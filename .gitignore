@@ -1,6 +1,16 @@
-.idea/
-.gradle/
-*.class
-build/
-*.DS_Store
-.vscode/
+# IntelliJ
+**/.idea/
+**/out/
+
+# Gradle
+**/.gradle/
+**/build/
+
+.DS_Store
+tools/plots/*
+toodls/time.csv
+*.Rhistory
+token.txt
+
+# Gitlab Token
+toodls/token.txt
