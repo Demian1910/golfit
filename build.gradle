@@ -1,4 +1,4 @@
-plugins {
+ plugins {
     id 'application'
     id 'java'
     id 'org.openjfx.javafxplugin' version '0.1.0'
@@ -14,7 +14,7 @@ java {
 }
 
 application {
-    mainClass = 'ch.unibas.dmi.dbis.cs108.example.HelloWorld'
+    mainClass = 'org.golfit.Main'
 }
 
 repositories {
@@ -53,7 +53,7 @@ tasks.register('fatJar', Jar) {
         attributes('Main-Class': application.mainClass.get())
     }
 
-    // include your compiled classes/resources
+    // include your compiled classes/resourcesf
     from(sourceSets.main.output)
 
     // make sure runtimeClasspath is resolved before we try to zipTree it
