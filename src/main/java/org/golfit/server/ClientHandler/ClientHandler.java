@@ -1,5 +1,7 @@
 package org.golfit.server.ClientHandler;
 
+import org.slf4j.Logger;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -12,6 +14,7 @@ public class ClientHandler implements Runnable {
     private final InetAddress address;
     private final int port;
     private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ClientHandler.class);
 
     public ClientHandler(String clientKey, DatagramSocket socket, InetAddress address, int port) {
         this.clientKey = clientKey;
@@ -25,11 +28,18 @@ public class ClientHandler implements Runnable {
     }
     @Override
     public void run() {
-        System.out.println("ClientHandler running for: " + clientKey);
+        logger.info("client: " + clientKey + " connected");
         try {
             while (true) {
                 String message = messageQueue.take();
-                System.out.println("[" + clientKey + "] " + message);
+                if(message.equals("ping")) {
+                    byte[] data = "pong".getBytes();
+                    DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
+                    socket.send(packet);
+                    continue;
+                }
+
+                logger.info("[" + clientKey + "] " + message);
 
                 String response = "Echo: " + message;
                 byte[] responseBytes = response.getBytes();
@@ -37,7 +47,7 @@ public class ClientHandler implements Runnable {
                 socket.send(responsePacket);
             }
         } catch (Exception e) {
-            System.out.println("ClientHandler error: " + e.getMessage());
+            logger.error("Error: " + e.getMessage());
         }
     }
 }

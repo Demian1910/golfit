@@ -1,8 +1,9 @@
 package org.golfit.server;
 
 import org.golfit.server.ClientHandler.ClientHandler;
+import org.golfit.server.ServerInit.ServerInit;
+import org.slf4j.Logger;
 
-import java.io.*;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
@@ -12,6 +13,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public class Server {
     private final int port;
     private final Map<String, ClientHandler> clients = new ConcurrentHashMap<>();
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Server.class);
 
 
     public Server(int port) {
@@ -19,10 +21,9 @@ public class Server {
     }
 
     public void start() {
-        // create datagram socket
 
         try(DatagramSocket socket = new DatagramSocket(port)) {
-            System.out.println("Server running on port: " + port);
+            ServerInit.serverInit(port);
             byte[] buffer = new byte[1024];
 
             while (true) {
@@ -39,10 +40,9 @@ public class Server {
                 });
 
                 clientHandler.queueMessage(message);
-
             }
         } catch (Exception e) {
-            System.out.println("Server error: " + e.getMessage());
+            logger.error("Error: " + e.getMessage());
         }
     }
 }

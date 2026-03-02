@@ -6,6 +6,7 @@
 **/.gradle/
 **/build/
 
+*.log
 .DS_Store
 tools/plots/*
 toodls/time.csv
