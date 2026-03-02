@@ -9,6 +9,7 @@ import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ThreadLocalRandom;
 
 public class Server {
     private final int port;
@@ -34,7 +35,7 @@ public class Server {
                 String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
 
                 ClientHandler clientHandler = clients.computeIfAbsent(clientKey, key -> {
-                    ClientHandler handler = new ClientHandler(key, socket, packet.getAddress(), packet.getPort());
+                    ClientHandler handler = new ClientHandler(key, socket, packet.getAddress(), packet.getPort(), generateUniqueId());
                     new Thread(handler).start();
                     return handler;
                 });
@@ -44,5 +45,17 @@ public class Server {
         } catch (Exception e) {
             logger.error("Error: " + e.getMessage());
         }
+    }
+
+    public static int generateUniqueId() {
+        long time = System.nanoTime();
+        long unix = System.currentTimeMillis();
+        long heap = Runtime.getRuntime().totalMemory();
+        long rnd  = ThreadLocalRandom.current().nextLong();
+
+        int hash = (int) (time ^ unix ^ heap ^ rnd);
+        hash &= 0x7FFFFFFF;
+        if(hash == 0 || hash == 1) hash = 2;
+        return hash;
     }
 }
