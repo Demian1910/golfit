@@ -1,6 +1,8 @@
 # IntelliJ
 **/.idea/
 **/out/
+.vscode
+.idea
 
 # Gradle
 **/.gradle/
