@@ -10,7 +10,7 @@ Minigolf as the way to have fun while maintaining competetive elements became po
 
 **Target Audience** Developers implementing game, project evaluators and potential users interested in minigolf videogame.
 
-## 1.2 Scope and Objectives
+### 1.2 Scope and Objectives
 
 **Project Scope** This project is developed by 4 people as part of the Programming project lecture at University of Basel. GOLFIT is a video game about minigolf, that implements server/client architecture, where the communication is made through custom made network protocol. Where users(clients) are able to establish connection with server and use the interface that server provides, such as: Lobby creation, chat and game itself. 
 
