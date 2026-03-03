@@ -17,3 +17,10 @@ first prototype of the network protocol. Now server and client can communicate w
 Demian added a comprehensive game concept, with clear game rules and mechanics outline. Added document includes our 
 vision of the game, its objectives win/loss conditions. Game rules section clearly underlines how the game process will
 be. On top Client and Server responsibilities are clearly defined.
+
+## Entry #4 3.3.26
+We had a group discussion and concluded that the game should be real-time based unlike the traditional turn-based golf game.
+We divided responsibilities so everyone can work has clear tasks. Anton will focus on networking, Tamer on physics while
+Constantin and Demian focus on the graphics of the game. 
+We briefly discussed how we should handle the presentation for milestone I. Tony: Networking, Constantin: Timeline 
+Tamer: Goals, rules and mechanics of Golfit. Demian will present the mock-up.
