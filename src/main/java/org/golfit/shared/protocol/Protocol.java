@@ -11,10 +11,11 @@ public class Protocol {
     public static final byte PKG_SYS_LOBBY_LIST = 0x08;
 
     public static final byte PKG_SYS_CHAT = 0x09;
-    public static final byte PKG_SYS_CHAT_PRIVATE = 0x010;
+    public static final byte PKG_SYS_CHAT_PRIVATE = 0x0A;
 
-    public static final byte PKG_MOVE_INPUT = 0x11;
-    public static final byte PKG_MOVE_UPDATE = 0x12;
+    public static final byte PKG_MOVE_INPUT = 0xB;
+    public static final byte PKG_MOVE_UPDATE = 0xC;
+    public static final byte PKG_SYS_ACK = 0xD;
 
     public static final byte CH_SYSTEM = 0;
     public static final byte CH_MOVEMENT = 1;
@@ -23,4 +24,9 @@ public class Protocol {
     public static final int ID_INVALID = 0;
     public static final int ID_SERVER = 1;
     public static final int ID_BROADCAST = -1;
+
+    @FunctionalInterface
+    public interface SendFunction {
+        void send(byte[] data) throws Exception;
+    }
 }

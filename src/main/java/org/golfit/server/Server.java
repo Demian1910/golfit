@@ -31,7 +31,11 @@ public class Server {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
 
+                byte[] raw = new byte[packet.getLength()];
+                System.arraycopy(packet.getData(), 0, raw, 0, packet.getLength());
+
                 String clientKey = packet.getAddress().getHostAddress() + ":" + packet.getPort();
+
                 String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
 
                 ClientHandler clientHandler = clients.computeIfAbsent(clientKey, key -> {
@@ -40,7 +44,7 @@ public class Server {
                     return handler;
                 });
 
-                clientHandler.queueMessage(message);
+                clientHandler.queueMessage(raw);
             }
         } catch (Exception e) {
             logger.error("Error: " + e.getMessage());
