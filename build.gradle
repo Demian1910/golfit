@@ -9,7 +9,7 @@ version = '0.0.1-ALPHA'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 javafx {
-    version = "21"
+    version = "25"
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.base']
 }
 

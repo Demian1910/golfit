@@ -1,5 +1,7 @@
 package org.golfit.client;
 
+import org.golfit.shared.packetBuilder.PacketBuilder;
+import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
 
 import java.io.*;
@@ -8,6 +10,7 @@ import java.util.Scanner;
 
 public class Client {
     final private String host;
+    final private int id = 0;
     final private int port;
     private String username;
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Client.class);
@@ -56,19 +59,22 @@ public class Client {
         try{
             while(!socket.isClosed()) {
                 long start = System.currentTimeMillis();
-                byte[] data = "ping".getBytes();
-                DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName(host), port);
-                socket.send(packet);
 
-                byte[] receiveData = new byte[1024];
-                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-                socket.receive(receivePacket);
-                String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
-                if(response.equals("pong")) {
-                    long ping = System.currentTimeMillis() - start;
-                    pingLogger.debug("Ping: " + ping + "ms");
-                }
-                Thread.sleep(5000);
+                byte[] packet = new PacketBuilder().buildPacket(Protocol.PKG_SYS_PING, Protocol.CH_SYSTEM, id, 0);
+
+//                byte[] data = "ping".getBytes();
+//                DatagramPacket packet = new DatagramPacket(data, data.length, InetAddress.getByName(host), port);
+//                socket.send(packet);
+//
+//                byte[] receiveData = new byte[1024];
+//                DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+//                socket.receive(receivePacket);
+//                String response = new String(receivePacket.getData(), 0, receivePacket.getLength());
+//                if(response.equals("pong")) {
+//                    long ping = System.currentTimeMillis() - start;
+//                    pingLogger.debug("Ping: " + ping + "ms");
+//                }
+//                Thread.sleep(5000);
             }
         }
         catch (Exception e) {

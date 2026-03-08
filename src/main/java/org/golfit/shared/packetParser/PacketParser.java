@@ -11,7 +11,7 @@ public class PacketParser {
         public byte[] payload;
     }
 
-    public static Header parsePackage(byte[] raw) {
+    public static Header parsePacket(byte[] raw) {
         if(raw.length < 11) return null;
         ByteBuffer buffer = ByteBuffer.wrap(raw);
         Header h = new Header();

@@ -1,12 +1,12 @@
 package org.golfit.shared.protocol.channelManager;
 
+import org.golfit.shared.constants.Constants;
 import org.golfit.shared.packetBuilder.PacketBuilder;
 import org.golfit.shared.packetParser.PacketParser;
 import org.golfit.shared.pendingPacket.PendingPacket;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channel.Channel;
 
-import java.net.DatagramSocket;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -25,15 +25,38 @@ public class ChannelManager {
         Channel channel = channels.get(channelId);
         int sequence = channel.nextSequence();
 
-        byte[] packet = PacketBuilder.buildPackage(packetType, channelId, senderId, sequence, payload);
+        byte[] packet = PacketBuilder.buildPacket(packetType, channelId, senderId, sequence, payload);
+        sender.send(packet);
+        if(channel.reliable) {
+            channel.pendingAck.put(sequence, new PendingPacket(packet, System.currentTimeMillis()));
+        }
+    }
+    public void send(byte channelId, byte packetType, int senderId) throws Exception {
+        Channel channel = channels.get(channelId);
+        int sequence = channel.nextSequence();
+
+        byte[] packet = PacketBuilder.buildPacket(packetType, channelId, senderId, sequence);
         sender.send(packet);
         if(channel.reliable) {
             channel.pendingAck.put(sequence, new PendingPacket(packet, System.currentTimeMillis()));
         }
     }
 
+    public void tick() throws Exception {
+        long time = System.currentTimeMillis();
+        for(Channel channel : channels.values()) {
+            if(!channel.reliable) continue;
+            for(PendingPacket pending : channel.pendingAck.values()) {
+                if(time - pending.sentAt > Constants.TIMEOUT_MS) {
+                    sender.send(pending.packet);
+                    pending.sentAt = time;
+                }
+            }
+        }
+    }
+
     public void onPackageReceived(byte[] raw) throws Exception {
-        PacketParser.Header header = PacketParser.parsePackage(raw);
+        PacketParser.Header header = PacketParser.parsePacket(raw);
         if(header == null) return;
 
         Channel channel = channels.get(header.channel);
@@ -49,7 +72,7 @@ public class ChannelManager {
 //        dispatch(header);
     }
     private void sendAck(byte channelId, int ackSequence, int targetId) throws Exception {
-        byte[] ack = PacketBuilder.buildPackage(Protocol.PKG_SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, null);
+        byte[] ack = PacketBuilder.buildPacket(Protocol.PKG_SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, null);
         sender.send(ack);
     }
 }
