@@ -2,7 +2,6 @@ package org.golfit.shared.protocol.channel;
 
 import org.golfit.shared.pendingPacket.PendingPacket;
 
-import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 

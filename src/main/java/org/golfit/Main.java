@@ -4,7 +4,7 @@ import org.golfit.client.Client;
 import org.golfit.server.Server;
 
 public class Main {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws Exception {
         if(args.length == 0) {
             printUsage();
             return;

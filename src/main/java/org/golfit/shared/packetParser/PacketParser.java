@@ -3,7 +3,7 @@ package org.golfit.shared.packetParser;
 import java.nio.ByteBuffer;
 
 public class PacketParser {
-    public static class Header {
+    public static class Packet {
         public byte type;
         public byte channel;
         public int senderId;
@@ -11,16 +11,21 @@ public class PacketParser {
         public byte[] payload;
     }
 
-    public static Header parsePacket(byte[] raw) {
-        if(raw.length < 11) return null;
+    public static Packet parsePacket(byte[] raw) {
+        if(raw.length < 10) return null;
         ByteBuffer buffer = ByteBuffer.wrap(raw);
-        Header h = new Header();
-        h.type = buffer.get();
-        h.channel = buffer.get();
-        h.senderId = buffer.getInt();
-        h.sequence = buffer.getInt();
-        h.payload = new byte[buffer.remaining()];
-        buffer.get(h.payload);
-        return h;
+        Packet packet = new Packet();
+        packet.type = buffer.get();
+        packet.channel = buffer.get();
+        packet.senderId = buffer.getInt();
+        packet.sequence = buffer.getInt();
+
+        if(buffer.remaining() > 0) {
+            packet.payload = new byte[buffer.remaining()];
+            buffer.get(packet.payload);
+        } else {
+            packet.payload = null;
+        }
+        return packet;
     }
 }

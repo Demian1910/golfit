@@ -1,20 +1,42 @@
 package org.golfit.server;
 
+import org.golfit.server.handlers.MovementHandler;
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.ServerInit.ServerInit;
+import org.golfit.server.handlers.ChatHandler;
+import org.golfit.server.handlers.SystemHandler;
+import org.golfit.server.serverApi.ServerApi;
+import org.golfit.shared.lobby.Lobby;
+import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
+
 
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
+import java.util.Collection;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadLocalRandom;
 
-public class Server {
+public class Server implements ServerContext{
+    private final ServerApi serverApi = new ServerApi(this);
+
+    private final SystemHandler systemHandler = new SystemHandler(serverApi);
+    private final ChatHandler chatHandler = new ChatHandler(serverApi);
+    private final MovementHandler movementHandler = new MovementHandler(serverApi);
+
+    private final Set<String> usernames = ConcurrentHashMap.newKeySet();
+
     private final int port;
     private final Map<String, ClientHandler> clients = new ConcurrentHashMap<>();
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Server.class);
+    private final ExecutorService threadPool = Executors.newCachedThreadPool();
 
 
     public Server(int port) {
@@ -22,8 +44,7 @@ public class Server {
     }
 
     public void start() {
-
-        try(DatagramSocket socket = new DatagramSocket(port)) {
+        try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
             byte[] buffer = new byte[1024];
 
@@ -34,13 +55,13 @@ public class Server {
                 byte[] raw = new byte[packet.getLength()];
                 System.arraycopy(packet.getData(), 0, raw, 0, packet.getLength());
 
+                // Use address+port as the key, not a random ID
                 String clientKey = packet.getAddress().getHostAddress() + ":" + packet.getPort();
 
-                String message = new String(packet.getData(), 0, packet.getLength(), StandardCharsets.UTF_8);
-
                 ClientHandler clientHandler = clients.computeIfAbsent(clientKey, key -> {
-                    ClientHandler handler = new ClientHandler(key, socket, packet.getAddress(), packet.getPort(), generateUniqueId());
-                    new Thread(handler).start();
+                    ClientHandler handler = new ClientHandler(key,socket, packet.getAddress(), packet.getPort(), generateUniqueId());
+                    handler.setDispatcher((p) -> dispatch(handler, p));
+                    threadPool.submit(handler);
                     return handler;
                 });
 
@@ -61,5 +82,26 @@ public class Server {
         hash &= 0x7FFFFFFF;
         if(hash == 0 || hash == 1) hash = 2;
         return hash;
+    }
+
+    private void dispatch(ClientHandler clientHandler, PacketParser.Packet packet) throws Exception {
+        switch(packet.type) {
+            case Protocol.PKG_SYS_CONNECT -> systemHandler.onConnect(clientHandler, packet);
+        }
+    }
+
+    @Override
+    public Map<String, ClientHandler> getClients() {
+        return clients;
+    }
+
+    @Override
+    public Collection<Lobby> getLobbies() {
+        return List.of();
+    }
+
+    @Override
+    public Set<String> getUsernameSet() {
+        return usernames;
     }
 }

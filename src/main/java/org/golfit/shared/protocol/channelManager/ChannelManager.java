@@ -13,13 +13,16 @@ import java.util.Map;
 public class ChannelManager {
     private final Map<Byte, Channel> channels = new HashMap<>();
     private final Protocol.SendFunction sender;
+    private final Protocol.PacketDispatcher dispatcher;
 
-    public ChannelManager(Protocol.SendFunction sender) {
+    public ChannelManager(Protocol.SendFunction sender, Protocol.PacketDispatcher dispatch) {
         channels.put(Protocol.CH_SYSTEM, new Channel(Protocol.CH_SYSTEM, true));
         channels.put(Protocol.CH_CHAT, new Channel(Protocol.CH_CHAT, true));
         channels.put(Protocol.CH_MOVEMENT, new Channel(Protocol.CH_MOVEMENT, false));
         this.sender = sender;
+        dispatcher = dispatch;
     }
+
 
     public void send(byte channelId, byte packetType, int senderId, byte[] payload) throws Exception {
         Channel channel = channels.get(channelId);
@@ -55,21 +58,27 @@ public class ChannelManager {
         }
     }
 
-    public void onPackageReceived(byte[] raw) throws Exception {
-        PacketParser.Header header = PacketParser.parsePacket(raw);
-        if(header == null) return;
+    public void onPacketReceived(byte[] raw) throws Exception {
+        PacketParser.Packet packet = PacketParser.parsePacket(raw);
+        System.out.println("onPacketReceived: parsed=" + (packet==null?"NULL":"type="+packet.type+" ch="+packet.channel+" seq="+packet.sequence));
+        if (packet == null) return;
 
-        Channel channel = channels.get(header.channel);
-        if(channel.reliable) {
-            if(channel.isNewPacket(header.sequence)) return;
-            sendAck(header.channel, header.sequence, header.senderId);
-        }
+        Channel channel = channels.get(packet.channel);
+        System.out.println("channel lookup: " + (channel==null?"NULL - MISSING CHANNEL":"found reliable="+channel.reliable));
+        if (channel == null) return;
 
-        if(header.type == Protocol.PKG_SYS_ACK) {
-            channel.pendingAck.remove(header.sequence);
+        if (packet.type == Protocol.PKG_SYS_ACK) {
+            channel.pendingAck.remove(packet.sequence);
             return;
         }
-//        dispatch(header);
+
+        if (channel.reliable) {
+            boolean isNew = channel.isNewPacket(packet.sequence);
+            System.out.println("isNewPacket(" + packet.sequence + ")=" + isNew);
+            if (!isNew) return;
+            sendAck(packet.channel, packet.sequence, packet.senderId);
+        }
+        dispatcher.dispatch(packet);
     }
     private void sendAck(byte channelId, int ackSequence, int targetId) throws Exception {
         byte[] ack = PacketBuilder.buildPacket(Protocol.PKG_SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, null);
