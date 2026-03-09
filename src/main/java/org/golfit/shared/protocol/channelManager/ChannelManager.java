@@ -1,20 +1,20 @@
 package org.golfit.shared.protocol.channelManager;
 
 import org.golfit.shared.constants.Constants;
-import org.golfit.shared.packetBuilder.PacketBuilder;
-import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.shared.packetBuilder.MessageBuilder;
+import org.golfit.shared.packetParser.MessageParser;
 import org.golfit.shared.pendingPacket.PendingPacket;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 public class ChannelManager {
-    private final Map<Byte, Channel> channels = new HashMap<>();
+    private final Map<String, Channel> channels = new HashMap<>();
     private final Protocol.SendFunction sender;
     private final Protocol.PacketDispatcher dispatcher;
     private final Logger logger = LoggerFactory.getLogger(ChannelManager.class);
@@ -24,29 +24,21 @@ public class ChannelManager {
         channels.put(Protocol.CH_SYSTEM, new Channel(Protocol.CH_SYSTEM, true));
         channels.put(Protocol.CH_CHAT, new Channel(Protocol.CH_CHAT, true));
         channels.put(Protocol.CH_MOVEMENT, new Channel(Protocol.CH_MOVEMENT, false));
+        channels.put(Protocol.CH_PINGS, new Channel(Protocol.CH_PINGS, false));
         this.sender = sender;
         this.dispatcher = dispatcher;
     }
 
 
-    public void send(byte channelId, byte packetType, int senderId, byte[] payload) throws Exception {
+    public void send(String packetType, String channelId, int senderId, String payload) throws Exception {
         Channel channel = channels.get(channelId);
         int sequence = channel.nextSequence();
 
-        byte[] packet = PacketBuilder.buildPacket(packetType, channelId, senderId, sequence, payload);
-        sender.send(packet);
+        String message = MessageBuilder.buildMessage(packetType, channelId, senderId, sequence, payload);
+        logger.info("Message bytes: " + Arrays.toString(message.getBytes()));
+        sender.send(message);
         if(channel.reliable) {
-            channel.pendingAck.put(sequence, new PendingPacket(packet, System.currentTimeMillis()));
-        }
-    }
-    public void send(byte channelId, byte packetType, int senderId) throws Exception {
-        Channel channel = channels.get(channelId);
-        int sequence = channel.nextSequence();
-
-        byte[] packet = PacketBuilder.buildPacket(packetType, channelId, senderId, sequence);
-        sender.send(packet);
-        if(channel.reliable) {
-            channel.pendingAck.put(sequence, new PendingPacket(packet, System.currentTimeMillis()));
+            channel.pendingAck.put(sequence, new PendingPacket(message, System.currentTimeMillis()));
         }
     }
 
@@ -63,29 +55,35 @@ public class ChannelManager {
         }
     }
 
-    public void onPacketReceived(byte[] raw) throws Exception {
-        PacketParser.Packet packet = PacketParser.parsePacket(raw);
+    public void onPacketReceived(String raw) throws Exception {
+        MessageParser.Message message = MessageParser.parseMessage(raw);
+        logger.info("Received message: " + raw);
 
-        if (packet == null) {
-            logger.error("Packet is null");
+        if (message == null) {
+            logger.error("Message is null");
             return;
         }
 
-        Channel channel = channels.get(packet.channel);
-        if (packet.type == Protocol.PKG_SYS_ACK) {
-            channel.pendingAck.remove(packet.sequence);
+        Channel channel = channels.get(message.channel);
+        if (message.type.equals(Protocol.SYS_ACK)) {
+            channel.pendingAck.remove(message.sequence);
             return;
         }
 
         if (channel.reliable) {
-            boolean isNew = channel.isNewPacket(packet.sequence);
+            boolean isNew = channel.isNewPacket(message.sequence);
             if (!isNew) return;
-            sendAck(packet.channel, packet.sequence, packet.senderId);
+            sendAck(message.channel, message.sequence, message.senderId);
         }
-        dispatcher.dispatch(packet);
+        logger.info("Received packet: " + message.type);
+        logger.info("Received packet: " + message.channel);
+        logger.info("Received packet: " + message.senderId);
+        logger.info("Received packet: " + message.payload);
+        dispatcher.dispatch(message);
     }
-    private void sendAck(byte channelId, int ackSequence, int targetId) throws Exception {
-        byte[] ack = PacketBuilder.buildPacket(Protocol.PKG_SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, null);
+    private void sendAck(String channelId, int ackSequence, int targetId) throws Exception {
+        String ack = MessageBuilder.buildMessage(Protocol.SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, "");
+        logger.info("Sending ack: " + ack);
         sender.send(ack);
     }
 }

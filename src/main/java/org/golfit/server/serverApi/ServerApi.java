@@ -9,7 +9,7 @@ import java.math.BigInteger;
 import java.util.Collection;
 
 import static org.golfit.shared.protocol.Protocol.CH_MOVEMENT;
-import static org.golfit.shared.protocol.Protocol.PKG_MOVE_UPDATE;
+import static org.golfit.shared.protocol.Protocol.MOVE_UPDATE;
 
 public class ServerApi implements IServerApi{
     private final ServerContext serverContext;
@@ -20,13 +20,13 @@ public class ServerApi implements IServerApi{
 
     @Override
     public void sendConnected(ClientHandler clientHandler, int assignedId) throws Exception {
-        byte[] payload = BigInteger.valueOf(assignedId).toByteArray();
-        clientHandler.getChannelManager().send(Protocol.CH_SYSTEM, Protocol.PKG_SYS_CONNECTED, Protocol.ID_SERVER, payload);
+        String payload =  assignedId + "";
+        clientHandler.getChannelManager().send(Protocol.SYS_CONNECTED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
     @Override
     public void sendPong(ClientHandler clientHandler) throws Exception {
-        clientHandler.getChannelManager().send(Protocol.CH_SYSTEM, Protocol.PKG_SYS_PONG, Protocol.ID_SERVER);
+        clientHandler.getChannelManager().send( Protocol.SYS_PONG, Protocol.CH_PINGS, Protocol.ID_SERVER, "");
     }
 
     public void disconnectClient(ClientHandler clientHandler) {
@@ -37,21 +37,20 @@ public class ServerApi implements IServerApi{
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
         //TODO: Convert lobbies to byte[]
         Collection<Lobby> lobbies = serverContext.getLobbies();
-        byte[] payload = new byte[0];
-        clientHandler.getChannelManager().send(Protocol.CH_SYSTEM, Protocol.PKG_SYS_LOBBY_LIST, Protocol.ID_SERVER, payload);
+        clientHandler.getChannelManager().send( Protocol.SYS_LOBBY_LIST,Protocol.CH_SYSTEM, Protocol.ID_SERVER, "");
     }
 
     @Override
     public void sendPrivateChat(ClientHandler clientHandler, int targetId, String data) throws Exception {
         //TODO: include targetId
         byte[] payload = data.getBytes();
-        clientHandler.getChannelManager().send(Protocol.CH_SYSTEM, Protocol.PKG_SYS_CHAT_PRIVATE, Protocol.ID_SERVER, payload);
+        clientHandler.getChannelManager().send( Protocol .SYS_CHAT_PRIVATE,Protocol.CH_SYSTEM, Protocol.ID_SERVER, "");
     }
 
     @Override
     public void broadcastChat(int senderId, String data) throws Exception {
         for(ClientHandler client : serverContext.getClients().values()) {
-            client.getChannelManager().send(Protocol.CH_CHAT, Protocol.PKG_SYS_CHAT, senderId, data.getBytes());
+            client.getChannelManager().send( Protocol.SYS_CHAT,Protocol.CH_CHAT, senderId, data);
         }
     }
 
@@ -60,7 +59,7 @@ public class ServerApi implements IServerApi{
         for(ClientHandler client : serverContext.getClients().values()) {
             if(client.getId() == senderId) continue;
             //TODO: Convert game object to byte[]
-            client.getChannelManager().send(CH_MOVEMENT, PKG_MOVE_UPDATE, senderId, new byte[1024]);
+            client.getChannelManager().send(Protocol.MOVE_UPDATE,Protocol.CH_MOVEMENT, senderId, "");
         }
     }
 

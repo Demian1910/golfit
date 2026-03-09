@@ -8,7 +8,7 @@ import org.golfit.server.handlers.SystemHandler;
 import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.constants.Constants;
 import org.golfit.shared.lobby.Lobby;
-import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.shared.packetParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
 
@@ -16,10 +16,7 @@ import org.slf4j.Logger;
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -65,7 +62,7 @@ public class Server implements ServerContext{
                     threadPool.submit(handler);
                     return handler;
                 });
-                clientHandler.queueMessage(raw);
+                clientHandler.queueMessage(new String(raw, StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
             logger.error("Error: " + e.getMessage());
@@ -84,10 +81,11 @@ public class Server implements ServerContext{
         return hash;
     }
 
-    private void dispatch(String clientKey, PacketParser.Packet packet) throws Exception {
+    private void dispatch(String clientKey, MessageParser.Message message) throws Exception {
         ClientHandler clientHandler = clients.get(clientKey);
-        switch(packet.type) {
-            case Protocol.PKG_SYS_CONNECT -> systemHandler.onConnect(clientHandler, packet);
+        switch(message.type) {
+            case Protocol.SYS_CONNECT -> systemHandler.onConnect(clientHandler, message);
+            case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
         }
     }
 

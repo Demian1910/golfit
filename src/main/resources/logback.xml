@@ -28,17 +28,13 @@
         </encoder>
     </appender>
 
+    <logger name="ping" level="DEBUG" additivity="false">
+        <appender-ref ref="PING_FILE" />
+    </logger>
+
     <root level="DEBUG">
         <appender-ref ref="CONSOLE" />
         <appender-ref ref="FILE" />
     </root>
 
-    <logger name="ping" level="DEBUG" additivity="false">
-        <appender-ref ref="PING_FILE" />
-    </logger>
-
-    <root level="INFO">
-        <appender-ref ref="CONSOLE" />
-        <appender-ref ref="FILE" />
-    </root>
 </configuration>

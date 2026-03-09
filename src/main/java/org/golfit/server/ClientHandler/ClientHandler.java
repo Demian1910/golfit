@@ -1,6 +1,6 @@
 package org.golfit.server.ClientHandler;
 
-import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.shared.packetParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
 import org.slf4j.Logger;
@@ -21,7 +21,7 @@ public class ClientHandler implements Runnable {
     private final DatagramSocket socket;
     private final InetAddress address;
     private final int port;
-    private final BlockingQueue<byte[]> messageQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
     private ChannelManager channelManager;
 
@@ -35,12 +35,13 @@ public class ClientHandler implements Runnable {
         this.Id = Id;
         this.dispatcher = dispatcher;
         this.channelManager = new ChannelManager((data) -> {
-            DatagramPacket pkg = new DatagramPacket(data, data.length, address, port);
+            byte[] byteData = data.getBytes(StandardCharsets.UTF_8);
+            DatagramPacket pkg = new DatagramPacket(byteData, byteData.length, address, port);
             socket.send(pkg);
         }, this::dispatch);
     }
 
-    public void queueMessage(byte [] raw) {
+    public void queueMessage(String raw) {
         messageQueue.offer(raw);
     }
 
@@ -58,7 +59,7 @@ public class ClientHandler implements Runnable {
 
         try {
             while (true) {
-             byte[] raw = messageQueue.take();
+             String raw = messageQueue.take();
              channelManager.onPacketReceived(raw);
             }
         } catch (Exception e) {
@@ -69,8 +70,8 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void dispatch(PacketParser.Packet packet) throws Exception {
-        dispatcher.dispatch(packet);
+    private void dispatch(MessageParser.Message message) throws Exception {
+        dispatcher.dispatch(message);
     }
     public ChannelManager getChannelManager() {
         return channelManager;

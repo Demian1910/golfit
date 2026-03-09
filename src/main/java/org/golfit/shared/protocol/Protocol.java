@@ -1,6 +1,6 @@
 package org.golfit.shared.protocol;
 
-import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.shared.packetParser.MessageParser;
 
 public class Protocol {
     public static final String SYS_CONNECT        = "SYS_CONNECT";
@@ -31,22 +31,27 @@ public class Protocol {
     public static final String SYS_ACK            = "SYS_ACK";
 
     // channels
-    public static final int CH_SYSTEM   = 0;
-    public static final int CH_MOVEMENT = 1;
-    public static final int CH_CHAT     = 2;
+    public static final String CH_SYSTEM   = "CH_SYSTEM";
+    public static final String CH_MOVEMENT = "CH_MOVEMENT";
+    public static final String CH_CHAT     = "CH_CHAT";
+    public static final String CH_PINGS    = "CH_PINGS";
 
     // ids
     public static final int ID_INVALID   = 0;
     public static final int ID_SERVER    = 1;
     public static final int ID_BROADCAST = -1;
 
+    public static final char DELIMITER = '|';
+    public static final char TERMINATOR = '\n';
+    public static final int FIELD_COUNT = 5;
+
     @FunctionalInterface
     public interface SendFunction {
-        void send(byte[] data) throws Exception;
+        void send(String data) throws Exception;
     }
 
     @FunctionalInterface
     public interface PacketDispatcher {
-        void dispatch(PacketParser.Packet packet) throws Exception;
+        void dispatch(MessageParser.Message message) throws Exception;
     }
 }
