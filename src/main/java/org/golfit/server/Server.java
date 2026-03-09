@@ -17,10 +17,7 @@ import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadLocalRandom;
+import java.util.concurrent.*;
 
 public class Server implements ServerContext{
     private final ServerApi serverApi = new ServerApi(this);
@@ -45,6 +42,17 @@ public class Server implements ServerContext{
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
             byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
+            ScheduledExecutorService cleanUp = Executors.newSingleThreadScheduledExecutor();
+            cleanUp.scheduleAtFixedRate(() -> {
+                clients.entrySet().removeIf(entry -> {
+                    if(entry.getValue().isTimedOut()) {
+                        logger.info("Client timed out: " + entry.getKey());
+                        entry.getValue().shutdown();
+                        return true;
+                    }
+                    return false;
+                });
+            }, 0, 10, TimeUnit.SECONDS);
 
             while (true) {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

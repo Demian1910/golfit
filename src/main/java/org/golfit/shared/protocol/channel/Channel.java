@@ -31,4 +31,9 @@ public class Channel {
         }
         return false;
     }
+    public void reset() {
+        nextSendSequence = 0;
+        nextExpectedSequence = 0;
+        pendingAck.clear();
+    }
 }

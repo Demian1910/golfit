@@ -69,4 +69,12 @@ public class ClientApi implements IClientApi {
     public void setId(int id) {
         client.id = id;
     }
+
+    public void resetChannels(){
+        channelManager.resetChannels();
+    }
+
+    public String getUsername() {
+        return client.username;
+    }
 }

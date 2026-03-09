@@ -9,9 +9,7 @@ import org.golfit.shared.protocol.channel.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 
 public class ChannelManager {
     private final Map<String, Channel> channels = new HashMap<>();
@@ -35,7 +33,6 @@ public class ChannelManager {
         int sequence = channel.nextSequence();
 
         String message = MessageBuilder.buildMessage(packetType, channelId, senderId, sequence, payload);
-        logger.info("Message bytes: " + Arrays.toString(message.getBytes()));
         sender.send(message);
         if(channel.reliable) {
             channel.pendingAck.put(sequence, new PendingPacket(message, System.currentTimeMillis()));
@@ -44,17 +41,27 @@ public class ChannelManager {
 
     public void tick() throws Exception {
         long time = System.currentTimeMillis();
-        for(Channel channel : channels.values()) {
-            if(!channel.reliable) continue;
-            for(PendingPacket pending : channel.pendingAck.values()) {
-                if(time - pending.sentAt > Constants.TIMEOUT_MS) {
+        for (Channel channel : channels.values()) {
+            if (!channel.reliable) continue;
+
+            List<Integer> toRemove = new ArrayList<>();
+
+            for (Map.Entry<Integer, PendingPacket> entry : channel.pendingAck.entrySet()) {
+                PendingPacket pending = entry.getValue();
+                if (time - pending.sentAt > Constants.TIMEOUT_MS) {
+                    if (pending.retryCount >= Constants.MAX_RETRIES) {
+                        toRemove.add(entry.getKey());
+                        continue;
+                    }
                     sender.send(pending.packet);
                     pending.sentAt = time;
+                    pending.retryCount++;
                 }
             }
+
+            toRemove.forEach(channel.pendingAck::remove);
         }
     }
-
     public void onPacketReceived(String raw) throws Exception {
         MessageParser.Message message = MessageParser.parseMessage(raw);
         logger.info("Received message: " + raw);
@@ -75,15 +82,15 @@ public class ChannelManager {
             if (!isNew) return;
             sendAck(message.channel, message.sequence, message.senderId);
         }
-        logger.info("Received packet: " + message.type);
-        logger.info("Received packet: " + message.channel);
-        logger.info("Received packet: " + message.senderId);
-        logger.info("Received packet: " + message.payload);
         dispatcher.dispatch(message);
     }
     private void sendAck(String channelId, int ackSequence, int targetId) throws Exception {
         String ack = MessageBuilder.buildMessage(Protocol.SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, "");
-        logger.info("Sending ack: " + ack);
         sender.send(ack);
+    }
+    public void resetChannels() {
+        for(Channel channel : channels.values()) {
+            channel.reset();
+        }
     }
 }

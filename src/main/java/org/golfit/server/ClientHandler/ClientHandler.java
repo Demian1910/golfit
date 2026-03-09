@@ -1,5 +1,6 @@
 package org.golfit.server.ClientHandler;
 
+import org.golfit.shared.constants.Constants;
 import org.golfit.shared.packetParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
@@ -24,6 +25,9 @@ public class ClientHandler implements Runnable {
     private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
     private ChannelManager channelManager;
+    private long lastPing = System.currentTimeMillis();
+
+    private Thread thread;
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ClientHandler.class);
 
@@ -47,6 +51,7 @@ public class ClientHandler implements Runnable {
 
     @Override
     public void run() {
+        thread = Thread.currentThread();
         ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor();
         ticker.scheduleAtFixedRate(()->{
             try {
@@ -56,13 +61,15 @@ public class ClientHandler implements Runnable {
             }
         },0, 100, TimeUnit.MILLISECONDS);
 
-
         try {
-            while (true) {
+            while (!thread.isInterrupted()) {
              String raw = messageQueue.take();
              channelManager.onPacketReceived(raw);
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e){
+            logger.info("ClientHandler thread interrupted");
+        }
+        catch (Exception e) {
             logger.error("Error: " + e.getMessage());
             logger.error(Arrays.toString(e.getStackTrace()));
         } finally {
@@ -82,6 +89,18 @@ public class ClientHandler implements Runnable {
     }
     public void setUsername(String username) {
         this.username = username;
+    }
+    public void updateLastPing() {
+        lastPing = System.currentTimeMillis();
+    }
+    public boolean isTimedOut() {
+        return System.currentTimeMillis() - lastPing > Constants.TIMEOUT_PING_MS;
+    }
+    public String getUsername() {
+        return username;
+    }
+    public void shutdown() {
+        thread.interrupt();
     }
 
 }

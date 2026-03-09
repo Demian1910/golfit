@@ -33,7 +33,7 @@ public class Client {
     DatagramSocket socket;
 
 
-    private String username;
+    String username;
 
     private ChannelManager channelManager;
 
@@ -91,8 +91,6 @@ public class Client {
         inputThread.setDaemon(true);
         inputThread.start();
 
-
-
         Thread receiveThread = new Thread(()-> {
             while (true) {
                 try {
@@ -110,7 +108,7 @@ public class Client {
         receiveThread.start();
 
         clientApi.connect(username);
-        pingService.start(Executors.newSingleThreadScheduledExecutor());
+        pingService.start();
     }
 
 

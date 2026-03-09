@@ -16,5 +16,4 @@ public class SystemHandler {
     public void onConnected(MessageParser.Message message) {
         logger.info("Yaaaaay, you count as connected user");
     }
-
 }

@@ -21,6 +21,7 @@ public class SystemHandler {
         serverApi.sendConnected(clientHandler, clientHandler.getId());
     }
     public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        clientHandler.updateLastPing();
         serverApi.sendPong(clientHandler);
     }
 }
