@@ -16,6 +16,7 @@ public class SystemHandler {
         if(message.payload != null) {
             String username = message.payload;
             clientHandler.setUsername(username);
+            System.out.println(username);
             System.out.println("Client " + clientHandler.getId() + " connected with username " + username);
         }
         serverApi.sendConnected(clientHandler, clientHandler.getId());

@@ -1,5 +1,7 @@
 package org.golfit.client;
 
+import org.golfit.client.cli.ClientCli;
+import org.golfit.client.cli.ConsoleManager;
 import org.golfit.client.handlers.ChatHandler;
 import org.golfit.client.handlers.MovementHandler;
 import org.golfit.client.handlers.SystemHandler;
@@ -22,6 +24,7 @@ import java.util.concurrent.TimeUnit;
 public class Client {
     public ClientApi clientApi;
     private PingService pingService;
+    private ClientCli clientCli;
 
     private SystemHandler systemHandler;
     private MovementHandler movementHandler;
@@ -47,7 +50,9 @@ public class Client {
     }
 
     public void start() throws Exception {
+        System.out.println("Type /help for a list of commands");
         socket = new DatagramSocket();
+        ConsoleManager.init();
 
         channelManager = new ChannelManager((data) -> {
             byte[] byteData = data.getBytes(StandardCharsets.UTF_8);
@@ -58,8 +63,7 @@ public class Client {
         clientApi = new ClientApi(channelManager, this);
 
         pingService = new PingService(clientApi);
-
-
+        clientCli = new ClientCli(clientApi);
         systemHandler = new SystemHandler(clientApi);
         movementHandler = new MovementHandler(clientApi);
         chatHandler = new ChatHandler(clientApi);
@@ -75,14 +79,11 @@ public class Client {
         }, 0, 100, TimeUnit.MILLISECONDS);
 
 
-        Scanner scanner = new Scanner(System.in);
-        Thread inputThread = new Thread(()-> {
+        Thread inputThread = new Thread(() -> {
             while (true) {
-               String line = scanner.nextLine();
-                MessageParser.Message messageParsed = MessageParser.parseMessage(line);
-                assert messageParsed != null;
                 try {
-                    channelManager.send(messageParsed.type, messageParsed.channel, messageParsed.senderId,messageParsed.payload);
+                    String line = ConsoleManager.readLine("> ");
+                    if (line != null) clientCli.processCommand(line);
                 } catch (Exception e) {
                     throw new RuntimeException(e);
                 }
@@ -107,7 +108,6 @@ public class Client {
         receiveThread.setDaemon(true);
         receiveThread.start();
 
-        clientApi.connect(username);
         pingService.start();
     }
 

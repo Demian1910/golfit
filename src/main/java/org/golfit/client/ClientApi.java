@@ -18,6 +18,7 @@ public class ClientApi implements IClientApi {
     public void  connect(String username) throws Exception {
         if(username != null) {
             String payload = username;
+            System.out.println("Connecting with username: " + username);
             channelManager.send( Protocol.SYS_CONNECT,Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
         }
     }

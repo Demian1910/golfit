@@ -5,11 +5,8 @@ import org.golfit.server.ServerContext;
 import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.protocol.Protocol;
 
-import java.math.BigInteger;
 import java.util.Collection;
 
-import static org.golfit.shared.protocol.Protocol.CH_MOVEMENT;
-import static org.golfit.shared.protocol.Protocol.MOVE_UPDATE;
 
 public class ServerApi implements IServerApi{
     private final ServerContext serverContext;

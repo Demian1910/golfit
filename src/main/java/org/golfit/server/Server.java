@@ -46,7 +46,7 @@ public class Server implements ServerContext{
             cleanUp.scheduleAtFixedRate(() -> {
                 clients.entrySet().removeIf(entry -> {
                     if(entry.getValue().isTimedOut()) {
-                        logger.info("Client timed out: " + entry.getKey());
+                        System.out.println("Client timed out: " + entry.getKey());
                         entry.getValue().shutdown();
                         return true;
                     }

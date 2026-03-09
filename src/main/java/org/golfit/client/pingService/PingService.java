@@ -48,12 +48,12 @@ public class PingService {
             try{
                 if(pingSentAt != 0 && System.currentTimeMillis() - pingSentAt > 10000) {
                     pingSentAt = 0;
-                    reconnectLogger.error("Server not responding");
+                    System.out.println("Server not responding");
                     clientApi.resetChannels();
                     clientApi.connect(clientApi.getUsername());
-                    reconnectLogger.info("Reconnection...");
+                    System.out.println("Reconnecting...");
             }} catch (Exception e) {
-                reconnectLogger.error("Reconnection failed: "+e.getMessage());
+                System.out.println("Reconnection failed: "+e.getMessage());
             }
     }
     public void stop() {
