@@ -3,6 +3,8 @@ package org.golfit.client;
 import org.golfit.client.handlers.ChatHandler;
 import org.golfit.client.handlers.MovementHandler;
 import org.golfit.client.handlers.SystemHandler;
+import org.golfit.client.pingService.PingService;
+import org.golfit.shared.constants.Constants;
 import org.golfit.shared.packetBuilder.PacketBuilder;
 import org.golfit.shared.packetParser.PacketParser;
 import org.golfit.shared.protocol.Protocol;
@@ -10,12 +12,14 @@ import org.golfit.shared.protocol.channelManager.ChannelManager;
 import org.slf4j.Logger;
 
 import java.net.*;
+import java.util.Scanner;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 public class Client {
     public ClientApi clientApi;
+    private PingService pingService;
 
     private SystemHandler systemHandler;
     private MovementHandler movementHandler;
@@ -32,7 +36,6 @@ public class Client {
     private ChannelManager channelManager;
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Client.class);
-    private static final Logger pingLogger = org.slf4j.LoggerFactory.getLogger("ping");
 
 
     public Client(String host, int port, String username) {
@@ -43,22 +46,21 @@ public class Client {
 
     public void start() throws Exception {
         socket = new DatagramSocket();
-        socket.setSoTimeout(5000); // ADD THIS - 5 second timeout
 
         channelManager = new ChannelManager((data) -> {
             DatagramPacket pkg = new DatagramPacket(data, data.length, InetAddress.getByName(host), port);
             socket.send(pkg);
-        }, (packet) -> dispatch(packet));
+        }, this::dispatch);
 
         clientApi = new ClientApi(channelManager, this);
-        clientApi.connect(username);
+        pingService = new PingService(clientApi);
 
-        // Move handlers BEFORE ticker
+
         systemHandler = new SystemHandler(clientApi);
         movementHandler = new MovementHandler(clientApi);
         chatHandler = new ChatHandler(clientApi);
 
-        // Start ticker LAST
+
         ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor();
         ticker.scheduleAtFixedRate(() -> {
             try {
@@ -68,20 +70,31 @@ public class Client {
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
 
-        byte[] buffer = new byte[1024];
-        while (true) {
-            try {
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
+        byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
+        DatagramPacket packet;
+        Scanner input = new Scanner(System.in);
 
-                byte[] raw = new byte[packet.getLength()];
-                System.arraycopy(packet.getData(), 0, raw, 0, packet.getLength());
-                channelManager.onPacketReceived(raw);
-                System.out.println("Received packet, id: " + id);
-            } catch (SocketTimeoutException e) {
-                System.out.println("No packet received in 5s - server not responding!"); // ADD THIS
+        ScheduledExecutorService pingThread = Executors.newSingleThreadScheduledExecutor();
+//        pingThread.scheduleAtFixedRate(pingService::sendPing(), 0, 10000, TimeUnit.MILLISECONDS);
+
+        Thread receiveThread = new Thread(()-> {
+            while (true) {
+                try {
+                    byte[] raw = new byte[Constants.MAX_PACKET_SIZE];
+                    DatagramPacket datagramPacket = new DatagramPacket(raw, raw.length);
+                    socket.receive(datagramPacket);
+                    System.arraycopy(datagramPacket.getData(), 0, raw, 0, datagramPacket.getLength());
+                    channelManager.onPacketReceived(raw);
+                } catch (Exception e) {
+                    logger.error(e.getMessage());
+                }
             }
-        }
+        });
+        receiveThread.setDaemon(true);
+        receiveThread.start();
+
+        clientApi.connect(username);
+
     }
 
     private void pingLoop(DatagramSocket socket) {

@@ -3,6 +3,7 @@ package org.golfit.shared.packetBuilder;
 import java.nio.ByteBuffer;
 
 public class PacketBuilder {
+
     public static byte[] buildPacket(byte type, byte channel, int senderId, int sequence, byte[] payload) {
         int size = 10 + (payload != null ? payload.length : 0);
         ByteBuffer buffer = ByteBuffer.allocate(size);

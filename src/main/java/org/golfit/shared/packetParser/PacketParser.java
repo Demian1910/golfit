@@ -12,7 +12,10 @@ public class PacketParser {
     }
 
     public static Packet parsePacket(byte[] raw) {
-        if(raw.length < 10) return null;
+        if (raw == null || raw.length < 10) {
+            return null;
+        }
+
         ByteBuffer buffer = ByteBuffer.wrap(raw);
         Packet packet = new Packet();
         packet.type = buffer.get();
@@ -20,7 +23,7 @@ public class PacketParser {
         packet.senderId = buffer.getInt();
         packet.sequence = buffer.getInt();
 
-        if(buffer.remaining() > 0) {
+        if (buffer.remaining() > 0) {
             packet.payload = new byte[buffer.remaining()];
             buffer.get(packet.payload);
         } else {

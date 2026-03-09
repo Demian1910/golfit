@@ -6,6 +6,7 @@ import org.golfit.server.ServerInit.ServerInit;
 import org.golfit.server.handlers.ChatHandler;
 import org.golfit.server.handlers.SystemHandler;
 import org.golfit.server.serverApi.ServerApi;
+import org.golfit.shared.constants.Constants;
 import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.packetParser.PacketParser;
 import org.golfit.shared.protocol.Protocol;
@@ -46,7 +47,7 @@ public class Server implements ServerContext{
     public void start() {
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
-            byte[] buffer = new byte[1024];
+            byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
 
             while (true) {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -55,16 +56,15 @@ public class Server implements ServerContext{
                 byte[] raw = new byte[packet.getLength()];
                 System.arraycopy(packet.getData(), 0, raw, 0, packet.getLength());
 
-                // Use address+port as the key, not a random ID
                 String clientKey = packet.getAddress().getHostAddress() + ":" + packet.getPort();
 
                 ClientHandler clientHandler = clients.computeIfAbsent(clientKey, key -> {
-                    ClientHandler handler = new ClientHandler(key,socket, packet.getAddress(), packet.getPort(), generateUniqueId());
-                    handler.setDispatcher((p) -> dispatch(handler, p));
+                    ClientHandler handler = new ClientHandler(
+                            key, socket, packet.getAddress(), packet.getPort(),
+                            generateUniqueId(), (pkt)-> this.dispatch(key, pkt));
                     threadPool.submit(handler);
                     return handler;
                 });
-
                 clientHandler.queueMessage(raw);
             }
         } catch (Exception e) {
@@ -84,7 +84,8 @@ public class Server implements ServerContext{
         return hash;
     }
 
-    private void dispatch(ClientHandler clientHandler, PacketParser.Packet packet) throws Exception {
+    private void dispatch(String clientKey, PacketParser.Packet packet) throws Exception {
+        ClientHandler clientHandler = clients.get(clientKey);
         switch(packet.type) {
             case Protocol.PKG_SYS_CONNECT -> systemHandler.onConnect(clientHandler, packet);
         }

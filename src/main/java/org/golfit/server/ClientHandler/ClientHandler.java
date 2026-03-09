@@ -1,5 +1,6 @@
 package org.golfit.server.ClientHandler;
 
+import org.golfit.shared.packetParser.PacketParser;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
 import org.slf4j.Logger;
@@ -7,6 +8,8 @@ import org.slf4j.Logger;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 import java.util.concurrent.*;
 
 public class ClientHandler implements Runnable {
@@ -14,7 +17,7 @@ public class ClientHandler implements Runnable {
     private final String key;
     private String username;
 
-
+    private Protocol.PacketDispatcher dispatcher;
     private final DatagramSocket socket;
     private final InetAddress address;
     private final int port;
@@ -24,12 +27,17 @@ public class ClientHandler implements Runnable {
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ClientHandler.class);
 
-    public ClientHandler(String key, DatagramSocket socket, InetAddress address, int port, int Id) {
+    public ClientHandler(String key, DatagramSocket socket, InetAddress address, int port, int Id, Protocol.PacketDispatcher dispatcher) {
         this.key = key;
         this.socket = socket;
         this.address = address;
         this.port = port;
         this.Id = Id;
+        this.dispatcher = dispatcher;
+        this.channelManager = new ChannelManager((data) -> {
+            DatagramPacket pkg = new DatagramPacket(data, data.length, address, port);
+            socket.send(pkg);
+        }, this::dispatch);
     }
 
     public void queueMessage(byte [] raw) {
@@ -55,23 +63,14 @@ public class ClientHandler implements Runnable {
             }
         } catch (Exception e) {
             logger.error("Error: " + e.getMessage());
+            logger.error(Arrays.toString(e.getStackTrace()));
         } finally {
             ticker.shutdown();
         }
     }
 
-    public void setDispatcher(Protocol.PacketDispatcher dispatcher) {
-        this.channelManager = new ChannelManager(
-                (data) -> {
-                    DatagramPacket pkg = new DatagramPacket(data, data.length, address, port);
-                    socket.send(pkg);
-                },
-                dispatcher
-        );
-    }
-
-    public ClientHandler getClientHandler() {
-        return this;
+    private void dispatch(PacketParser.Packet packet) throws Exception {
+        dispatcher.dispatch(packet);
     }
     public ChannelManager getChannelManager() {
         return channelManager;

@@ -2,17 +2,21 @@ package org.golfit.client.handlers;
 
 import org.golfit.client.ClientApi;
 import org.golfit.shared.packetParser.PacketParser;
-
-import java.nio.ByteBuffer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class SystemHandler {
     private final ClientApi clientApi;
+    private final Logger logger = LoggerFactory.getLogger(SystemHandler.class);
 
     public SystemHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
     public void onConnected(PacketParser.Packet packet) {
-        int assignedId = ByteBuffer.wrap(packet.payload).getInt();
-        clientApi.setId(assignedId);
+        logger.info("Yaaaaay, you count as connected user");
+    }
+
+    public void onPong(){
+
     }
 }

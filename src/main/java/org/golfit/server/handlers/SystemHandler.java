@@ -14,8 +14,11 @@ public class SystemHandler {
     }
 
     public void onConnect(ClientHandler clientHandler, PacketParser.Packet packet) throws Exception {
-        String username = new String(packet.payload);
-        clientHandler.setUsername(username);
+        if(packet.payload != null) {
+            String username = new String(packet.payload);
+            clientHandler.setUsername(username);
+            System.out.println("Client " + clientHandler.getId() + " connected with username " + username);
+        }
         serverApi.sendConnected(clientHandler, clientHandler.getId());
     }
 }

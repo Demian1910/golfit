@@ -15,7 +15,7 @@ public class ClientApi implements IClientApi {
     }
 
     @Override
-    public void connect(String username) throws Exception {
+    public void  connect(String username) throws Exception {
         if(username != null) {
             byte[] payload = username.getBytes();
             channelManager.send(Protocol.CH_SYSTEM, Protocol.PKG_SYS_CONNECT, Protocol.ID_SERVER, payload);

@@ -6,7 +6,10 @@ import org.golfit.shared.packetParser.PacketParser;
 import org.golfit.shared.pendingPacket.PendingPacket;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channel.Channel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -14,13 +17,15 @@ public class ChannelManager {
     private final Map<Byte, Channel> channels = new HashMap<>();
     private final Protocol.SendFunction sender;
     private final Protocol.PacketDispatcher dispatcher;
+    private final Logger logger = LoggerFactory.getLogger(ChannelManager.class);
 
-    public ChannelManager(Protocol.SendFunction sender, Protocol.PacketDispatcher dispatch) {
+
+    public ChannelManager(Protocol.SendFunction sender, Protocol.PacketDispatcher dispatcher) {
         channels.put(Protocol.CH_SYSTEM, new Channel(Protocol.CH_SYSTEM, true));
         channels.put(Protocol.CH_CHAT, new Channel(Protocol.CH_CHAT, true));
         channels.put(Protocol.CH_MOVEMENT, new Channel(Protocol.CH_MOVEMENT, false));
         this.sender = sender;
-        dispatcher = dispatch;
+        this.dispatcher = dispatcher;
     }
 
 
@@ -60,13 +65,13 @@ public class ChannelManager {
 
     public void onPacketReceived(byte[] raw) throws Exception {
         PacketParser.Packet packet = PacketParser.parsePacket(raw);
-        System.out.println("onPacketReceived: parsed=" + (packet==null?"NULL":"type="+packet.type+" ch="+packet.channel+" seq="+packet.sequence));
-        if (packet == null) return;
+
+        if (packet == null) {
+            logger.error("Packet is null");
+            return;
+        }
 
         Channel channel = channels.get(packet.channel);
-        System.out.println("channel lookup: " + (channel==null?"NULL - MISSING CHANNEL":"found reliable="+channel.reliable));
-        if (channel == null) return;
-
         if (packet.type == Protocol.PKG_SYS_ACK) {
             channel.pendingAck.remove(packet.sequence);
             return;
@@ -74,7 +79,6 @@ public class ChannelManager {
 
         if (channel.reliable) {
             boolean isNew = channel.isNewPacket(packet.sequence);
-            System.out.println("isNewPacket(" + packet.sequence + ")=" + isNew);
             if (!isNew) return;
             sendAck(packet.channel, packet.sequence, packet.senderId);
         }
