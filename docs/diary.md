@@ -24,3 +24,7 @@ We divided responsibilities so everyone can work has clear tasks. Anton will foc
 Constantin and Demian focus on the graphics of the game. 
 We briefly discussed how we should handle the presentation for milestone I. Tony: Networking, Constantin: Timeline 
 Tamer: Goals, rules and mechanics of Golfit. Demian will present the mock-up.
+
+## Entry #5 10.3.26
+
+Constantin created a window class for the game.
