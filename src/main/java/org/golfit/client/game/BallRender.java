@@ -4,10 +4,11 @@ import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
 import org.golfit.client.game.physics.Ball;
+import org.golfit.shared.constants.Constants;
 
 public class BallRender {
     private Circle circle;
-    private static final double BALL_RADIUS = 10.0;
+    private static final double BALL_RADIUS = Constants.BALL_RADIUS;
 
     public BallRender(Pane root, Ball ball, Color color) {
         this.circle = new Circle(BALL_RADIUS, color);

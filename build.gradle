@@ -53,13 +53,13 @@ test {
 
 tasks.register('runBallTest', JavaExec) {
     group = 'application'
-    description = 'Runs the BallController physics and graphics test (standalone JavaFX)'
+    description = 'Runs the BallController physics and graphics test'
 
     def jfxJars = configurations.runtimeClasspath.filter { it.name.contains('javafx') }
     def nonJfxJars = configurations.runtimeClasspath.filter { !it.name.contains('javafx') }
 
     classpath = sourceSets.main.output + nonJfxJars
-    mainClass = 'org.golfit.client.game.BallController'
+    mainClass = 'org.golfit.client.game.BallTestApp'
 
     doFirst {
         jvmArgs '--module-path', jfxJars.asPath, '--add-modules', 'ALL-MODULE-PATH'

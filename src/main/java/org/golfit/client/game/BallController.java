@@ -1,48 +1,105 @@
 package org.golfit.client.game;
 
-import javafx.scene.layout.Pane;
 import org.golfit.client.game.physics.Ball;
+import org.golfit.shared.constants.Constants;
+import javafx.animation.AnimationTimer;
+import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.scene.Scene;
-import javafx.stage.Stage;
 
-//wires mouse events → physics → rendering loop
-public class BallController extends Application {
-    Ball ball;
-    BallRender ballRender;
-    Pane root;
+/**
+ * Wires mouse events → physics → rendering loop.
+ *
+ * Usage:
+ * BallController controller = new BallController(pane, 100, 100, Color.BLUE);
+ * controller.start();
+ */
+public class BallController {
 
-    public BallController() {
-        // default constructor for JavaFX
+    /**
+     * Converts drag distance to initial ball speed. Unit: (px/s) per px of drag.
+     */
+    private static final double STROKE_SCALE = 3.0;
+
+    /**
+     * Current terrain friction — changes when the ball moves to a different
+     * surface.
+     */
+    private double currentFriction = Constants.GRASS_FRICTION;
+
+    private final Ball ball;
+    private final BallRender ballRender;
+    private final Pane root;
+    private AnimationTimer gameLoop;
+
+    // Drag tracking
+    private double dragStartX;
+    private double dragStartY;
+
+    public BallController(Pane root, double initialX, double initialY, Color color) {
+        this.root = root;
+        this.ball = new Ball(initialX, initialY);
+        this.ballRender = new BallRender(root, ball, color);
+
+        registerMouseEvents();
+        buildGameLoop();
     }
 
-    public BallController(Pane root, double Ix, double Iy, Color color) {
-        ball = new Ball((int) Ix, (int) Iy);
-        ballRender = new BallRender(root, ball, color);
+    // ── Public API ──────────────────────────────────────────────────────────────
+
+    /** Starts the physics + rendering loop. */
+    public void start() {
+        gameLoop.start();
     }
 
-    @Override
-    public void start(Stage primaryStage) {
-        GameView gameView = new GameView();
-        Pane canvas = gameView.getRoot();
+    /** Stops the physics + rendering loop. */
+    public void stop() {
+        gameLoop.stop();
+    }
 
-        // Create a ball for testing
-        BallController testController = new BallController(canvas, 100, 100, Color.BLUE);
+    /** Call this when the ball enters a new terrain type (e.g. sand, grass). */
+    public void setTerrain(double friction) {
+        this.currentFriction = friction;
+    }
 
-        Scene scene = new Scene(canvas, 800, 600);
-        primaryStage.setTitle("Ball Physics Test");
-        primaryStage.setScene(scene);
-        primaryStage.setOnCloseRequest(e -> {
-            Platform.exit();
-            System.exit(0);
+    private void registerMouseEvents() {
+        // Record where the drag started
+        root.setOnMousePressed(e -> {
+            dragStartX = e.getX();
+            dragStartY = e.getY();
         });
-        primaryStage.show();
+
+        // On release: direction is opposite to drag (like a real golf stroke)
+        root.setOnMouseReleased(e -> {
+            double dx = dragStartX - e.getX();
+            double dy = dragStartY - e.getY();
+            ball.stroke(dx * STROKE_SCALE, dy * STROKE_SCALE);
+        });
     }
 
-    public static void main(String[] args) {
-        launch(args);
-    }
+    /**
+     * Initializes the Game Loop.
+     * Every frame: calculates elapsed time, updates the ball's physical position,
+     * and synchronizes the circle rendering on the UI.
+     */
+    private void buildGameLoop() {
+        long[] lastTime = { -1 };
 
+        // AnimationTimer is synchronized with the refresh rate of the screen
+        gameLoop = new AnimationTimer() {
+            @Override
+            public void handle(long nowNanos) {
+                if (lastTime[0] < 0) {
+                    lastTime[0] = nowNanos;
+                    return;
+                }
+
+                // refresh rate does not have always the same value
+                double deltaTime = (nowNanos - lastTime[0]) / 1_000_000_000.0;
+                lastTime[0] = nowNanos;
+
+                ball.update(deltaTime, currentFriction);
+                ballRender.updatePosition(ball);
+            }
+        };
+    }
 }
