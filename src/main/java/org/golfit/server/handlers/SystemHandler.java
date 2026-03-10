@@ -29,7 +29,7 @@ public class SystemHandler {
         System.out.println("Client " + clientHandler.getId() + " connected with username " + username);
 
         // Send back: assignedId|finalUsername
-        String payload = clientHandler.getId() + "|" + username;
+        String payload = clientHandler.getId() + ":" + username;
         serverApi.sendConnected(clientHandler, payload);
     }
     public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
