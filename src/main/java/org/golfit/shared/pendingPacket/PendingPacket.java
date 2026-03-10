@@ -2,10 +2,11 @@ package org.golfit.shared.pendingPacket;
 
 
 public class PendingPacket {
-    public final byte[] packet;
+    public final String packet;
     public long sentAt;
+    public int retryCount = 0;
 
-    public PendingPacket(byte[] packet, long sentAt) {
+    public PendingPacket(String packet, long sentAt) {
         this.packet = packet;
         this.sentAt = sentAt;
     }

@@ -6,7 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class Channel {
-    public final byte id;
+    public final String id;
     public final boolean reliable;
 
     private int nextSendSequence = 0;
@@ -14,7 +14,7 @@ public class Channel {
 
     public final Map<Integer, PendingPacket> pendingAck = new LinkedHashMap<>();
 
-    public Channel(byte id, boolean reliable) {
+    public Channel(String id, boolean reliable) {
         this.id = id;
         this.reliable = reliable;
     }
@@ -30,5 +30,10 @@ public class Channel {
             return true;
         }
         return false;
+    }
+    public void reset() {
+        nextSendSequence = 0;
+        nextExpectedSequence = 0;
+        pendingAck.clear();
     }
 }

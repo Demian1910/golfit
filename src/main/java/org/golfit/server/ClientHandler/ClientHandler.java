@@ -1,6 +1,7 @@
 package org.golfit.server.ClientHandler;
 
-import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.shared.constants.Constants;
+import org.golfit.shared.packetParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
 import org.slf4j.Logger;
@@ -21,9 +22,12 @@ public class ClientHandler implements Runnable {
     private final DatagramSocket socket;
     private final InetAddress address;
     private final int port;
-    private final BlockingQueue<byte[]> messageQueue = new LinkedBlockingQueue<>();
+    private final BlockingQueue<String> messageQueue = new LinkedBlockingQueue<>();
 
     private ChannelManager channelManager;
+    private long lastPing = System.currentTimeMillis();
+
+    private Thread thread;
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ClientHandler.class);
 
@@ -35,17 +39,19 @@ public class ClientHandler implements Runnable {
         this.Id = Id;
         this.dispatcher = dispatcher;
         this.channelManager = new ChannelManager((data) -> {
-            DatagramPacket pkg = new DatagramPacket(data, data.length, address, port);
+            byte[] byteData = data.getBytes(StandardCharsets.UTF_8);
+            DatagramPacket pkg = new DatagramPacket(byteData, byteData.length, address, port);
             socket.send(pkg);
         }, this::dispatch);
     }
 
-    public void queueMessage(byte [] raw) {
+    public void queueMessage(String raw) {
         messageQueue.offer(raw);
     }
 
     @Override
     public void run() {
+        thread = Thread.currentThread();
         ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor();
         ticker.scheduleAtFixedRate(()->{
             try {
@@ -55,13 +61,15 @@ public class ClientHandler implements Runnable {
             }
         },0, 100, TimeUnit.MILLISECONDS);
 
-
         try {
-            while (true) {
-             byte[] raw = messageQueue.take();
+            while (!thread.isInterrupted()) {
+             String raw = messageQueue.take();
              channelManager.onPacketReceived(raw);
             }
-        } catch (Exception e) {
+        } catch (InterruptedException e){
+            logger.info("ClientHandler thread interrupted");
+        }
+        catch (Exception e) {
             logger.error("Error: " + e.getMessage());
             logger.error(Arrays.toString(e.getStackTrace()));
         } finally {
@@ -69,8 +77,8 @@ public class ClientHandler implements Runnable {
         }
     }
 
-    private void dispatch(PacketParser.Packet packet) throws Exception {
-        dispatcher.dispatch(packet);
+    private void dispatch(MessageParser.Message message) throws Exception {
+        dispatcher.dispatch(message);
     }
     public ChannelManager getChannelManager() {
         return channelManager;
@@ -81,6 +89,18 @@ public class ClientHandler implements Runnable {
     }
     public void setUsername(String username) {
         this.username = username;
+    }
+    public void updateLastPing() {
+        lastPing = System.currentTimeMillis();
+    }
+    public boolean isTimedOut() {
+        return System.currentTimeMillis() - lastPing > Constants.TIMEOUT_PING_MS;
+    }
+    public String getUsername() {
+        return username;
+    }
+    public void shutdown() {
+        thread.interrupt();
     }
 
 }

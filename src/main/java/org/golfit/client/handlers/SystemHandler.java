@@ -1,7 +1,8 @@
 package org.golfit.client.handlers;
 
 import org.golfit.client.ClientApi;
-import org.golfit.shared.packetParser.PacketParser;
+import org.golfit.client.pingService.PingService;
+import org.golfit.shared.packetParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,11 +13,7 @@ public class SystemHandler {
     public SystemHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
-    public void onConnected(PacketParser.Packet packet) {
+    public void onConnected(MessageParser.Message message) {
         logger.info("Yaaaaay, you count as connected user");
-    }
-
-    public void onPong(){
-
     }
 }
