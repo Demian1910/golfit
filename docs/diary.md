@@ -26,7 +26,19 @@ We briefly discussed how we should handle the presentation for milestone I. Tony
 Tamer: Goals, rules and mechanics of Golfit. Demian will present the mock-up.
 
 ## Entry #5 06.03.26
-Meeting via Discord call with Demian, Tamer, and Constantin to define tasks and responsibilities for the next phase of development. We established a clear breakdown of features and technical requirements:
+Meeting via Discord call with Demian, Tamer, and Constantin to define tasks and responsibilities for the next phase of development. 
+We established a clear breakdown of features and technical requirements:
+
+## Entry #6 9.03.26
+Tamer checked all the tasks for milestone 2 and informed the group accordingly and also told anton that the current Protocol is not 
+human readable anton then spent the day changing the protocol to make it human readable.
+
+## Entry #7 10.03.26
+Tamer either implemented or refined all his tasks which include: Call me Bob, whoami, bob_001, Login, Logout, Chat
+also kind of cleaned up the handlers for the client and server which went from multiple separated classes like chathandler,
+loginhandler, doohickeyhandler... etc. to just a combined SystemHandler inside both the Client and the Server folders inside 
+the handlers folder so .../client/handlers/SystemHandler and .../server/handlers/SystemHandler were made.
+
 
 ### Individual Assignments
 
