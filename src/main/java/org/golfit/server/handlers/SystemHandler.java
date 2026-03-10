@@ -2,7 +2,7 @@ package org.golfit.server.handlers;
 
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.serverApi.ServerApi;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 
 public class SystemHandler {
 
@@ -13,6 +13,7 @@ public class SystemHandler {
     }
 
     public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        clientHandler.getChannelManager().resetChannels();
         String username = (message.payload != null && !message.payload.isEmpty())
                 ? message.payload : "player";
 

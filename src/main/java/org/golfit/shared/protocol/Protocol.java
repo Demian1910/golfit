@@ -1,6 +1,6 @@
 package org.golfit.shared.protocol;
 
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 
 public class Protocol {
     public static final String SYS_CONNECT        = "SYS_CONNECT";

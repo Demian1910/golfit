@@ -1,7 +1,7 @@
 package org.golfit.server.ClientHandler;
 
 import org.golfit.shared.constants.Constants;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
 import org.slf4j.Logger;
