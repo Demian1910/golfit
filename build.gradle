@@ -51,6 +51,21 @@ test {
  }
 
 
+tasks.register('runBallTest', JavaExec) {
+    group = 'application'
+    description = 'Runs the BallController physics and graphics test (standalone JavaFX)'
+
+    def jfxJars = configurations.runtimeClasspath.filter { it.name.contains('javafx') }
+    def nonJfxJars = configurations.runtimeClasspath.filter { !it.name.contains('javafx') }
+
+    classpath = sourceSets.main.output + nonJfxJars
+    mainClass = 'org.golfit.client.game.BallController'
+
+    doFirst {
+        jvmArgs '--module-path', jfxJars.asPath, '--add-modules', 'ALL-MODULE-PATH'
+    }
+}
+
 tasks.register('fatJar', Jar) {
     group = 'build'
     description = 'Assembles a runnable fat JAR including runtime dependencies.'
