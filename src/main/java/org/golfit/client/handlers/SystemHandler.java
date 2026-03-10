@@ -14,7 +14,7 @@ public class SystemHandler {
     }
     public void onConnected(MessageParser.Message message) {
         if (message.payload != null && !message.payload.isEmpty()) {
-            String[] parts = message.payload.split("\\|");
+            String[] parts = message.payload.split(":");
             if (parts.length >= 1) {
                 int assignedId = Integer.parseInt(parts[0]);
                 clientApi.setId(assignedId);
