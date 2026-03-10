@@ -1,8 +1,7 @@
 package org.golfit.client.handlers;
 
 import org.golfit.client.ClientApi;
-import org.golfit.client.pingService.PingService;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

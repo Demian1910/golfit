@@ -48,6 +48,11 @@ public class ClientApi implements IClientApi {
         String buffer = lobbyId + "";
         channelManager.send(Protocol.SYS_JOIN_LOBBY, Protocol.CH_SYSTEM, Protocol.ID_SERVER, buffer);
     }
+    @Override
+    public void leaveLobby() throws Exception {
+        //TODO: Send lobby id as payload, get it from client via ge
+        channelManager.send(Protocol.SYS_LEAVE_LOBBY, Protocol.CH_SYSTEM, Protocol.ID_SERVER, "");
+    }
 
     @Override
     public void sendChat(String data) throws Exception {

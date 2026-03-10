@@ -1,6 +1,5 @@
-package org.golfit.shared.packetParser;
+package org.golfit.shared.messageParser;
 
-import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

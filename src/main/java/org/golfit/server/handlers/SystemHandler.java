@@ -2,7 +2,7 @@ package org.golfit.server.handlers;
 
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.serverApi.ServerApi;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 
 public class SystemHandler {
 

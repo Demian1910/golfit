@@ -1,8 +1,8 @@
 package org.golfit.shared.protocol.channelManager;
 
 import org.golfit.shared.constants.Constants;
-import org.golfit.shared.packetBuilder.MessageBuilder;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageBuilder.MessageBuilder;
+import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.pendingPacket.PendingPacket;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channel.Channel;

@@ -1,6 +1,4 @@
-package org.golfit.shared.packetBuilder;
-
-import java.nio.ByteBuffer;
+package org.golfit.shared.messageBuilder;
 
 import static org.golfit.shared.protocol.Protocol.DELIMITER;
 import static org.golfit.shared.protocol.Protocol.TERMINATOR;

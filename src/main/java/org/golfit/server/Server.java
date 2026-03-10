@@ -8,7 +8,7 @@ import org.golfit.server.handlers.SystemHandler;
 import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.constants.Constants;
 import org.golfit.shared.lobby.Lobby;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
 
