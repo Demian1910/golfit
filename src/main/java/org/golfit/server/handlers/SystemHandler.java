@@ -13,13 +13,24 @@ public class SystemHandler {
     }
 
     public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        if(message.payload != null) {
-            String username = message.payload;
-            clientHandler.setUsername(username);
-            System.out.println(username);
-            System.out.println("Client " + clientHandler.getId() + " connected with username " + username);
+        String username = (message.payload != null && !message.payload.isEmpty())
+                ? message.payload : "player";
+
+        if (!serverApi.claimUsername(username)) {
+            String base = username;
+            int counter = 1;
+            do {
+                username = base + "_" + String.format("%03d", counter);
+                counter++;
+            } while (!serverApi.claimUsername(username));
         }
-        serverApi.sendConnected(clientHandler, clientHandler.getId());
+
+        clientHandler.setUsername(username);
+        System.out.println("Client " + clientHandler.getId() + " connected with username " + username);
+
+        // Send back: assignedId|finalUsername
+        String payload = clientHandler.getId() + "|" + username;
+        serverApi.sendConnected(clientHandler, payload);
     }
     public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         clientHandler.updateLastPing();

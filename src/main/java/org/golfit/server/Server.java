@@ -47,6 +47,10 @@ public class Server implements ServerContext{
                 clients.entrySet().removeIf(entry -> {
                     if(entry.getValue().isTimedOut()) {
                         System.out.println("Client timed out: " + entry.getKey());
+                        String timedOutUsername = entry.getValue().getUsername();
+                        if (timedOutUsername != null) {
+                            usernames.remove(timedOutUsername);
+                        }
                         entry.getValue().shutdown();
                         return true;
                     }

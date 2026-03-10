@@ -83,4 +83,8 @@ public class ClientApi implements IClientApi {
     public String getUsername() {
         return client.username;
     }
+
+    public void setUsername(String username) {
+        client.username = username;
+    }
 }

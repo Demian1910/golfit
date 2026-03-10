@@ -45,7 +45,7 @@ public class Client {
     public Client(String host, int port, String username) {
         this.host = host;
         this.port = port;
-        this.username = username;
+        this.username = username != null ? username : System.getProperty("user.name");
     }
 
     public void start() throws Exception {
@@ -107,6 +107,7 @@ public class Client {
         receiveThread.setDaemon(true);
         receiveThread.start();
 
+        clientApi.connect(username);
         pingService.start();
     }
 
