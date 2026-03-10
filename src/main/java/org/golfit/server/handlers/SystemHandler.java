@@ -13,6 +13,7 @@ public class SystemHandler {
     }
 
     public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        clientHandler.getChannelManager().resetChannels();
         String username = (message.payload != null && !message.payload.isEmpty())
                 ? message.payload : "player";
 

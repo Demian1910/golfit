@@ -20,28 +20,67 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Server implements ServerContext{
+    /**
+     * server context
+     */
     private final ServerApi serverApi = new ServerApi(this);
 
+    /**
+     * server handlers
+     */
     private final SystemHandler systemHandler = new SystemHandler(serverApi);
     private final ChatHandler chatHandler = new ChatHandler(serverApi);
     private final MovementHandler movementHandler = new MovementHandler(serverApi);
 
+    /**
+     * Set of saved usernames
+     */
     private final Set<String> usernames = ConcurrentHashMap.newKeySet();
 
+    /** Server port*/
     private final int port;
+
+    /** Map of connected clients */
     private final Map<String, ClientHandler> clients = new ConcurrentHashMap<>();
+
+    /** Map of active lobbies */
+    private final Map<Integer, Lobby> lobbies = new ConcurrentHashMap<>();
+
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Server.class);
+
+    /** Thread pool for handling client requests */
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
 
 
+
+    /**
+     * Constructs a Server instance with the specified port.
+     * @param port The sets number to bind the server to.
+     */
     public Server(int port) {
         this.port = port;
     }
 
+    /**
+     * Starts the server main loop.
+     *
+     * <p>This method:
+     * <ol>
+     *   <li>Opens a {@link DatagramSocket} on {@link #port}</li>
+     *   <li>Schedules a cleanup task every 10 seconds to remove timed-out clients</li>
+     *   <li>Enters an infinite receive loop — each incoming packet is routed to its
+     *       {@link ClientHandler}, creating one if this is a new client address</li>
+     * </ol>
+     *
+     * <p>A client is identified by its {@code "ip:port"} string. If a packet arrives
+     * from an unknown address, a new {@link ClientHandler} is created and submitted
+     * to the thread pool.
+     */
     public void start() {
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
             byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
+
             ScheduledExecutorService cleanUp = Executors.newSingleThreadScheduledExecutor();
             cleanUp.scheduleAtFixedRate(() -> {
                 clients.entrySet().removeIf(entry -> {
@@ -56,7 +95,7 @@ public class Server implements ServerContext{
                     }
                     return false;
                 });
-            }, 0, 10, TimeUnit.SECONDS);
+            }, 0, 10000, TimeUnit.SECONDS);
 
             while (true) {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -81,6 +120,14 @@ public class Server implements ServerContext{
         }
     }
 
+    /**
+     * Generates a unique integer client ID based on timing, memory, and random data.
+     *
+     * <p>The result is always positive and never {@code 0} ({@code ID_INVALID})
+     * or {@code 1} ({@code ID_SERVER}).
+     *
+     * @return a unique positive integer client ID
+     */
     public static int generateUniqueId() {
         long time = System.nanoTime();
         long unix = System.currentTimeMillis();
@@ -93,6 +140,19 @@ public class Server implements ServerContext{
         return hash;
     }
 
+    /**
+     * Dispatches a parsed message from a client to the appropriate handler.
+     *
+     * <p>Routing is based on message type:
+     * <ul>
+     *   <li>{@code SYS_CONNECT} — handled by {@link SystemHandler#onConnect}, assigns username and ID</li>
+     *   <li>{@code SYS_PING} — handled by {@link SystemHandler#onPing}, updates last ping time and sends pong</li>
+     * </ul>
+     *
+     * @param clientKey the {@code "ip:port"} key identifying the sender
+     * @param message   the parsed incoming message
+     * @throws Exception if a handler throws during processing
+     */
     private void dispatch(String clientKey, MessageParser.Message message) throws Exception {
         ClientHandler clientHandler = clients.get(clientKey);
         switch(message.type) {
@@ -101,16 +161,32 @@ public class Server implements ServerContext{
         }
     }
 
+    /**
+     * Returns the map of all currently connected clients.
+     *
+     * @return map of client key ({@code "ip:port"}) to {@link ClientHandler}
+     */
     @Override
     public Map<String, ClientHandler> getClients() {
         return clients;
     }
 
+    /**
+     * Returns the collection of active lobbies.
+     *
+     * @return collection of {@link Lobby} instances
+     */
     @Override
     public Collection<Lobby> getLobbies() {
-        return List.of();
+        return Map.copyOf(lobbies).values();
     }
 
+    /**
+     * Returns the set of currently claimed usernames.
+     * Used by {@link ServerApi#claimUsername} to check and register new usernames.
+     *
+     * @return the live set of active usernames
+     */
     @Override
     public Set<String> getUsernameSet() {
         return usernames;

@@ -2,8 +2,6 @@ package org.golfit.client;
 
 public interface IClientApi {
     void connect(String username) throws Exception;
-
-    void disconnect() throws Exception;
     void ping() throws Exception;
     void requestLobbies() throws Exception;
     void createLobby() throws Exception;

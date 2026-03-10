@@ -19,23 +19,30 @@ public class ClientCli {
                 case help -> {
                     System.out.println("Available commands:");
                     System.out.println("/help - Displays this message");
+                    System.out.println("/whoami - Displays your username");
                     System.out.println("/connect <username> - Connects to the server");
-                    System.out.println("/reconnect - Reconnects to the server");
+                    System.out.println("/rec - Reconnects to the server");
                     System.out.println("/createLobby <lobbyName> - Creates a lobby");
                     System.out.println("/joinLobby <lobbyName> - Joins a lobby");
                     System.out.println("/leaveLobby - Leaves the current lobby");
                     System.out.println("/chat <message> - Sends a chat message");
                     System.out.println("/privateChat <username> <message> - Sends a private chat message");
                     System.out.println("/movement <direction> - Moves the player in the specified direction");
+                    System.out.println("/q - Quits the client");
+                    System.out.println("/rec - Reconnects to the server");
+                }
+                case whoami -> {
+                    System.out.println("Your username is: " + clientApi.getUsername());
                 }
                 case connect -> {
                     System.out.println("Connecting to the server...");
                     String connectUsername = args.length > 1 ? args[1] : clientApi.getUsername();
                     clientApi.connect(connectUsername);
                 }
-                case reconnect -> {
+                case rec -> {
                     System.out.println("Reconnecting to the server...");
                     String reconnectUsername = args.length > 1 ? args[1] : clientApi.getUsername();
+                    clientApi.resetChannels();
                     clientApi.connect(reconnectUsername);
                 }
                 case createLobby -> {
@@ -56,6 +63,10 @@ public class ClientCli {
                 case movement -> {
                     System.out.println("Movement command not implemented yet");
                 }
+                case q -> {
+                    System.out.println("Shutting down...");
+                    clientApi.shutdown();
+                }
                 default -> System.out.println("Unknown command");
             }
         }
@@ -64,12 +75,14 @@ public class ClientCli {
 
 enum Commands {
     help,
+    whoami,
     connect,
-    reconnect,
+    rec,
     createLobby,
     joinLobby,
     leaveLobby,
     chat,
     privateChat,
     movement,
+    q
 }
