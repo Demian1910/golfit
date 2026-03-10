@@ -29,7 +29,6 @@ public class ClientCli {
                     System.out.println("/privateChat <username> <message> - Sends a private chat message");
                     System.out.println("/movement <direction> - Moves the player in the specified direction");
                     System.out.println("/q - Quits the client");
-                    System.out.println("/rec - Reconnects to the server");
                 }
                 case whoami -> {
                     System.out.println("Your username is: " + clientApi.getUsername());
