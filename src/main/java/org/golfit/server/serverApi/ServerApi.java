@@ -16,11 +16,10 @@ public class ServerApi implements IServerApi{
     }
 
     @Override
-    public void sendConnected(ClientHandler clientHandler, int assignedId) throws Exception {
+    public void sendConnected(ClientHandler clientHandler, String payload) throws Exception {
         for(ClientHandler client : serverContext.getClients().values()) {
             System.out.println("Client Connected" + client.getUsername());
         }
-        String payload =  assignedId + "";
         clientHandler.getChannelManager().send(Protocol.SYS_CONNECTED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 

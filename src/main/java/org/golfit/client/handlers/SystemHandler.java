@@ -14,6 +14,18 @@ public class SystemHandler {
         this.clientApi = clientApi;
     }
     public void onConnected(MessageParser.Message message) {
-        logger.info("Yaaaaay, you count as connected user");
+        if (message.payload != null && !message.payload.isEmpty()) {
+            String[] parts = message.payload.split("\\|");
+            if (parts.length >= 1) {
+                int assignedId = Integer.parseInt(parts[0]);
+                clientApi.setId(assignedId);
+            }
+            if (parts.length >= 2) {
+                String assignedUsername = parts[1];
+                clientApi.setUsername(assignedUsername);
+                logger.info("Connected as: " + assignedUsername);
+            }
+        }
+        logger.info("yAaaAY! Successfully connected to server");
     }
 }
