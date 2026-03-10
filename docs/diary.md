@@ -67,3 +67,6 @@ To ensure consistency with the game logic and mockup, the following requirements
 * **Ball Mechanics:** Implement bounce logic where the ball reflects at the same angle it hits a wall.
 * **Physics Constraints:** Avoid placing walls too close to each other to prevent issues with the bouncing logic.
 * **Interactive Elements:** Design interactive environments (doors and bridges) that are graphically distinct but logically consistent.
+
+## Entry #6 10.03.26
+Demian: ball mechanic implemented in a separate branch golf-ball. Ball can move with dynamic friction using mouse. Next step is implementing bouncing mechanic for Milestone 4
