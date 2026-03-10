@@ -2,8 +2,6 @@ package org.golfit.client;
 
 import org.golfit.client.cli.ClientCli;
 import org.golfit.client.cli.ConsoleManager;
-import org.golfit.client.handlers.ChatHandler;
-import org.golfit.client.handlers.MovementHandler;
 import org.golfit.client.handlers.SystemHandler;
 import org.golfit.client.pingService.PingService;
 import org.golfit.shared.constants.Constants;
@@ -49,8 +47,6 @@ public class Client {
 
     /** Handlers for different message types **/
     private SystemHandler systemHandler;
-    private MovementHandler movementHandler;
-    private ChatHandler chatHandler;
 
     /** Server hostname and port  **/
     final private String host;
@@ -112,8 +108,6 @@ public class Client {
         pingService = new PingService(clientApi);
         clientCli = new ClientCli(clientApi);
         systemHandler = new SystemHandler(clientApi);
-        movementHandler = new MovementHandler(clientApi);
-        chatHandler = new ChatHandler(clientApi);
 
         // initiates ticker for resending messages
         ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor();
@@ -179,6 +173,7 @@ public class Client {
         switch(message.type) {
             case Protocol.SYS_CONNECTED -> systemHandler.onConnected(message);
             case Protocol.SYS_PONG -> pingService.onPong();
+            case Protocol.SYS_CHAT -> systemHandler.onChat(message);
         }
     }
 }

@@ -27,4 +27,7 @@ public class SystemHandler {
         }
         logger.info("yAaaAY! Successfully connected to server");
     }
+    public void onChat(MessageParser.Message message) {
+        System.out.println("[Chat] " + message.payload);
+    }
 }

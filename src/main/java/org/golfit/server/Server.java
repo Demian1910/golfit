@@ -1,9 +1,7 @@
 package org.golfit.server;
 
-import org.golfit.server.handlers.MovementHandler;
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.ServerInit.ServerInit;
-import org.golfit.server.handlers.ChatHandler;
 import org.golfit.server.handlers.SystemHandler;
 import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.constants.Constants;
@@ -29,8 +27,6 @@ public class Server implements ServerContext{
      * server handlers
      */
     private final SystemHandler systemHandler = new SystemHandler(serverApi);
-    private final ChatHandler chatHandler = new ChatHandler(serverApi);
-    private final MovementHandler movementHandler = new MovementHandler(serverApi);
 
     /**
      * Set of saved usernames
@@ -158,6 +154,16 @@ public class Server implements ServerContext{
         switch(message.type) {
             case Protocol.SYS_CONNECT -> systemHandler.onConnect(clientHandler, message);
             case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
+            case Protocol.SYS_DISCONNECT -> {
+                String username = clientHandler.getUsername();
+                if (username != null) {
+                    serverApi.releaseUsername(username);
+                }
+                System.out.println("Client " + clientHandler.getId() + " (" + username + ") disconnected");
+                clientHandler.shutdown();
+                clients.remove(clientKey);
+            }
+            case Protocol.SYS_CHAT -> serverApi.broadcastChat(clientHandler.getId(), message.payload);
         }
     }
 

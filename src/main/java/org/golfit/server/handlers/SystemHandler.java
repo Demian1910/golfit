@@ -29,7 +29,7 @@ public class SystemHandler {
         clientHandler.setUsername(username);
         System.out.println("Client " + clientHandler.getId() + " connected with username " + username);
 
-        // Send back: assignedId|finalUsername
+        // Send back: assignedId:finalUsername
         String payload = clientHandler.getId() + ":" + username;
         serverApi.sendConnected(clientHandler, payload);
     }

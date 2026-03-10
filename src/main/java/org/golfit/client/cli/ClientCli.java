@@ -54,7 +54,8 @@ public class ClientCli {
                     System.out.println("Leaving lobby...");
                 }
                 case chat -> {
-                    clientApi.sendChat(args[1]);
+                    String msg = command.substring(command.indexOf(' ') + 1);
+                    clientApi.sendChat(msg);
                 }
                 case privateChat -> {
                     clientApi.sendPrivateChat(args[1], Integer.parseInt(args[2]));
