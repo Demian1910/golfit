@@ -36,7 +36,7 @@ human readable anton then spent the day changing the protocol to make it human r
 ## Entry #7 10.03.26
 Tamer either implemented or refined all his tasks which include: Call me Bob, whoami, bob_001, Login, Logout, Chat
 with the help of Anton also kind of cleaned up the handlers for the client and server which went from multiple separated
-classes like chathandler, loginhandler, doohickeyhandler... etc. to just a combined SystemHandler inside both the Client 
+classes like chathandler, loginhandler, *whatever else was there i forgot*handler... etc. to just a combined SystemHandler inside both the Client 
 and the Server folders inside the handlers folder so .../client/handlers/SystemHandler and .../server/handlers/SystemHandler were made.
 
 
