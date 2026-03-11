@@ -163,7 +163,7 @@ public class Server implements ServerContext{
                 clientHandler.shutdown();
                 clients.remove(clientKey);
             }
-            case Protocol.SYS_CHAT -> serverApi.broadcastChat(clientHandler.getId(), message.payload);
+            case Protocol.SYS_CHAT -> systemHandler.onChat(clientHandler, message);
         }
     }
 

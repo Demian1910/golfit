@@ -28,6 +28,7 @@ public class SystemHandler {
         logger.info("yAaaAY! Successfully connected to server");
     }
     public void onChat(MessageParser.Message message) {
-        System.out.println("[Chat] " + message.payload);
+        String[] parts = message.payload.split(":");
+        System.out.println("["+parts[0]+"]" + parts[1]);
     }
 }

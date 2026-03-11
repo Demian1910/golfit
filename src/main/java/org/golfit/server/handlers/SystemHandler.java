@@ -1,5 +1,6 @@
 package org.golfit.server.handlers;
 
+import org.golfit.client.Client;
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.messageParser.MessageParser;
@@ -36,5 +37,11 @@ public class SystemHandler {
     public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         clientHandler.updateLastPing();
         serverApi.sendPong(clientHandler);
+    }
+
+    public void onChat(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+       String payload = clientHandler.getUsername() + ":" + message.payload;
+        serverApi.broadcastChat(clientHandler.getId(), payload);
+
     }
 }
