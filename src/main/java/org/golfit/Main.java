@@ -6,6 +6,9 @@ import org.golfit.server.Server;
 
 public class Main {
     public static void main(String[] args) {
+        // Launches Game-Window, but main thread is blocked.
+        Window.launch(Window.class, args);
+
         if(args.length == 0) {
             printUsage();
             return;
@@ -32,9 +35,6 @@ public class Main {
             }
 
         }
-        // Launches Game-Window, but main thread is blocked.
-        Window.launch(Window.class, args);
-
     }
 
 
