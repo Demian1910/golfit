@@ -29,17 +29,6 @@ Tamer: Goals, rules and mechanics of Golfit. Demian will present the mock-up.
 Meeting via Discord call with Demian, Tamer, and Constantin to define tasks and responsibilities for the next phase of development. 
 We established a clear breakdown of features and technical requirements:
 
-## Entry #6 9.03.26
-Tamer checked all the tasks for milestone 2 and informed the group accordingly and also told anton that the current Protocol is not 
-human readable anton then spent the day changing the protocol to make it human readable.
-
-## Entry #7 10.03.26
-Tamer either implemented or refined all his tasks which include: Call me Bob, whoami, bob_001, Login, Logout, Chat
-with the help of Anton also kind of cleaned up the handlers for the client and server which went from multiple separated
-classes like chathandler, loginhandler, *whatever else was there i forgot*handler... etc. to just a combined SystemHandler inside both the Client 
-and the Server folders inside the handlers folder so .../client/handlers/SystemHandler and .../server/handlers/SystemHandler were made.
-
-
 ### Individual Assignments
 
 **ANTON:**
@@ -56,7 +45,6 @@ and the Server folders inside the handlers folder so .../client/handlers/SystemH
 * **Chat (15):** Client to client chat is working.
 
 **DEMIAN:**
-* **QA Concept (10):** Reasonable Software Quality concept in written form (see slides).
 * **Physics Prototype:** Create a ball object that can be thrown with a certain velocity and direction, that slows down over time, and that bounces on a wall. Its position has to be known in every moment. (Note: integration with a future UI bar for direction/velocity).
 
 **CONSTANTIN:**
@@ -80,5 +68,13 @@ To ensure consistency with the game logic and mockup, the following requirements
 * **Physics Constraints:** Avoid placing walls too close to each other to prevent issues with the bouncing logic.
 * **Interactive Elements:** Design interactive environments (doors and bridges) that are graphically distinct but logically consistent.
 
-## Entry #6 10.03.26
+## Entry #6 9.03.26
+Tamer checked all the tasks for milestone 2 and informed the group accordingly and also told anton that the current Protocol is not
+human readable anton then spent the day changing the protocol to make it human readable.
+
+## Entry #7 10.03.26
+Tamer either implemented or refined all his tasks which include: Call me Bob, whoami, bob_001, Login, Logout, Chat
+with the help of Anton also kind of cleaned up the handlers for the client and server which went from multiple separated
+classes like chathandler, loginhandler, *whatever else was there i forgot*handler... etc. to just a combined SystemHandler inside both the Client
+and the Server folders inside the handlers folder so .../client/handlers/SystemHandler and .../server/handlers/SystemHandler were made.
 Demian: ball mechanic implemented in a separate branch golf-ball. Ball can move with dynamic friction using mouse. Next step is implementing bouncing mechanic for Milestone 4

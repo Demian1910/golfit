@@ -1,9 +1,47 @@
-# README
-This is a readme file. It typically includes some information about your project. 
-For more information about readmes, you can either [read a guide](https://github.com/18F/open-source-guide/blob/18f-pages/pages/making-readmes-readable.md) or have a look at the readmes of popular open-source projects such as [Swift by Apple](https://github.com/apple/swift) or [Tensorflow](https://github.com/tensorflow/tensorflow).
+# GOLFIT
 
-Readme files are typically formatted in Markdown. 
-However, there are platform-specific flavors, so for this project, you can make full use of the [Gitlab markdown syntax](https://docs.gitlab.com/ee/user/markdown.html), for example when talking about a :bug: (bug) or if your code is slow like a :snail:.
-You can also tag people using @username and reference issues using '#1', where 1 is the issue number. For more features, consult the linked Gitlab syntax guide. 
+GOLFIT is a multiplayer video game centered around the experience of minigolf. Developed by a team of four students for the Programming project at the University of Basel, it aims to provide a fun golf game, with interactive environment.
 
-If you don't like reading documentation, [here's a cheatsheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet).
+## Project Overview
+The game is built on a client-server architecture where communication is handled through a custom-made network protocol.
+* **Server**: Responsible for game logic, maintaining client lists, and storing the authoritative game state.
+* **Client**: Provides a JavaFX-based Graphical User Interface (GUI), handles user input, and implements latency prediction.
+
+## Key Features
+* **Multiplayer Gameplay**: Support for up to 4 players per lobby.
+* **Lobby & Chat**: Users can create/join lobbies and communicate via a real-time text chat.
+* **Reliable Networking**: A custom UDP-based protocol with reliable delivery for system and chat messages.
+* **Ball physics**: Includes shot power (0-100%), angle (0-360°), friction-based deceleration, and wall bounces.
+
+## Technology Stack
+* **Language**: Java 25.
+* **Framework**: JavaFX for the GUI.
+* **Build System**: Gradle 9.3.1.
+* **Logging**: SLF4J and Logback.
+
+## Getting Started
+
+### Execution
+The project is executed through the `Main` class, which accepts specific arguments for the server or client roles.
+
+**To start a Server:**
+```bash
+java -jar build/libs/golfit-0.0.1-ALPHA.jar server <port>
+```
+**To start a Client:**
+```bash
+java -jar build/libs/golfit-0.0.1-ALPHA.jar client <adress>:<port> <name>
+```
+
+## Project Documentation
+Detailed information about project design and progress can be found in the following documents:
+* [**Requirement Analysis**](docs/requirementAnalysis.md): Comprehensive analysis of functional and non-functional requirements.
+* [**Network Protocol**](docs/networkProtocol.md): Technical specifications of the custom communication protocol.
+* [**Project Diary**](docs/diary.md): Chronological record of milestones and task assignments.
+
+## Contributors
+GOLFIT was developed by:
+* Anton Bilokon a.bilokon@stud.unibas.ch
+* Demian Piodi d.piodi@stud.unibas.com
+* Tamer Erata t.erata@stud.unibas.ch
+* Constantin Chau c.chau@stud.unibas.ch
