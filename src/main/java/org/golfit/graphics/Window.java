@@ -11,6 +11,10 @@ public class Window extends Application {
     public static final int INIT_WIDTH = 1280;
     public static final int INIT_HEIGHT = 720;
 
+    /**
+     * Creates a new window and initializes main pane
+     * @param stage the javaFX stage
+     */
     @Override
     public void start(Stage stage) {
         Pane root = new Pane();

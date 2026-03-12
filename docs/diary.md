@@ -78,3 +78,8 @@ with the help of Anton also kind of cleaned up the handlers for the client and s
 classes like chathandler, loginhandler, *whatever else was there i forgot*handler... etc. to just a combined SystemHandler inside both the Client
 and the Server folders inside the handlers folder so .../client/handlers/SystemHandler and .../server/handlers/SystemHandler were made.
 Demian: ball mechanic implemented in a separate branch golf-ball. Ball can move with dynamic friction using mouse. Next step is implementing bouncing mechanic for Milestone 4
+
+## Entry 8: 12.03.26
+
+Constantin implemented game window and the graphics for the golf course, including walls, sand, ice, balls, trees, golf hole, switch and ramps.
+added Javadoc to the graphics. 
