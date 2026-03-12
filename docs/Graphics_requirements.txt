@@ -1,0 +1,24 @@
+Requirements:
+
+Default world size is 1280 x 720. Resizing should Keep the scale factor the same.
+
+
+The map will consist of easy polygon shapes which will be drawn using JavaFX.
+Golf Hole is an ellipse of size 40x20
+
+Pool is a rect of size 230x250 
+Bridge (weak green) is a rect of 230x20
+Switch (gray-red) is an ellipse of size 50x30, opens/closes bridge
+UI (dark blue) on right side is 200px wide
+Ball is 30px Diameter
+Breakable wall (red) is 30x70
+Trees can be considered as 40x55 rects 
+Bouncy balls (pink) have 50px Diameter (should increase ball Velocity)
+
+Terrain
+water (blue) ball should respawn at last position
+ice (light blue) should have less friction
+sand (yellow) should have more friction
+Red walls are broken after two collisions
+Brown walls are Unbreakable
+The cats and trees break after one collision
