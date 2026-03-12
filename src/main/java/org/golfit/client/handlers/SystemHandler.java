@@ -1,6 +1,7 @@
 package org.golfit.client.handlers;
 
 import org.golfit.client.ClientApi;
+import org.golfit.client.cli.ConsoleManager;
 import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -27,8 +28,41 @@ public class SystemHandler {
         }
         logger.info("yAaaAY! Successfully connected to server");
     }
+
+    /** Handles chat messages*/
     public void onChat(MessageParser.Message message) {
         String[] parts = message.payload.split(":");
-        System.out.println("["+parts[0]+"]" + parts[1]);
+        ConsoleManager.println("["+parts[0]+"]" + parts[1]);
+    }
+
+    public void onChatPrivate(MessageParser.Message message) {
+//        String[] parts = message.payload.split(":");
+//        ConsoleManager.println("["+parts[0]+"]" + parts[1]);
+    }
+
+    public void onLobbyList(MessageParser.Message message) throws Exception {
+        ConsoleManager.println("Lobby list");
+    }
+
+    /**
+     * Handles the creation of a lobby
+     * @param message The message containing the lobby name in payload
+     */
+    public void onLobbyCreated(MessageParser.Message message) throws Exception {
+//        clientApi.createLobby();
+        ConsoleManager.println("Lobby created");
+    }
+
+    public void onLobbyJoined(MessageParser.Message message) {
+        ConsoleManager.println("Joined lobby");
+    }
+
+    /** Handles the leaving of a lobby*/
+    public void onLobbyLeft(MessageParser.Message message) {
+        ConsoleManager.println("Left lobby");
+    }
+
+    public void onMoveUpdate(MessageParser.Message message) {
+        ConsoleManager.println("Move update");
     }
 }

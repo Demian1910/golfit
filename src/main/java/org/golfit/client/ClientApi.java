@@ -32,7 +32,6 @@ public class ClientApi implements IClientApi {
     public void  connect(String username) throws Exception {
         if(username != null) {
             String payload = username;
-            System.out.println("Connecting with username: " + username);
             channelManager.send( Protocol.SYS_CONNECT,Protocol.CH_SYSTEM, getId() , payload);
         }
     }
@@ -53,7 +52,7 @@ public class ClientApi implements IClientApi {
      * @throws Exception if the request fails
      */
     @Override
-    public void requestLobbies() throws Exception {
+    public void lobbyList() throws Exception {
         channelManager.send( Protocol.SYS_LOBBY_LIST, Protocol.CH_SYSTEM,getId(), "");
     }
 
@@ -64,19 +63,17 @@ public class ClientApi implements IClientApi {
      */
     @Override
     public void createLobby() throws Exception {
-        channelManager.send( Protocol.SYS_CREATE_LOBBY,Protocol.CH_SYSTEM, getId(), "");
+        channelManager.send( Protocol.SYS_LOBBY_CREATE,Protocol.CH_SYSTEM, getId(), "");
     }
 
     /**
      * Joins the specified lobby on the server.
-     *
-     * @param lobbyId The ID of the lobby to join
      * @throws Exception if the lobby join fails
      */
     @Override
-    public void joinLobby(int lobbyId) throws Exception {
-        String buffer = lobbyId + "";
-        channelManager.send(Protocol.SYS_JOIN_LOBBY, Protocol.CH_SYSTEM, getId(), buffer);
+    public void joinLobby() throws Exception {
+        String buffer = "";
+        channelManager.send(Protocol.SYS_LOBBY_JOIN, Protocol.CH_SYSTEM, getId(), buffer);
     }
 
     /**
@@ -87,7 +84,7 @@ public class ClientApi implements IClientApi {
     @Override
     public void leaveLobby() throws Exception {
         //TODO: Send lobby id as payload, get it from client via ge
-        channelManager.send(Protocol.SYS_LEAVE_LOBBY, Protocol.CH_SYSTEM, getId(), "");
+        channelManager.send(Protocol.SYS_LOBBY_LEAVE, Protocol.CH_SYSTEM, getId(), "");
     }
 
     /**
@@ -104,11 +101,10 @@ public class ClientApi implements IClientApi {
     /**
      * Sends a private chat message to the specified target.
      *
-     * @param data The chat message content
      * @throws Exception if the private chat fails
      */
     @Override
-    public void sendPrivateChat(String data, int targetId) throws Exception {
+    public void sendPrivateChat(String data) throws Exception {
         channelManager.send( Protocol.SYS_CHAT_PRIVATE,Protocol.CH_CHAT, getId(), data);
     }
 
@@ -147,7 +143,7 @@ public class ClientApi implements IClientApi {
 
     public void shutdown(){
         try {
-            channelManager.send(Protocol.SYS_DISCONNECT, Protocol.CH_SYSTEM, getId(), "");
+            channelManager.send(Protocol.SYS_DISCONNECT, Protocol.CH_PINGS, getId(), "");
         } catch (Exception ignored) {}
         client.pingService.stop();
         client.socket.close();

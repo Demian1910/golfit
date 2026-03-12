@@ -11,4 +11,5 @@ public interface ServerContext {
     Map<String, ClientHandler> getClients();
     Collection<Lobby> getLobbies();
     Set<String> getUsernameSet();
+    int getSessionId();
 }

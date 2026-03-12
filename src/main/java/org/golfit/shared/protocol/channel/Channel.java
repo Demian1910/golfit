@@ -23,9 +23,14 @@ public class Channel {
         return reliable ? nextSendSequence++ : 0;
     }
 
+    public int nextExpectedSequence() {
+        return nextExpectedSequence;
+    }
+
     public boolean isNewPacket(int seq) {
-        if(!reliable) return true;
-        if(seq == nextExpectedSequence) {
+        if (!reliable) return true;
+        if (seq < nextExpectedSequence) return false;
+        if (seq == nextExpectedSequence) {
             nextExpectedSequence++;
             return true;
         }

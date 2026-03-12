@@ -18,6 +18,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Server implements ServerContext{
+    private static final int sessionId = generateUniqueId();
     /**
      * server context
      */
@@ -93,6 +94,15 @@ public class Server implements ServerContext{
                 });
             }, 0, 10000, TimeUnit.SECONDS);
 
+//            ScheduledExecutorService moveUpdates = Executors.newSingleThreadScheduledExecutor();
+//            moveUpdates.scheduleAtFixedRate(() -> {
+//                try {
+//                    serverApi.broadcastMovement();
+//                } catch (Exception e) {
+//                    throw new RuntimeException(e);
+//                }
+//            }, 0, 20000, TimeUnit.MILLISECONDS);
+
             while (true) {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
                 socket.receive(packet);
@@ -154,16 +164,14 @@ public class Server implements ServerContext{
         switch(message.type) {
             case Protocol.SYS_CONNECT -> systemHandler.onConnect(clientHandler, message);
             case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
-            case Protocol.SYS_DISCONNECT -> {
-                String username = clientHandler.getUsername();
-                if (username != null) {
-                    serverApi.releaseUsername(username);
-                }
-                System.out.println("Client " + clientHandler.getId() + " (" + username + ") disconnected");
-                clientHandler.shutdown();
-                clients.remove(clientKey);
-            }
+            case Protocol.SYS_DISCONNECT -> systemHandler.onDisconnect(clientHandler);
             case Protocol.SYS_CHAT -> systemHandler.onChat(clientHandler, message);
+            case Protocol.SYS_CHAT_PRIVATE -> systemHandler.onChatPrivate(clientHandler, message);
+            case Protocol.SYS_LOBBY_CREATE -> systemHandler.onCreateLobby(clientHandler, message);
+            case Protocol.SYS_LOBBY_LIST -> systemHandler.onLobbyList(clientHandler);
+            case Protocol.SYS_LOBBY_JOIN -> systemHandler.onLobbyJoin(clientHandler, message);
+            case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeave(clientHandler, message);
+            case Protocol.MOVE_INPUT -> systemHandler.onMoveInput(clientHandler, message);
         }
     }
 
@@ -196,5 +204,16 @@ public class Server implements ServerContext{
     @Override
     public Set<String> getUsernameSet() {
         return usernames;
+    }
+
+    /**
+     * Returns the unique session ID for this server instance.
+     * Used to identify the server in client connections.
+     *
+     * @return the session ID
+     */
+    @Override
+    public int getSessionId() {
+        return sessionId;
     }
 }

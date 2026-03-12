@@ -1,9 +1,11 @@
 package org.golfit.server.handlers;
 
 import org.golfit.client.Client;
+import org.golfit.client.ClientApi;
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.shared.protocol.Protocol;
 
 public class SystemHandler {
 
@@ -14,7 +16,7 @@ public class SystemHandler {
     }
 
     public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        clientHandler.getChannelManager().resetChannels();
+//        clientHandler.getChannelManager().resetChannels();
         String username = (message.payload != null && !message.payload.isEmpty())
                 ? message.payload : "player";
 
@@ -41,7 +43,38 @@ public class SystemHandler {
 
     public void onChat(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
        String payload = clientHandler.getUsername() + ":" + message.payload;
-        serverApi.broadcastChat(clientHandler.getId(), payload);
+        serverApi.broadcastChat(Protocol.ID_SERVER, payload);
+    }
 
+    public void onChatPrivate(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        serverApi.sendPrivateChat(clientHandler, Protocol.ID_SERVER, message.payload);
+    }
+
+    /**
+     * Handles client disconnection by notifying the server API.
+     */
+    public void onDisconnect(ClientHandler clientHandler) {
+        System.out.println("Client " + clientHandler.getUsername() + " disconnected");
+        serverApi.disconnectClient(clientHandler);
+    }
+
+    public void onCreateLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        serverApi.createLobby(clientHandler, "");
+    }
+
+    public void onLobbyList(ClientHandler clientHandler) throws Exception {
+        serverApi.sendLobbyList(clientHandler);
+    }
+
+    public void onLobbyJoin(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        serverApi.joinLobby(clientHandler, message.payload);
+    }
+
+    public void onLobbyLeave(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        System.out.println("Client " + clientHandler.getUsername() + " left lobby");
+    }
+
+    public void onMoveInput(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        System.out.println("Client " + clientHandler.getUsername() + " sent move input");
     }
 }

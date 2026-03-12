@@ -131,11 +131,9 @@ public class ChannelManager {
      */
     public void onPacketReceived(String raw) throws Exception {
         MessageParser.Message message = MessageParser.parseMessage(raw);
-        logger.info("Received message: " + raw.trim());
-
-        if (message == null) {
-            logger.error("Message is null");
-            return;
+        if(message.type.equals(Protocol.SYS_PING) || message.type.equals(Protocol.SYS_PONG)) {}
+        else {
+            logger.info("Received message: " + raw.trim());
         }
 
         Channel channel = channels.get(message.channel);
@@ -160,12 +158,11 @@ public class ChannelManager {
      *
      * @param channelId   the channel the original packet arrived on
      * @param ackSequence the sequence number being acknowledged
-     * @param targetId    the ID of the original sender (unused in routing, kept for protocol symmetry)
+     * @param targetId    the ID of the original sender
      * @throws Exception if the sender throws during transmission
      */
     private void sendAck(String channelId, int ackSequence, int targetId) throws Exception {
         String ack = MessageBuilder.buildMessage(Protocol.SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, "");
-        logger.info("Sending ACK for sequence: " + ackSequence + " on channel: " + channelId);
         sender.send(ack);
     }
 

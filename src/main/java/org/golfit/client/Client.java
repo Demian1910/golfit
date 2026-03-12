@@ -169,11 +169,18 @@ public class Client {
      *
      * @param message the parsed incoming message
      */
-    private void dispatch(MessageParser.Message message) {
+    private void dispatch(MessageParser.Message message) throws Exception {
         switch(message.type) {
             case Protocol.SYS_CONNECTED -> systemHandler.onConnected(message);
-            case Protocol.SYS_PONG -> pingService.onPong();
+            case Protocol.SYS_PONG -> pingService.onPong(message);
             case Protocol.SYS_CHAT -> systemHandler.onChat(message);
+            case Protocol.SYS_CHAT_PRIVATE -> systemHandler.onChatPrivate(message);
+            case Protocol.SYS_LOBBY_LIST -> systemHandler.onLobbyList(message);
+            case Protocol.SYS_LOBBY_CREATED -> systemHandler.onLobbyCreated(message);
+            case Protocol.SYS_LOBBY_JOINED -> systemHandler.onLobbyJoined(message);
+            case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeft(message);
+            case Protocol.MOVE_UPDATE -> systemHandler.onMoveUpdate(message);
+
         }
     }
 }

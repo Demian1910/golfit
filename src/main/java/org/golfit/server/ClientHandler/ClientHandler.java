@@ -102,5 +102,8 @@ public class ClientHandler implements Runnable {
     public void shutdown() {
         thread.interrupt();
     }
+    public String getClientKey(){
+        return key;
+    }
 
 }

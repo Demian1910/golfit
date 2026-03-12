@@ -12,11 +12,11 @@ public class Protocol {
     public static final String SYS_PONG           = "SYS_PONG";
 
     // lobby
-    public static final String SYS_CREATE_LOBBY   = "SYS_CREATE_LOBBY";
+    public static final String SYS_LOBBY_CREATE  = "SYS_LOBBY_CREATE";
     public static final String SYS_LOBBY_CREATED  = "SYS_LOBBY_CREATED";
-    public static final String SYS_JOIN_LOBBY     = "SYS_JOIN_LOBBY";
+    public static final String SYS_LOBBY_JOIN     = "SYS_LOBBY_JOIN";
     public static final String SYS_LOBBY_JOINED   = "SYS_LOBBY_JOINED";
-    public static final String SYS_LEAVE_LOBBY    = "SYS_LEAVE_LOBBY";
+    public static final String SYS_LOBBY_LEAVE    = "SYS_LOBBY_LEAVE";
     public static final String SYS_LOBBY_LIST     = "SYS_LOBBY_LIST";
 
     // chat
