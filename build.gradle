@@ -9,7 +9,7 @@ version = '0.0.1-ALPHA'
 
 java {
     toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
+        languageVersion = JavaLanguageVersion.of(25)
     }
 }
 
@@ -22,7 +22,7 @@ repositories {
 }
 
 javafx {
-    version = "21"
+    version = "25"
     modules = ['javafx.controls', 'javafx.fxml', 'javafx.base']
 }
 
@@ -31,6 +31,8 @@ dependencies {
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.10.0")
     implementation 'org.slf4j:slf4j-api:2.0.9'
     implementation 'ch.qos.logback:logback-classic:1.4.14'
+    implementation 'org.jline:jline-reader:3.26.3'
+    implementation 'org.jline:jline-terminal:3.26.3'
 }
 
 test {

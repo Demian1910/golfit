@@ -1,32 +1,57 @@
 package org.golfit.shared.protocol;
 
+import org.golfit.shared.messageParser.MessageParser;
+
 public class Protocol {
-    public static final byte PKG_SYS_CONNECT = 0x01;
-    public static final byte PKG_SYS_DISCONNECT = 0x02;
-    public static final byte PKG_SYS_PING = 0x03;
-    public static final byte PKG_SYS_PONG = 0x04;
-    public static final byte PKG_SYS_CREATE_LOBBY = 0x05;
-    public static final byte PKG_SYS_JOIN_LOBBY = 0x06;
-    public static final byte PKG_SYS_LEAVE_LOBBY = 0x07;
-    public static final byte PKG_SYS_LOBBY_LIST = 0x08;
+    public static final String SYS_CONNECT        = "SYS_CONNECT";
+    public static final String SYS_CONNECTED      = "SYS_CONNECTED";
+    public static final String SYS_DISCONNECT     = "SYS_DISCONNECT";
 
-    public static final byte PKG_SYS_CHAT = 0x09;
-    public static final byte PKG_SYS_CHAT_PRIVATE = 0x0A;
+    // ping
+    public static final String SYS_PING           = "SYS_PING";
+    public static final String SYS_PONG           = "SYS_PONG";
 
-    public static final byte PKG_MOVE_INPUT = 0xB;
-    public static final byte PKG_MOVE_UPDATE = 0xC;
-    public static final byte PKG_SYS_ACK = 0xD;
+    // lobby
+    public static final String SYS_LOBBY_CREATE  = "SYS_LOBBY_CREATE";
+    public static final String SYS_LOBBY_CREATED  = "SYS_LOBBY_CREATED";
+    public static final String SYS_LOBBY_JOIN     = "SYS_LOBBY_JOIN";
+    public static final String SYS_LOBBY_JOINED   = "SYS_LOBBY_JOINED";
+    public static final String SYS_LOBBY_LEAVE    = "SYS_LOBBY_LEAVE";
+    public static final String SYS_LOBBY_LIST     = "SYS_LOBBY_LIST";
 
-    public static final byte CH_SYSTEM = 0;
-    public static final byte CH_MOVEMENT = 1;
-    public static final byte CH_CHAT = 2;
+    // chat
+    public static final String SYS_CHAT           = "SYS_CHAT";
+    public static final String SYS_CHAT_PRIVATE   = "SYS_CHAT_PRIVATE";
 
-    public static final int ID_INVALID = 0;
-    public static final int ID_SERVER = 1;
+    // movement
+    public static final String  MOVE_INPUT         = "MOVE_INPUT";
+    public static final String  MOVE_UPDATE        = "MOVE_UPDATE";
+
+    // protocol
+    public static final String SYS_ACK            = "SYS_ACK";
+
+    // channels
+    public static final String CH_SYSTEM   = "CH_SYSTEM";
+    public static final String CH_MOVEMENT = "CH_MOVEMENT";
+    public static final String CH_CHAT     = "CH_CHAT";
+    public static final String CH_PINGS    = "CH_PINGS";
+
+    // ids
+    public static final int ID_INVALID   = 0;
+    public static final int ID_SERVER    = 1;
     public static final int ID_BROADCAST = -1;
+
+    public static final char DELIMITER = '|';
+    public static final char TERMINATOR = '\n';
+    public static final int FIELD_COUNT = 5;
 
     @FunctionalInterface
     public interface SendFunction {
-        void send(byte[] data) throws Exception;
+        void send(String data) throws Exception;
+    }
+
+    @FunctionalInterface
+    public interface PacketDispatcher {
+        void dispatch(MessageParser.Message message) throws Exception;
     }
 }
