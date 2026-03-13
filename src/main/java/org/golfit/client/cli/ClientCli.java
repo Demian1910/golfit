@@ -36,7 +36,7 @@ public class ClientCli {
                     case changeUsername -> {
                         System.out.println("Changing username...");
                         String reconnectUsername = args.length > 1 ? args[1] : clientApi.getUsername();
-                        clientApi.resetChannels();
+//                        clientApi.resetChannels();
                         clientApi.connect(reconnectUsername);
                     }
                     case lobbyList -> {

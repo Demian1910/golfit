@@ -118,7 +118,7 @@ public class ClientApi implements IClientApi {
     public void sendMovement(Object movementData) throws Exception {
         //TODO: Decide on movement data datatype to add to function parameters
         //TODO: Convert  movement data to byte[]
-        channelManager.send( Protocol.MOVE_INPUT,Protocol.CH_MOVEMENT,
+        channelManager.send( Protocol.MOVE_INPUT,Protocol.CH_SYSTEM,
                 getId(), ""); //TODO: Add movement data as last parameter
     }
 

@@ -92,7 +92,7 @@ public class Server implements ServerContext{
                     }
                     return false;
                 });
-            }, 0, 10000, TimeUnit.SECONDS);
+            }, 0, 10, TimeUnit.SECONDS);
 
 //            ScheduledExecutorService moveUpdates = Executors.newSingleThreadScheduledExecutor();
 //            moveUpdates.scheduleAtFixedRate(() -> {
