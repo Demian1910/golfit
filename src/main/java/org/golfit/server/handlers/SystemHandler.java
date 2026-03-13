@@ -26,6 +26,12 @@ public class SystemHandler {
         String username = (message.payload != null && !message.payload.isEmpty())
                 ? message.payload : "player";
 
+        //Release the old username so it can be reclaimed (during /changeUsername)
+        String oldUsername = clientHandler.getUsername();
+        if (oldUsername != null) {
+            serverApi.releaseUsername(oldUsername);
+        }
+
         if (!serverApi.claimUsername(username)) {
             String base = username;
             int counter = 1;
