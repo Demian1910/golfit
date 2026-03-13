@@ -4,6 +4,7 @@ import org.golfit.client.ClientApi;
 
 import java.util.Arrays;
 
+/** Processes user input from the CLI and dispatches slash commands to the client API. */
 public class ClientCli {
     private final ClientApi clientApi;
 
@@ -13,6 +14,7 @@ public class ClientCli {
         this.clientApi = clientApi;
     }
 
+    /** Parses and executes a slash command entered by the user. */
     public void processCommand(String command) throws Exception {
         if(command.charAt(0) == '/') {
             try{
@@ -95,6 +97,7 @@ public class ClientCli {
     }
 }
 
+/** Available CLI slash commands. */
 enum Commands {
     help,
     whoami,

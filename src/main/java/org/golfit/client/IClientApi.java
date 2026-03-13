@@ -1,5 +1,6 @@
 package org.golfit.client;
 
+/** Defines the client-side API for sending protocol messages to the server. */
 public interface IClientApi {
     void connect(String username) throws Exception;
     void ping() throws Exception;

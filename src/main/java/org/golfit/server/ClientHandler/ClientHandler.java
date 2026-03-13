@@ -13,6 +13,7 @@ import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.concurrent.*;
 
+/** Handles a single connected client on the server side. Runs its own thread with a message queue and periodic channel tick. */
 public class ClientHandler implements Runnable {
     private final int Id;
     private final String key;
@@ -31,6 +32,16 @@ public class ClientHandler implements Runnable {
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(ClientHandler.class);
 
+    /**
+     * Creates a new ClientHandler for a connected client.
+     *
+     * @param key        the client identifier in "ip:port" format
+     * @param socket     the server's UDP socket used for sending responses
+     * @param address    the client's IP address
+     * @param port       the client's port number
+     * @param Id         the unique client ID
+     * @param dispatcher callback to dispatch parsed messages to server handlers
+     */
     public ClientHandler(String key, DatagramSocket socket, InetAddress address, int port, int Id, Protocol.PacketDispatcher dispatcher) {
         this.key = key;
         this.socket = socket;
@@ -45,10 +56,12 @@ public class ClientHandler implements Runnable {
         }, this::dispatch, Protocol.ID_SERVER);
     }
 
+    /** Enqueues a raw packet string for processing by this handler's thread. */
     public void queueMessage(String raw) {
         messageQueue.offer(raw);
     }
 
+    /** Main loop: starts a 100ms channel tick and processes queued messages until interrupted. */
     @Override
     public void run() {
         thread = Thread.currentThread();
@@ -77,6 +90,7 @@ public class ClientHandler implements Runnable {
         }
     }
 
+    /** Forwards a parsed message to the server's dispatch logic. */
     private void dispatch(MessageParser.Message message) throws Exception {
         dispatcher.dispatch(message);
     }
@@ -93,12 +107,14 @@ public class ClientHandler implements Runnable {
     public void updateLastPing() {
         lastPing = System.currentTimeMillis();
     }
+    /** Returns true if no ping has been received within the timeout window. */
     public boolean isTimedOut() {
         return System.currentTimeMillis() - lastPing > Constants.TIMEOUT_PING_MS;
     }
     public String getUsername() {
         return username;
     }
+    /** Interrupts this handler's processing thread. */
     public void shutdown() {
         thread.interrupt();
     }

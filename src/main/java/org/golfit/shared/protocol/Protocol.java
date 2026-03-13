@@ -2,6 +2,7 @@ package org.golfit.shared.protocol;
 
 import org.golfit.shared.messageParser.MessageParser;
 
+/** Defines all protocol constants including packet types, channel identifiers, special IDs, and functional interfaces. */
 public class Protocol {
     public static final String SYS_CONNECT        = "SYS_CONNECT";
     public static final String SYS_CONNECTED      = "SYS_CONNECTED";

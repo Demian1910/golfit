@@ -2,7 +2,7 @@ package org.golfit;
 
 import org.golfit.client.Client;
 import org.golfit.server.Server;
-
+/** Entry point for the GolfIt application. Starts either a server or client based on CLI arguments. */
 public class Main {
     public static void main(String[] args) throws Exception {
         if(args.length == 0) {

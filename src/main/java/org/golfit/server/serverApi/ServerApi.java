@@ -9,6 +9,7 @@ import java.util.Collection;
 import java.util.Map;
 
 
+/** Implements server-side actions: sending responses to clients, managing usernames, and broadcasting messages. */
 public class ServerApi implements IServerApi{
     private final ServerContext serverContext;
 
@@ -16,6 +17,7 @@ public class ServerApi implements IServerApi{
         this.serverContext = serverContext;
     }
 
+    /** Sends a SYS_CONNECTED response to the client with their assigned ID and username. */
     @Override
     public void sendConnected(ClientHandler clientHandler, String payload) throws Exception {
         for(ClientHandler client : serverContext.getClients().values()) {
@@ -23,24 +25,28 @@ public class ServerApi implements IServerApi{
         clientHandler.getChannelManager().send(Protocol.SYS_CONNECTED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
+    /** Sends a pong response with the current session ID. */
     @Override
     public void sendPong(ClientHandler clientHandler) throws Exception {
         String payload = String.valueOf(serverContext.getSessionId());
         clientHandler.getChannelManager().send( Protocol.SYS_PONG, Protocol.CH_PINGS, Protocol.ID_SERVER, payload);
     }
 
+    /** Removes a client from the server: releases their username, stops their handler, and removes them from the client map. */
     public void disconnectClient(ClientHandler clientHandler) {
         serverContext.getUsernameSet().remove(clientHandler.getUsername());
         clientHandler.shutdown();
         serverContext.getClients().remove(clientHandler.getClientKey());
     }
 
+    /** Creates a lobby and sends a SYS_LOBBY_CREATED confirmation to the requesting client. */
     @Override
     public void createLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         System.out.println("Sending SYS_LOBBY_CREATED to " + clientHandler.getUsername()); // add this
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_CREATED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
+    /** Sends the list of available lobbies to the requesting client. */
     @Override
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
         StringBuilder payload = new StringBuilder();
@@ -51,19 +57,23 @@ public class ServerApi implements IServerApi{
         clientHandler.getChannelManager().send( Protocol.SYS_LOBBY_LIST,Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload.toString());
     }
 
+    /** Sends a SYS_LOBBY_JOINED confirmation to the client. */
     public void joinLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_JOINED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
+    /** Sends a lobby leave confirmation to the client. */
     public void sendLeaveLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
+    /** Sends a private chat message to the specified client. */
     @Override
     public void sendPrivateChat(ClientHandler clientHandler, int targetId, String data) throws Exception {
         clientHandler.getChannelManager().send( Protocol .SYS_CHAT_PRIVATE,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
     }
 
+    /** Broadcasts a chat message to all connected clients. */
     @Override
     public void broadcastChat(int senderId, String data) throws Exception {
         for(ClientHandler client : serverContext.getClients().values()) {
@@ -71,6 +81,7 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    /** Broadcasts movement updates to all connected clients. */
     @Override
     public void broadcastMovement() throws Exception {
         for(ClientHandler client : serverContext.getClients().values()) {
@@ -80,10 +91,12 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    /** Attempts to claim a username. Returns true if the username was available and successfully claimed. */
     public boolean claimUsername(String username) {
         return serverContext.getUsernameSet().add(username);
     }
 
+    /** Releases a previously claimed username so it can be used by another client. */
     public void releaseUsername(String username) {
         serverContext.getUsernameSet().remove(username);
     }

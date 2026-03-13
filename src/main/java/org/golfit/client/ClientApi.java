@@ -95,7 +95,7 @@ public class ClientApi implements IClientApi {
     }
 
     /**
-     * Sends a private chat message to the specified target.
+     * Sends a private chat message to the server for routing.
      *
      * @throws Exception if the private chat fails
      */

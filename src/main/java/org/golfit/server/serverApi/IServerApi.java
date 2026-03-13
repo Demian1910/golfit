@@ -2,6 +2,7 @@ package org.golfit.server.serverApi;
 
 import org.golfit.server.ClientHandler.ClientHandler;
 
+/** Defines the server-side API for sending protocol messages to clients. */
 public interface IServerApi {
     public void sendConnected(ClientHandler clientHandler, String payload) throws Exception;
     public void sendPong(ClientHandler clientHandler) throws Exception;

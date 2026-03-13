@@ -7,6 +7,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
 
+/** Provides access to shared server state: connected clients, lobbies, usernames, and session ID. */
 public interface ServerContext {
     Map<String, ClientHandler> getClients();
     Collection<Lobby> getLobbies();

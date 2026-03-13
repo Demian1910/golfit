@@ -6,6 +6,7 @@ import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+/** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
 public class SystemHandler {
     private final ClientApi clientApi;
     private final Logger logger = LoggerFactory.getLogger(SystemHandler.class);
@@ -13,6 +14,8 @@ public class SystemHandler {
     public SystemHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
+
+    /** Handles the SYS_CONNECTED response by extracting the assigned client ID and username from the payload. */
     public void onConnected(MessageParser.Message message) {
         if (message.payload != null && !message.payload.isEmpty()) {
             String[] parts = message.payload.split(":");
@@ -36,11 +39,13 @@ public class SystemHandler {
         ConsoleManager.println("["+parts[0]+"]" + parts[1]);
     }
 
+    /** Handles an incoming private chat message. */
     public void onChatPrivate(MessageParser.Message message) {
        String[] parts = message.payload.split(":", 2);
        ConsoleManager.println("Whisper from "+"["+parts[0]+"]" + parts[1]);
     }
 
+    /** Handles the lobby list response from the server. */
     public void onLobbyList(MessageParser.Message message) throws Exception {
         String[] lobbies = message.payload.split(":");
         ConsoleManager.println("Available lobbies:");
@@ -58,6 +63,7 @@ public class SystemHandler {
         clientApi.setLobbyId(Integer.parseInt(message.payload));
     }
 
+    /** Handles confirmation that the client has joined a lobby. */
     public void onLobbyJoined(MessageParser.Message message) {
         ConsoleManager.println("Joined lobby with id: "+message.payload);
         clientApi.setLobbyId(Integer.parseInt(message.payload));
@@ -69,6 +75,7 @@ public class SystemHandler {
         ConsoleManager.println("Left lobby");
     }
 
+    /** Handles a movement update from the server. */
     public void onMoveUpdate(MessageParser.Message message) {
         ConsoleManager.println("Move update");
     }
