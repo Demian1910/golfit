@@ -42,7 +42,7 @@ public class ClientHandler implements Runnable {
             byte[] byteData = data.getBytes(StandardCharsets.UTF_8);
             DatagramPacket pkg = new DatagramPacket(byteData, byteData.length, address, port);
             socket.send(pkg);
-        }, this::dispatch);
+        }, this::dispatch, Protocol.ID_SERVER);
     }
 
     public void queueMessage(String raw) {

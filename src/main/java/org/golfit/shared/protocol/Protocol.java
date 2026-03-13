@@ -17,6 +17,7 @@ public class Protocol {
     public static final String SYS_LOBBY_JOIN     = "SYS_LOBBY_JOIN";
     public static final String SYS_LOBBY_JOINED   = "SYS_LOBBY_JOINED";
     public static final String SYS_LOBBY_LEAVE    = "SYS_LOBBY_LEAVE";
+    public static final String SYS_LOBBY_LEFT     = "SYS_LOBBY_LEFT";
     public static final String SYS_LOBBY_LIST     = "SYS_LOBBY_LIST";
 
     // chat

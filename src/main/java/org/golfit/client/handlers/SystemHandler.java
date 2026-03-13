@@ -19,14 +19,15 @@ public class SystemHandler {
             if (parts.length >= 1) {
                 int assignedId = Integer.parseInt(parts[0]);
                 clientApi.setId(assignedId);
+                clientApi.getChannelManager().updateLocalId(assignedId);
             }
             if (parts.length >= 2) {
                 String assignedUsername = parts[1];
                 clientApi.setUsername(assignedUsername);
                 logger.info("Connected as: " + assignedUsername);
             }
+
         }
-        logger.info("yAaaAY! Successfully connected to server");
     }
 
     /** Handles chat messages*/
@@ -36,12 +37,16 @@ public class SystemHandler {
     }
 
     public void onChatPrivate(MessageParser.Message message) {
-//        String[] parts = message.payload.split(":");
-//        ConsoleManager.println("["+parts[0]+"]" + parts[1]);
+       String[] parts = message.payload.split(":", 2);
+       ConsoleManager.println("Whisper from "+"["+parts[0]+"]" + parts[1]);
     }
 
     public void onLobbyList(MessageParser.Message message) throws Exception {
-        ConsoleManager.println("Lobby list");
+        String[] lobbies = message.payload.split(":");
+        ConsoleManager.println("Available lobbies:");
+        for(String lobby : lobbies) {
+            ConsoleManager.println("Lobby: "+lobby);
+        }
     }
 
     /**
@@ -49,16 +54,18 @@ public class SystemHandler {
      * @param message The message containing the lobby name in payload
      */
     public void onLobbyCreated(MessageParser.Message message) throws Exception {
-//        clientApi.createLobby();
-        ConsoleManager.println("Lobby created");
+        ConsoleManager.println("Lobby created with id: "+message.payload);
+        clientApi.setLobbyId(Integer.parseInt(message.payload));
     }
 
     public void onLobbyJoined(MessageParser.Message message) {
-        ConsoleManager.println("Joined lobby");
+        ConsoleManager.println("Joined lobby with id: "+message.payload);
+        clientApi.setLobbyId(Integer.parseInt(message.payload));
     }
 
     /** Handles the leaving of a lobby*/
-    public void onLobbyLeft(MessageParser.Message message) {
+    public void onLobbyLeft(MessageParser.Message message) throws Exception {
+        clientApi.setLobbyId(-1);
         ConsoleManager.println("Left lobby");
     }
 

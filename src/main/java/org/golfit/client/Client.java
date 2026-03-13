@@ -54,6 +54,8 @@ public class Client {
     /** Server assigned identifier for the client (Default 0) **/
     int id = 0;
 
+    int lobbyId = 0;
+
     final private int port;
     DatagramSocket socket;
 
@@ -101,7 +103,7 @@ public class Client {
             byte[] byteData = data.getBytes(StandardCharsets.UTF_8);
             DatagramPacket pkg = new DatagramPacket(byteData, byteData.length, InetAddress.getByName(host), port);
             socket.send(pkg);
-        }, this::dispatch);
+        }, this::dispatch, id);
 
         clientApi = new ClientApi(channelManager, this);
 

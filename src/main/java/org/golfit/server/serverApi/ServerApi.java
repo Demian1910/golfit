@@ -43,20 +43,25 @@ public class ServerApi implements IServerApi{
 
     @Override
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
-        //TODO: Convert lobbies to byte[]
+        StringBuilder payload = new StringBuilder();
         Collection<Lobby> lobbies = serverContext.getLobbies();
-        clientHandler.getChannelManager().send( Protocol.SYS_LOBBY_LIST,Protocol.CH_SYSTEM, Protocol.ID_SERVER, "");
+        for (Lobby lobby : lobbies) {
+            payload.append(lobby.getId()).append(":");
+        }
+        clientHandler.getChannelManager().send( Protocol.SYS_LOBBY_LIST,Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload.toString());
     }
 
     public void joinLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_JOINED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
+    public void sendLeaveLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
+        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
+    }
+
     @Override
     public void sendPrivateChat(ClientHandler clientHandler, int targetId, String data) throws Exception {
-        //TODO: include targetId
-        byte[] payload = data.getBytes();
-        clientHandler.getChannelManager().send( Protocol .SYS_CHAT_PRIVATE,Protocol.CH_SYSTEM, Protocol.ID_SERVER, "");
+        clientHandler.getChannelManager().send( Protocol .SYS_CHAT_PRIVATE,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
     }
 
     @Override
@@ -80,8 +85,7 @@ public class ServerApi implements IServerApi{
     }
 
     public void releaseUsername(String username) {
-        boolean removed = serverContext.getUsernameSet().remove(username);
-        System.out.println("Released username: " + username + " success=" + removed);
+        serverContext.getUsernameSet().remove(username);
     }
 
     public Map<String, ClientHandler> getClients() {

@@ -35,7 +35,7 @@ public class ChannelManager {
     private final Protocol.SendFunction sender;
     private final Protocol.PacketDispatcher dispatcher;
     private final Logger logger = LoggerFactory.getLogger(ChannelManager.class);
-
+    private int localId;
 
     /**
      * Constructs a {@code ChannelManager} and initializes all four protocol channels.
@@ -43,13 +43,14 @@ public class ChannelManager {
      * @param sender     function that sends a raw message string over the network
      * @param dispatcher function that dispatches a parsed message to the appropriate handler
      */
-    public ChannelManager(Protocol.SendFunction sender, Protocol.PacketDispatcher dispatcher) {
+    public ChannelManager(Protocol.SendFunction sender, Protocol.PacketDispatcher dispatcher, int localId) {
         channels.put(Protocol.CH_SYSTEM, new Channel(Protocol.CH_SYSTEM, true));
         channels.put(Protocol.CH_CHAT, new Channel(Protocol.CH_CHAT, true));
         channels.put(Protocol.CH_MOVEMENT, new Channel(Protocol.CH_MOVEMENT, false));
         channels.put(Protocol.CH_PINGS, new Channel(Protocol.CH_PINGS, false));
         this.sender = sender;
         this.dispatcher = dispatcher;
+        this.localId = localId;
     }
 
     /**
@@ -145,7 +146,7 @@ public class ChannelManager {
         if (channel.reliable) {
             boolean isNew = channel.isNewPacket(message.sequence);
             if (!isNew) return;
-            sendAck(message.channel, message.sequence, message.senderId);
+            sendAck(message.channel, message.sequence, localId);
         }
         dispatcher.dispatch(message);
     }
@@ -162,7 +163,7 @@ public class ChannelManager {
      * @throws Exception if the sender throws during transmission
      */
     private void sendAck(String channelId, int ackSequence, int targetId) throws Exception {
-        String ack = MessageBuilder.buildMessage(Protocol.SYS_ACK, channelId, Protocol.ID_SERVER, ackSequence, "");
+        String ack = MessageBuilder.buildMessage(Protocol.SYS_ACK, channelId, targetId, ackSequence, "");
         sender.send(ack);
     }
 
@@ -176,5 +177,9 @@ public class ChannelManager {
         for(Channel channel : channels.values()) {
             channel.reset();
         }
+    }
+
+    public void updateLocalId(int id) {
+        this.localId = id;
     }
 }

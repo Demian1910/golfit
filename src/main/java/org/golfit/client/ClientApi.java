@@ -3,8 +3,6 @@ package org.golfit.client;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
 
-import java.math.BigInteger;
-
 /**
  * Client API for interacting with the game server.
  *
@@ -71,9 +69,8 @@ public class ClientApi implements IClientApi {
      * @throws Exception if the lobby join fails
      */
     @Override
-    public void joinLobby() throws Exception {
-        String buffer = "";
-        channelManager.send(Protocol.SYS_LOBBY_JOIN, Protocol.CH_SYSTEM, getId(), buffer);
+    public void joinLobby(String lobbyName) throws Exception {
+        channelManager.send(Protocol.SYS_LOBBY_JOIN, Protocol.CH_SYSTEM, getId(), lobbyName);
     }
 
     /**
@@ -82,9 +79,8 @@ public class ClientApi implements IClientApi {
      * @throws Exception if the lobby leave fails
      */
     @Override
-    public void leaveLobby() throws Exception {
-        //TODO: Send lobby id as payload, get it from client via ge
-        channelManager.send(Protocol.SYS_LOBBY_LEAVE, Protocol.CH_SYSTEM, getId(), "");
+    public void leaveLobby(String lobbyId) throws Exception {
+        channelManager.send(Protocol.SYS_LOBBY_LEAVE, Protocol.CH_SYSTEM, getId(), lobbyId);
     }
 
     /**
@@ -139,6 +135,18 @@ public class ClientApi implements IClientApi {
 
     public void setUsername(String username) {
         client.username = username;
+    }
+
+    public void setLobbyId(int lobbyId){
+        client.lobbyId = lobbyId;
+    }
+
+    public int getLobbyId(){
+        return client.lobbyId;
+    }
+
+    public ChannelManager getChannelManager() {
+        return channelManager;
     }
 
     public void shutdown(){

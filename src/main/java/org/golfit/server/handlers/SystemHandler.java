@@ -7,6 +7,8 @@ import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 
+import java.util.Map;
+
 public class SystemHandler {
 
     private final ServerApi serverApi;
@@ -16,7 +18,11 @@ public class SystemHandler {
     }
 
     public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-//        clientHandler.getChannelManager().resetChannels();
+        String previousUsername = clientHandler.getUsername();
+        if(previousUsername != null) {
+            serverApi.releaseUsername(previousUsername);
+        }
+
         String username = (message.payload != null && !message.payload.isEmpty())
                 ? message.payload : "player";
 
@@ -47,7 +53,15 @@ public class SystemHandler {
     }
 
     public void onChatPrivate(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        serverApi.sendPrivateChat(clientHandler, Protocol.ID_SERVER, message.payload);
+        String[] parts = message.payload.split(":",2);
+        String targetUsername = parts[0];
+        String data = clientHandler.getUsername() + ":" + parts[1];
+        Map<String, ClientHandler> targetClientHandler = serverApi.getClients();
+        for(ClientHandler client : targetClientHandler.values()) {
+            if(client.getUsername().equals(targetUsername)) {
+                serverApi.sendPrivateChat(client, client.getId(), data);
+            }
+        }
     }
 
     /**
@@ -59,7 +73,7 @@ public class SystemHandler {
     }
 
     public void onCreateLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        serverApi.createLobby(clientHandler, "");
+        serverApi.createLobby(clientHandler, "1");
     }
 
     public void onLobbyList(ClientHandler clientHandler) throws Exception {
@@ -71,6 +85,7 @@ public class SystemHandler {
     }
 
     public void onLobbyLeave(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        serverApi.sendLeaveLobby(clientHandler, message.payload);
         System.out.println("Client " + clientHandler.getUsername() + " left lobby");
     }
 

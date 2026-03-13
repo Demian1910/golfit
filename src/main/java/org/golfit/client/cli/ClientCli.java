@@ -2,6 +2,8 @@ package org.golfit.client.cli;
 
 import org.golfit.client.ClientApi;
 
+import java.util.Arrays;
+
 public class ClientCli {
     private final ClientApi clientApi;
 
@@ -13,15 +15,16 @@ public class ClientCli {
 
     public void processCommand(String command) throws Exception {
         if(command.charAt(0) == '/') {
-            String[] args = command.split(" ");
-            String cleanCommand = args[0].substring(1);
             try{
+                String[] args = command.split(" ");
+                String cleanCommand = args[0].substring(1);
                 switch (Commands.valueOf(cleanCommand)) {
                     case help -> {
                         System.out.println("Available commands:");
                         System.out.println("/help - Displays this message");
                         System.out.println("/whoami - Displays your username");
                         System.out.println("/changeUsername <username> - Changes your username");
+                        System.out.println("/lobbyList - Lists available lobbies");
                         System.out.println("/createLobby - Creates a lobby");
                         System.out.println("/joinLobby <lobbyName> - Joins a lobby");
                         System.out.println("/leaveLobby - Leaves the current lobby");
@@ -36,7 +39,6 @@ public class ClientCli {
                     case changeUsername -> {
                         System.out.println("Changing username...");
                         String reconnectUsername = args.length > 1 ? args[1] : clientApi.getUsername();
-//                        clientApi.resetChannels();
                         clientApi.connect(reconnectUsername);
                     }
                     case lobbyList -> {
@@ -48,27 +50,36 @@ public class ClientCli {
                         clientApi.createLobby();
                     }
                     case joinLobby -> {
-                        System.out.println("Joining lobby...");
-                        clientApi.joinLobby();
+                        if(args.length > 1) {
+                            System.out.println("Joining lobby...");
+                            String lobbyName = args[1];
+                            clientApi.joinLobby(lobbyName);
+                        }
+                        else {
+                            System.out.println("Usage: /joinLobby <lobbyName>");
+                        }
                     }
                     case leaveLobby -> {
                         System.out.println("Leaving lobby...");
-                        clientApi.leaveLobby();
+                        clientApi.leaveLobby(String.valueOf(clientApi.getLobbyId()));
                     }
                     case chat -> {
                         String msg = command.substring(command.indexOf(' ') + 1);
                         clientApi.sendChat(msg);
                     }
-                    case privateChat -> {
+                    case whisper -> {
                         if (args.length < 3) {
                             System.out.println("Usage: /privateChat <username> <message>");
                             break;
                         }
-                        String data = command.substring("/privateChat ".length());
+                        String targetUsername = args[1];
+                        String message = String.join(" ", Arrays.copyOfRange(args, 2, args.length));
+                        String data = targetUsername + ":" + message;
+
                         clientApi.sendPrivateChat(data);
                     }
                     case movement -> {
-                        clientApi.sendMovement(args[1]);
+                        if (args.length < 2) {clientApi.sendMovement(args[1]);}
                     }
                     case q -> {
                         System.out.println("Shutting down...");
@@ -94,7 +105,7 @@ enum Commands {
     joinLobby,
     leaveLobby,
     chat,
-    privateChat,
+    whisper,
     movement,
     q
 }

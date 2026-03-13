@@ -74,6 +74,13 @@ public class Server implements ServerContext{
      * to the thread pool.
      */
     public void start() {
+        int lobbyId1 = generateUniqueId();
+        int lobbyId2 = generateUniqueId();
+        int lobbyId3 = generateUniqueId();
+        lobbies.put(lobbyId1,new Lobby(lobbyId1));
+        lobbies.put(lobbyId2,new Lobby(lobbyId2));
+        lobbies.put(lobbyId3,new Lobby(lobbyId3));
+
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
             byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
