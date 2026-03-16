@@ -1,4 +1,5 @@
 package org.golfit.graphics;
+
 import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
@@ -13,12 +14,13 @@ public class Window extends Application {
 
     /**
      * Creates a new window and initializes main pane
+     *
      * @param stage the javaFX stage
      */
     @Override
     public void start(Stage stage) {
         Pane root = new Pane();
-        Scene scene = new Scene(root, INIT_WIDTH,INIT_HEIGHT);
+        Scene scene = new Scene(root, INIT_WIDTH, INIT_HEIGHT);
         Game game = new Game(scene);
         root.getChildren().add((game.getRoot()));
 

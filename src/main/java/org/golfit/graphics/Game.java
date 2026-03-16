@@ -7,6 +7,7 @@ public class Game {
 
     private Pane root;
     private Course course;
+
     /**
      * Initiates the main pane for the game
      *
