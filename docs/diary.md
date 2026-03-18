@@ -83,3 +83,31 @@ Demian: ball mechanic implemented in a separate branch golf-ball. Ball can move 
 
 Constantin implemented game window and the graphics for the golf course, including walls, sand, ice, balls, trees, golf hole, switch and ramps.
 added Javadoc to the graphics. 
+
+## Entry #9 16.03.26
+The team has met after the Mileston 2 in presence hour to discuss about the development tasks division for **Milestone 4**
+
+### Individual Assignments (Milestone 4)
+
+**DEMIAN:**
+* **Game Logic (40):** Implementation of the main game mechanics and ensuring a playable state.
+* **Game State (10):** Development of the server-side logic to handle and synchronize the game state.
+* **Rules to Code (5):** Mapping the formal game rules into the actual code structure.
+* **Manual (10):** Drafting a written guide for players on how to play GOLFIT.
+
+**CONSTANTIN:**
+* **Progress Report (15):** Documenting the project timeline, individual responsibilities, and problem-solving strategies.
+* **QA Concept & Advanced QA (20):** Developing a detailed software quality plan and implementing measurement protocols.
+* **Game logic**: work with Demian to implement the the logival walls object and bouncing logic 
+
+**ANTON:**
+* **Protocol & Networking:** Finalizing the human-readable **Protocol Code (10)** and providing the **Protocol Document (5)** with command examples.
+* **Social Features:** Implementing **Lobby/Lounging (5)** for multiple rooms, **Broadcast (5)** for global messages, and **Whisper (5)** for private 1-to-1 chats.
+* **Data Management:** Implementing the **Game, Lounging, and Player Lists (15)**.
+* **Tooling:** Creating the **Build Script (5)** for JAR/JavaDoc generation and the **Command Line (5)** parser for host/port/username.
+
+**TAMER:**
+* **GUI (25):** Finalizing the user interface, specifically focusing on the Chat and Game screens.
+* **Librarian (10):** Integrating an external library (outside of JavaFX/JUnit) to enhance project functionality.
+
+---
