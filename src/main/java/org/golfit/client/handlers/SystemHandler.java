@@ -6,6 +6,9 @@ import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Collections;
+import java.util.LinkedHashSet;
+
 /** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
 public class SystemHandler {
     private final ClientApi clientApi;
@@ -34,7 +37,7 @@ public class SystemHandler {
     }
 
     /** Handles chat messages*/
-    public void onChat(MessageParser.Message message) {
+    public void onChatBroadcast(MessageParser.Message message) {
         String[] parts = message.payload.split(":");
         ConsoleManager.println("["+parts[0]+"]" + parts[1]);
     }
@@ -43,6 +46,11 @@ public class SystemHandler {
     public void onChatPrivate(MessageParser.Message message) {
        String[] parts = message.payload.split(":", 2);
        ConsoleManager.println("Whisper from "+"["+parts[0]+"]" + parts[1]);
+    }
+
+    public void onChatLobby(MessageParser.Message message) {
+        String[] parts = message.payload.split(":", 2);
+        ConsoleManager.println("Lobby message from ["+parts[0]+"]: " + parts[1]);
     }
 
     /** Handles the lobby list response from the server. */
@@ -73,6 +81,15 @@ public class SystemHandler {
     public void onLobbyLeft(MessageParser.Message message) throws Exception {
         clientApi.setLobbyId(-1);
         ConsoleManager.println("Left lobby");
+    }
+
+    public void onLobbyInfo(MessageParser.Message message) throws Exception {
+        String[] lobbyInfo = message.payload.split(":", 2);
+        ConsoleManager.println(lobbyInfo[0]+"//"+lobbyInfo[1]);
+        clientApi.setLobbyId(Integer.parseInt(lobbyInfo[0]));
+
+        String[] players = lobbyInfo[1].split(",");
+        Collections.addAll(clientApi.getLobbyPlayers(), players);
     }
 
     /** Handles a movement update from the server. */

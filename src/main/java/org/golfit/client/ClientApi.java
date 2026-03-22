@@ -3,6 +3,8 @@ package org.golfit.client;
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
 
+import java.util.LinkedHashSet;
+
 /**
  * Client API for interacting with the game server.
  *
@@ -90,8 +92,8 @@ public class ClientApi implements IClientApi {
      * @throws Exception if the private chat fails
      */
     @Override
-    public void sendChat(String data) throws Exception {
-        channelManager.send( Protocol.SYS_CHAT,Protocol.CH_CHAT, getId(), data);
+    public void sendChatBroadcast(String data) throws Exception {
+        channelManager.send( Protocol.SYS_CHAT_BROADCAST,Protocol.CH_CHAT, getId(), data);
     }
 
     /**
@@ -102,6 +104,12 @@ public class ClientApi implements IClientApi {
     @Override
     public void sendPrivateChat(String data) throws Exception {
         channelManager.send( Protocol.SYS_CHAT_PRIVATE,Protocol.CH_CHAT, getId(), data);
+    }
+
+    @Override
+    public void sendLobbyChat(String data) throws Exception {
+        String payload = getLobbyId() + ":" + data;
+        channelManager.send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_CHAT, getId(), payload);
     }
 
     /**
@@ -141,6 +149,10 @@ public class ClientApi implements IClientApi {
         client.lobbyId = lobbyId;
     }
 
+    public LinkedHashSet<String> getLobbyPlayers() {
+        return client.lobbyPlayers;
+    }
+
     public int getLobbyId(){
         return client.lobbyId;
     }
@@ -157,4 +169,6 @@ public class ClientApi implements IClientApi {
         client.socket.close();
         System.exit(0);
     }
+
+
 }

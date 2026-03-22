@@ -8,7 +8,8 @@ public interface IClientApi {
     void createLobby() throws Exception;
     void joinLobby(String lobbyName) throws Exception;
     void leaveLobby(String lobbyId) throws Exception;
-    void sendChat(String data) throws Exception;
+    void sendChatBroadcast(String data) throws Exception;
     void sendPrivateChat(String data) throws Exception;
     void sendMovement(Object movementData) throws Exception;
+    void sendLobbyChat(String data) throws Exception;
 }

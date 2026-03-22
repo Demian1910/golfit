@@ -41,8 +41,7 @@ public class ServerApi implements IServerApi{
 
     /** Creates a lobby and sends a SYS_LOBBY_CREATED confirmation to the requesting client. */
     @Override
-    public void createLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
-        System.out.println("Sending SYS_LOBBY_CREATED to " + clientHandler.getUsername()); // add this
+    public void sendCreateLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_CREATED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
@@ -50,21 +49,22 @@ public class ServerApi implements IServerApi{
     @Override
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
         StringBuilder payload = new StringBuilder();
-        Collection<Lobby> lobbies = serverContext.getLobbies();
-        for (Lobby lobby : lobbies) {
+        Map<Integer, Lobby> lobbies = serverContext.getLobbies();
+        for (Lobby lobby : lobbies.values()) {
             payload.append(lobby.getId()).append(":");
         }
         clientHandler.getChannelManager().send( Protocol.SYS_LOBBY_LIST,Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload.toString());
     }
 
-    /** Sends a SYS_LOBBY_JOINED confirmation to the client. */
-    public void joinLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
-        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_JOINED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
-    }
-
     /** Sends a lobby leave confirmation to the client. */
     public void sendLeaveLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
+    }
+
+    public void sendLobbyInfo(ClientHandler clientHandler, String lobbyId) throws Exception {
+        Lobby lobbyContext = serverContext.getLobbies().get(Integer.parseInt(lobbyId));
+        String payload = lobbyContext.getLobbyContext();
+        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_INFO, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
     /** Sends a private chat message to the specified client. */
@@ -77,8 +77,13 @@ public class ServerApi implements IServerApi{
     @Override
     public void broadcastChat(int senderId, String data) throws Exception {
         for(ClientHandler client : serverContext.getClients().values()) {
-            client.getChannelManager().send( Protocol.SYS_CHAT,Protocol.CH_CHAT, senderId, data);
+            client.getChannelManager().send( Protocol.SYS_CHAT_BROADCAST,Protocol.CH_CHAT, senderId, data);
         }
+    }
+
+    @Override
+    public void sendLobbyChat(ClientHandler clientHandler, String data) throws Exception {
+        clientHandler.getChannelManager().send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
     }
 
     /** Broadcasts movement updates to all connected clients. */

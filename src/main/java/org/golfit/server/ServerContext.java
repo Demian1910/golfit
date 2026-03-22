@@ -9,8 +9,9 @@ import java.util.Set;
 
 /** Provides access to shared server state: connected clients, lobbies, usernames, and session ID. */
 public interface ServerContext {
+    int generateUniqueId();
     Map<String, ClientHandler> getClients();
-    Collection<Lobby> getLobbies();
+    Map<Integer, Lobby> getLobbies();
     Set<String> getUsernameSet();
     int getSessionId();
 }

@@ -13,24 +13,27 @@ public class Protocol {
     public static final String SYS_PONG           = "SYS_PONG";
 
     // lobby
-    public static final String SYS_LOBBY_CREATE  = "SYS_LOBBY_CREATE";
+    public static final String SYS_LOBBY_CREATE   = "SYS_LOBBY_CREATE";
     public static final String SYS_LOBBY_CREATED  = "SYS_LOBBY_CREATED";
     public static final String SYS_LOBBY_JOIN     = "SYS_LOBBY_JOIN";
     public static final String SYS_LOBBY_JOINED   = "SYS_LOBBY_JOINED";
     public static final String SYS_LOBBY_LEAVE    = "SYS_LOBBY_LEAVE";
     public static final String SYS_LOBBY_LEFT     = "SYS_LOBBY_LEFT";
     public static final String SYS_LOBBY_LIST     = "SYS_LOBBY_LIST";
+    public static final String SYS_LOBBY_INFO     =  "SYS_LOBBY_INFO";
+    public static final String SYS_PLAYERS_LIST   = "SYS_PLAYERS_LIST";
 
     // chat
-    public static final String SYS_CHAT           = "SYS_CHAT";
+    public static final String SYS_CHAT_BROADCAST = "SYS_CHAT_BROADCAST";
     public static final String SYS_CHAT_PRIVATE   = "SYS_CHAT_PRIVATE";
+    public static final String SYS_CHAT_LOBBY     = "SYS_CHAT_LOBBY";
 
     // movement
     public static final String  MOVE_INPUT         = "MOVE_INPUT";
     public static final String  MOVE_UPDATE        = "MOVE_UPDATE";
 
     // protocol
-    public static final String SYS_ACK            = "SYS_ACK";
+    public static final String SYS_ACK             = "SYS_ACK";
 
     // channels
     public static final String CH_SYSTEM   = "CH_SYSTEM";

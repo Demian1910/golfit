@@ -110,4 +110,11 @@ The team has met after the Mileston 2 in presence hour to discuss about the deve
 * **GUI (25):** Finalizing the user interface, specifically focusing on the Chat and Game screens.
 * **Librarian (10):** Integrating an external library (outside of JavaFX/JUnit) to enhance project functionality.
 
----
+
+## Entry #10 22.03.26
+
+Anton implemented lobby logics and chat messaging. Network protocol was updated with few entries, such as, separate communication commands
+for different types of messages i.e. broadcast, whisper and lobby messages handled differently. Such mechanics allows
+to separate and scale logic connected to different communication types. Lobbies are fully implemented, each lobby has 
+status fields(open, ongoing, running), set of clients and different useful getter and setter functions. Current implementation 
+allows it to integrate lobby logic with GUI components. 
