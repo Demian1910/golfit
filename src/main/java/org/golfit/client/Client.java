@@ -13,6 +13,8 @@ import org.jline.reader.UserInterruptException;
 
 import java.net.*;
 import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -55,6 +57,7 @@ public class Client {
     int id = 0;
 
     int lobbyId = 0;
+    LinkedHashSet<String> lobbyPlayers = new LinkedHashSet<>();
 
     final private int port;
     DatagramSocket socket;
@@ -175,11 +178,12 @@ public class Client {
         switch(message.type) {
             case Protocol.SYS_CONNECTED -> systemHandler.onConnected(message);
             case Protocol.SYS_PONG -> pingService.onPong(message);
-            case Protocol.SYS_CHAT -> systemHandler.onChat(message);
+            case Protocol.SYS_CHAT_BROADCAST -> systemHandler.onChatBroadcast(message);
             case Protocol.SYS_CHAT_PRIVATE -> systemHandler.onChatPrivate(message);
+            case Protocol.SYS_CHAT_LOBBY -> systemHandler.onChatLobby(message);
             case Protocol.SYS_LOBBY_LIST -> systemHandler.onLobbyList(message);
             case Protocol.SYS_LOBBY_CREATED -> systemHandler.onLobbyCreated(message);
-            case Protocol.SYS_LOBBY_JOINED -> systemHandler.onLobbyJoined(message);
+            case Protocol.SYS_LOBBY_JOINED, Protocol.SYS_LOBBY_INFO -> systemHandler.onLobbyInfo(message);
             case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeft(message);
             case Protocol.MOVE_UPDATE -> systemHandler.onMoveUpdate(message);
 

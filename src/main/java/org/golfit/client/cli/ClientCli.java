@@ -31,6 +31,7 @@ public class ClientCli {
                         System.out.println("/joinLobby <lobbyName> - Joins a lobby");
                         System.out.println("/leaveLobby - Leaves the current lobby");
                         System.out.println("/chat <message> - Sends a chat message");
+                        System.out.println("/lobby <message> - Sends lobby message");
                         System.out.println("/privateChat <username> <message> - Sends a private chat message");
                         System.out.println("/movement <direction> - Moves the player in the specified direction");
                         System.out.println("/q - Quits the client");
@@ -67,7 +68,7 @@ public class ClientCli {
                     }
                     case chat -> {
                         String msg = command.substring(command.indexOf(' ') + 1);
-                        clientApi.sendChat(msg);
+                        clientApi.sendChatBroadcast(msg);
                     }
                     case whisper -> {
                         if (args.length < 3) {
@@ -79,6 +80,10 @@ public class ClientCli {
                         String data = targetUsername + ":" + message;
 
                         clientApi.sendPrivateChat(data);
+                    }
+                    case lobby -> {
+                        String msg = command.substring(command.indexOf(' ') + 1);
+                        clientApi.sendLobbyChat(msg);
                     }
                     case movement -> {
                         if (args.length < 2) {clientApi.sendMovement(args[1]);}
@@ -109,6 +114,7 @@ enum Commands {
     leaveLobby,
     chat,
     whisper,
+    lobby,
     movement,
     q
 }

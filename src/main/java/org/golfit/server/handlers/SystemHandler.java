@@ -3,19 +3,24 @@ package org.golfit.server.handlers;
 import org.golfit.client.Client;
 import org.golfit.client.ClientApi;
 import org.golfit.server.ClientHandler.ClientHandler;
+import org.golfit.server.ServerContext;
 import org.golfit.server.serverApi.ServerApi;
+import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 
+import java.util.LinkedHashSet;
 import java.util.Map;
 
 /** Handles all system-level protocol messages on the server side (connect, disconnect, chat, lobbies, movement). */
 public class SystemHandler {
 
     private final ServerApi serverApi;
+    private final ServerContext serverContext;
 
-    public SystemHandler(ServerApi serverApi) {
+    public SystemHandler(ServerApi serverApi, ServerContext serverContext) {
         this.serverApi = serverApi;
+        this.serverContext = serverContext;
     }
 
     /** Handles a client connection or username change. Releases any old username, claims the new one, and sends back the assignment. */
@@ -52,7 +57,7 @@ public class SystemHandler {
     }
 
     /** Handles a public chat message by prefixing the sender's username and broadcasting to all clients. */
-    public void onChat(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+    public void onChatBroadcast(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
        String payload = clientHandler.getUsername() + ":" + message.payload;
         serverApi.broadcastChat(Protocol.ID_SERVER, payload);
     }
@@ -70,6 +75,21 @@ public class SystemHandler {
         }
     }
 
+
+    public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        String[] parts = message.payload.split(":", 2);
+        int lobbyId = Integer.parseInt(parts[0]);
+        String payload = clientHandler.getUsername() + ":" + parts[1];
+
+        serverContext.getLobbies().get(lobbyId).getClients().forEach((client -> {
+            try {
+                serverApi.sendLobbyChat(client, payload);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
+    }
+
     /**
      * Handles client disconnection by notifying the server API.
      */
@@ -80,7 +100,10 @@ public class SystemHandler {
 
     /** Handles a lobby creation request. */
     public void onCreateLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        serverApi.createLobby(clientHandler, "1");
+        int lobbyId = serverContext.generateUniqueId();
+        serverContext.getLobbies().put(lobbyId, new Lobby(lobbyId, clientHandler));
+        serverApi.sendCreateLobby(clientHandler, String.valueOf(lobbyId));
+        serverApi.sendLobbyInfo(clientHandler, String.valueOf(lobbyId));
     }
 
     /** Handles a request for the list of available lobbies. */
@@ -90,13 +113,33 @@ public class SystemHandler {
 
     /** Handles a request to join a lobby. */
     public void onLobbyJoin(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        serverApi.joinLobby(clientHandler, message.payload);
+        Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));
+        lobby.addClient(clientHandler);
+        LinkedHashSet<ClientHandler> clients = lobby.getClients();
+        clients.forEach((client -> {
+            try {
+                serverApi.sendLobbyInfo(client,message.payload);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
+
+
+        serverApi.sendLobbyInfo(clientHandler, message.payload);
     }
 
     /** Handles a request to leave the current lobby. */
     public void onLobbyLeave(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));
+        lobby.removeClient(clientHandler);
+        lobby.getClients().forEach((client -> {
+            try {
+                serverApi.sendLobbyInfo(client,message.payload);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        }));
         serverApi.sendLeaveLobby(clientHandler, message.payload);
-        System.out.println("Client " + clientHandler.getUsername() + " left lobby");
     }
 
     /** Handles movement input from a client. */

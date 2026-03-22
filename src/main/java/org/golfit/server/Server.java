@@ -18,7 +18,7 @@ import java.util.*;
 import java.util.concurrent.*;
 
 public class Server implements ServerContext{
-    private static final int sessionId = generateUniqueId();
+    private final int sessionId = generateUniqueId();
     /**
      * server context
      */
@@ -27,7 +27,7 @@ public class Server implements ServerContext{
     /**
      * server handlers
      */
-    private final SystemHandler systemHandler = new SystemHandler(serverApi);
+    private final SystemHandler systemHandler = new SystemHandler(serverApi, this);
 
     /**
      * Set of saved usernames
@@ -74,13 +74,6 @@ public class Server implements ServerContext{
      * to the thread pool.
      */
     public void start() {
-        int lobbyId1 = generateUniqueId();
-        int lobbyId2 = generateUniqueId();
-        int lobbyId3 = generateUniqueId();
-        lobbies.put(lobbyId1,new Lobby(lobbyId1));
-        lobbies.put(lobbyId2,new Lobby(lobbyId2));
-        lobbies.put(lobbyId3,new Lobby(lobbyId3));
-
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
             byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
@@ -141,7 +134,8 @@ public class Server implements ServerContext{
      *
      * @return a unique positive integer client ID
      */
-    public static int generateUniqueId() {
+    @Override
+    public int generateUniqueId() {
         long time = System.nanoTime();
         long unix = System.currentTimeMillis();
         long heap = Runtime.getRuntime().totalMemory();
@@ -172,8 +166,9 @@ public class Server implements ServerContext{
             case Protocol.SYS_CONNECT -> systemHandler.onConnect(clientHandler, message);
             case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
             case Protocol.SYS_DISCONNECT -> systemHandler.onDisconnect(clientHandler);
-            case Protocol.SYS_CHAT -> systemHandler.onChat(clientHandler, message);
+            case Protocol.SYS_CHAT_BROADCAST -> systemHandler.onChatBroadcast(clientHandler, message);
             case Protocol.SYS_CHAT_PRIVATE -> systemHandler.onChatPrivate(clientHandler, message);
+            case Protocol.SYS_CHAT_LOBBY -> systemHandler.onChatLobby(clientHandler, message);
             case Protocol.SYS_LOBBY_CREATE -> systemHandler.onCreateLobby(clientHandler, message);
             case Protocol.SYS_LOBBY_LIST -> systemHandler.onLobbyList(clientHandler);
             case Protocol.SYS_LOBBY_JOIN -> systemHandler.onLobbyJoin(clientHandler, message);
@@ -193,13 +188,13 @@ public class Server implements ServerContext{
     }
 
     /**
-     * Returns the collection of active lobbies.
+     * Returns the map of active lobbies.
      *
-     * @return collection of {@link Lobby} instances
+     * @return map of {@link Lobby} instances
      */
     @Override
-    public Collection<Lobby> getLobbies() {
-        return Map.copyOf(lobbies).values();
+    public Map<Integer, Lobby> getLobbies() {
+        return lobbies;
     }
 
     /**

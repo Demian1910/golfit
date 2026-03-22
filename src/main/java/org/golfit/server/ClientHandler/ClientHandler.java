@@ -15,9 +15,15 @@ import java.util.concurrent.*;
 
 /** Handles a single connected client on the server side. Runs its own thread with a message queue and periodic channel tick. */
 public class ClientHandler implements Runnable {
+    enum ClientState {
+        IN_MENU,
+        IN_GAME
+    }
+
     private final int Id;
     private final String key;
     private String username;
+    private ClientState clientState =  ClientState.IN_MENU;
 
     private Protocol.PacketDispatcher dispatcher;
     private final DatagramSocket socket;
