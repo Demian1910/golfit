@@ -9,6 +9,8 @@ import javafx.geometry.Insets;
 
 public class GameView {
     private Pane root;
+    private double startX;
+    private double startY;
 
     public GameView() {
         this.root = new Pane();
@@ -16,8 +18,22 @@ public class GameView {
         this.root.setBackground(new Background(new BackgroundFill(
                 Color.WHITE,
                 CornerRadii.EMPTY,
-                Insets.EMPTY
-        )));
+                Insets.EMPTY)));
+                
+        setupMouseControls();
+    }
+
+    private void setupMouseControls() {
+        this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
+            startX = e.getX(); startY = e.getY();
+        });
+        this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
+            try {
+                if (org.golfit.Main.currentClient != null) {
+                    org.golfit.Main.currentClient.clientApi.sendMovement((startX - e.getX()) * 5, (startY - e.getY()) * 5);
+                }
+            } catch (Exception ex) {}
+        });
     }
 
     /**

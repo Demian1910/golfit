@@ -7,6 +7,8 @@ import org.golfit.server.Server;
  * Entry point for the GolfIt application. Starts either a server or client based on CLI arguments.
  */
 public class Main {
+    public static Client currentClient;
+
     public static void main(String[] args) throws Exception {
         if (args.length == 0) {
             printUsage();
@@ -29,9 +31,10 @@ public class Main {
                 String[] hostPort = args[1].split(":");
                 String host = hostPort[0];
                 int port = Integer.parseInt(hostPort[1]);
-                String username = args.length >= 3 ? args[2] : null;
+                String username = args.length >= 3 ? args[2] : "Player" + (int)(Math.random() * 10000);
 
-                new Client(host, port, username).start();
+                currentClient = new Client(host, port, username);
+                currentClient.start();
 
                 org.golfit.client.game.GraphicInit.main(args);
             }

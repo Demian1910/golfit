@@ -35,13 +35,11 @@ public class Client {
     final private int port;
     DatagramSocket socket;
 
-
     String username;
 
     private ChannelManager channelManager;
 
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Client.class);
-
 
     public Client(String host, int port, String username) {
         this.host = host;
@@ -50,9 +48,7 @@ public class Client {
     }
 
     public void start() throws Exception {
-        System.out.println("Type /help for a list of commands");
         socket = new DatagramSocket();
-        ConsoleManager.init();
 
         channelManager = new ChannelManager((data) -> {
             byte[] byteData = data.getBytes(StandardCharsets.UTF_8);
@@ -68,7 +64,6 @@ public class Client {
         movementHandler = new MovementHandler(clientApi);
         chatHandler = new ChatHandler(clientApi);
 
-
         ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor();
         ticker.scheduleAtFixedRate(() -> {
             try {
@@ -78,28 +73,15 @@ public class Client {
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
 
-
-        Thread inputThread = new Thread(() -> {
-            while (true) {
-                try {
-                    String line = ConsoleManager.readLine("> ");
-                    if (line != null) clientCli.processCommand(line);
-                } catch (Exception e) {
-                    throw new RuntimeException(e);
-                }
-            }
-        });
-        inputThread.setDaemon(true);
-        inputThread.start();
-
-        Thread receiveThread = new Thread(()-> {
+        Thread receiveThread = new Thread(() -> {
             while (true) {
                 try {
                     byte[] raw = new byte[Constants.MAX_PACKET_SIZE];
                     DatagramPacket datagramPacket = new DatagramPacket(raw, raw.length);
                     socket.receive(datagramPacket);
                     System.arraycopy(datagramPacket.getData(), 0, raw, 0, datagramPacket.getLength());
-                    channelManager.onPacketReceived(new String(raw, 0, datagramPacket.getLength(), StandardCharsets.UTF_8));
+                    channelManager
+                            .onPacketReceived(new String(raw, 0, datagramPacket.getLength(), StandardCharsets.UTF_8));
                 } catch (Exception e) {
                     logger.error(e.getMessage());
                 }
@@ -111,11 +93,15 @@ public class Client {
         pingService.start();
     }
 
+    public MovementHandler getMovementHandler() {
+        return movementHandler;
+    }
 
     private void dispatch(MessageParser.Message message) {
-        switch(message.type) {
+        switch (message.type) {
             case Protocol.SYS_CONNECTED -> systemHandler.onConnected(message);
             case Protocol.SYS_PONG -> pingService.onPong();
+            case Protocol.MOVE_UPDATE -> movementHandler.onMoveUpdate(message);
         }
     }
 }
