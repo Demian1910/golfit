@@ -44,20 +44,11 @@ public class Ball {
         py += vy * deltaTime;
     }
 
-    public void setPosition(double x, double y) {
-        this.px = x;
-        this.py = y;
-    }
-
     public double getPx() {
         return px;
     }
 
     public double getPy() {
         return py;
-    }
-
-    public boolean isMoving() {
-        return vx != 0;
     }
 }
