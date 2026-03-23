@@ -12,19 +12,21 @@ import org.golfit.shared.packetParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
 
-
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
-public class Server implements ServerContext{
+public class Server implements ServerContext {
     private final ServerApi serverApi = new ServerApi(this);
 
     private final SystemHandler systemHandler = new SystemHandler(serverApi);
     private final ChatHandler chatHandler = new ChatHandler(serverApi);
-    private final MovementHandler movementHandler = new MovementHandler(serverApi);
+
+    private final org.golfit.server.game.ServerGameSimulation gameSimulation = new org.golfit.server.game.ServerGameSimulation(
+            serverApi);
+    private final MovementHandler movementHandler = new MovementHandler(serverApi, gameSimulation);
 
     private final Set<String> usernames = ConcurrentHashMap.newKeySet();
 
@@ -33,7 +35,6 @@ public class Server implements ServerContext{
     private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Server.class);
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
 
-
     public Server(int port) {
         this.port = port;
     }
@@ -41,12 +42,14 @@ public class Server implements ServerContext{
     public void start() {
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
+            gameSimulation.start();
             byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
             ScheduledExecutorService cleanUp = Executors.newSingleThreadScheduledExecutor();
             cleanUp.scheduleAtFixedRate(() -> {
                 clients.entrySet().removeIf(entry -> {
-                    if(entry.getValue().isTimedOut()) {
+                    if (entry.getValue().isTimedOut()) {
                         System.out.println("Client timed out: " + entry.getKey());
+                        gameSimulation.removePlayer(entry.getValue().getId());
                         entry.getValue().shutdown();
                         return true;
                     }
@@ -66,7 +69,7 @@ public class Server implements ServerContext{
                 ClientHandler clientHandler = clients.computeIfAbsent(clientKey, key -> {
                     ClientHandler handler = new ClientHandler(
                             key, socket, packet.getAddress(), packet.getPort(),
-                            generateUniqueId(), (pkt)-> this.dispatch(key, pkt));
+                            generateUniqueId(), (pkt) -> this.dispatch(key, pkt));
                     threadPool.submit(handler);
                     return handler;
                 });
@@ -81,19 +84,25 @@ public class Server implements ServerContext{
         long time = System.nanoTime();
         long unix = System.currentTimeMillis();
         long heap = Runtime.getRuntime().totalMemory();
-        long rnd  = ThreadLocalRandom.current().nextLong();
+        long rnd = ThreadLocalRandom.current().nextLong();
 
         int hash = (int) (time ^ unix ^ heap ^ rnd);
         hash &= 0x7FFFFFFF;
-        if(hash == 0 || hash == 1) hash = 2;
+        if (hash == 0 || hash == 1)
+            hash = 2;
         return hash;
     }
 
     private void dispatch(String clientKey, MessageParser.Message message) throws Exception {
         ClientHandler clientHandler = clients.get(clientKey);
-        switch(message.type) {
-            case Protocol.SYS_CONNECT -> systemHandler.onConnect(clientHandler, message);
+        switch (message.type) {
+            case Protocol.SYS_CONNECT -> {
+                systemHandler.onConnect(clientHandler, message);
+                // Assign a temporary spawn position when connected
+                gameSimulation.addPlayer(clientHandler.getId(), 400.0, 300.0);
+            }
             case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
+            case Protocol.MOVE_INPUT -> movementHandler.onMoveInput(clientHandler, message);
         }
     }
 

@@ -3,26 +3,39 @@ package org.golfit;
 import org.golfit.client.Client;
 import org.golfit.server.Server;
 
+/**
+ * Entry point for the GolfIt application. Starts either a server or client based on CLI arguments.
+ */
 public class Main {
     public static void main(String[] args) throws Exception {
-        if(args.length == 0) {
+        if (args.length == 0) {
             printUsage();
             return;
         }
         switch (args[0]) {
             case "server" -> {
-                if (args.length < 2 ) {printUsage(); return;}
+                if (args.length < 2) {
+                    printUsage();
+                    return;
+                }
                 int port = Integer.parseInt(args[1]);
                 new Server(port).start();
             }
             case "client" -> {
-                if (args.length < 2) {printUsage(); return;}
+                if (args.length < 2) {
+                    printUsage();
+                    return;
+                }
                 String[] hostPort = args[1].split(":");
                 String host = hostPort[0];
                 int port = Integer.parseInt(hostPort[1]);
                 String username = args.length >= 3 ? args[2] : null;
+
                 new Client(host, port, username).start();
+
+                org.golfit.client.game.GraphicInit.main(args);
             }
+            default -> printUsage();
         }
     }
 
