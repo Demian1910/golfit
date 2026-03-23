@@ -13,7 +13,16 @@ public class SystemHandler {
     public SystemHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
+
     public void onConnected(MessageParser.Message message) {
-        logger.info("Yaaaaay, you count as connected user");
+        if (message.payload != null && !message.payload.isEmpty()) {
+            try {
+                int id = Integer.parseInt(message.payload);
+                clientApi.setId(id);
+                logger.info("Yaaaaay, you count as connected user with ID: " + id);
+            } catch (NumberFormatException e) {
+                logger.error("Failed to parse assigned ID: " + message.payload);
+            }
+        }
     }
 }

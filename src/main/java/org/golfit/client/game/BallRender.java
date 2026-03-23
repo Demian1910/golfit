@@ -3,9 +3,7 @@ package org.golfit.client.game;
 import javafx.scene.layout.Pane;
 import javafx.scene.shape.Circle;
 import javafx.scene.paint.Color;
-import org.golfit.client.game.physics.Ball;
 import org.golfit.shared.constants.Constants;
-import java.awt.*;
 
 public class BallRender {
     private Circle circle;
