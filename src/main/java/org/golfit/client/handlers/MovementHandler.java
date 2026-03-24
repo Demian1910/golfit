@@ -1,7 +1,7 @@
 package org.golfit.client.handlers;
 
 import org.golfit.client.ClientApi;
-import org.golfit.shared.packetParser.MessageParser;
+import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.client.game.BallRender;
 import org.golfit.client.game.Ball;
 import javafx.scene.layout.Pane;

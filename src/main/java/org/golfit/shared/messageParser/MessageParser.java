@@ -1,6 +1,5 @@
-package org.golfit.shared.packetParser;
+package org.golfit.shared.messageParser;
 
-import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -8,6 +7,11 @@ import org.slf4j.LoggerFactory;
 
 import static org.golfit.shared.protocol.Protocol.FIELD_COUNT;
 
+/**
+ * Parser class for messages.
+ *
+ * Parses messages received from the network into structured objects.
+ */
 public class MessageParser {
     private static final Logger logger = LoggerFactory.getLogger(MessageParser.class);
 
@@ -17,6 +21,11 @@ public class MessageParser {
     private static final int FIELD_SEQUENCE = 3;
     private static final int FIELD_PAYLOAD  = 4;
 
+    /**
+     * Represents a parsed message.
+     *
+     * Contains fields for type, channel, sender ID, sequence number, and payload.
+     */
     public static class Message {
         public String type;
         public String channel;
@@ -25,6 +34,13 @@ public class MessageParser {
         public String payload;
     }
 
+    /**
+     * Parses a raw message string into a structured Message object.
+     *
+     * Validates the format and extracts fields from the raw message.
+     * @param raw the raw message string
+     * @return the parsed message object or null if parsing fails
+     */
     public static Message parseMessage(String raw) {
         if(raw == null || raw.isEmpty()) {
             logger.error("Invalid packet format: null or empty string");

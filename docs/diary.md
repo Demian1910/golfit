@@ -26,7 +26,8 @@ We briefly discussed how we should handle the presentation for milestone I. Tony
 Tamer: Goals, rules and mechanics of Golfit. Demian will present the mock-up.
 
 ## Entry #5 06.03.26
-Meeting via Discord call with Demian, Tamer, and Constantin to define tasks and responsibilities for the next phase of development. We established a clear breakdown of features and technical requirements:
+Meeting via Discord call with Demian, Tamer, and Constantin to define tasks and responsibilities for the next phase of development. 
+We established a clear breakdown of features and technical requirements:
 
 ### Individual Assignments
 
@@ -44,7 +45,6 @@ Meeting via Discord call with Demian, Tamer, and Constantin to define tasks and 
 * **Chat (15):** Client to client chat is working.
 
 **DEMIAN:**
-* **QA Concept (10):** Reasonable Software Quality concept in written form (see slides).
 * **Physics Prototype:** Create a ball object that can be thrown with a certain velocity and direction, that slows down over time, and that bounces on a wall. Its position has to be known in every moment. (Note: integration with a future UI bar for direction/velocity).
 
 **CONSTANTIN:**
@@ -67,3 +67,54 @@ To ensure consistency with the game logic and mockup, the following requirements
 * **Ball Mechanics:** Implement bounce logic where the ball reflects at the same angle it hits a wall.
 * **Physics Constraints:** Avoid placing walls too close to each other to prevent issues with the bouncing logic.
 * **Interactive Elements:** Design interactive environments (doors and bridges) that are graphically distinct but logically consistent.
+
+## Entry #6 9.03.26
+Tamer checked all the tasks for milestone 2 and informed the group accordingly and also told anton that the current Protocol is not
+human readable anton then spent the day changing the protocol to make it human readable.
+
+## Entry #7 10.03.26
+Tamer either implemented or refined all his tasks which include: Call me Bob, whoami, bob_001, Login, Logout, Chat
+with the help of Anton also kind of cleaned up the handlers for the client and server which went from multiple separated
+classes like chathandler, loginhandler, *whatever else was there i forgot*handler... etc. to just a combined SystemHandler inside both the Client
+and the Server folders inside the handlers folder so .../client/handlers/SystemHandler and .../server/handlers/SystemHandler were made.
+Demian: ball mechanic implemented in a separate branch golf-ball. Ball can move with dynamic friction using mouse. Next step is implementing bouncing mechanic for Milestone 4
+
+## Entry 8: 12.03.26
+
+Constantin implemented game window and the graphics for the golf course, including walls, sand, ice, balls, trees, golf hole, switch and ramps.
+added Javadoc to the graphics. 
+
+## Entry #9 16.03.26
+The team has met after the Mileston 2 in presence hour to discuss about the development tasks division for **Milestone 4**
+
+### Individual Assignments (Milestone 4)
+
+**DEMIAN:**
+* **Game Logic (40):** Implementation of the main game mechanics and ensuring a playable state.
+* **Game State (10):** Development of the server-side logic to handle and synchronize the game state.
+* **Rules to Code (5):** Mapping the formal game rules into the actual code structure.
+* **Manual (10):** Drafting a written guide for players on how to play GOLFIT.
+
+**CONSTANTIN:**
+* **Progress Report (15):** Documenting the project timeline, individual responsibilities, and problem-solving strategies.
+* **QA Concept & Advanced QA (20):** Developing a detailed software quality plan and implementing measurement protocols.
+* **Game logic**: work with Demian to implement the the logival walls object and bouncing logic 
+
+**ANTON:**
+* **Protocol & Networking:** Finalizing the human-readable **Protocol Code (10)** and providing the **Protocol Document (5)** with command examples.
+* **Social Features:** Implementing **Lobby/Lounging (5)** for multiple rooms, **Broadcast (5)** for global messages, and **Whisper (5)** for private 1-to-1 chats.
+* **Data Management:** Implementing the **Game, Lounging, and Player Lists (15)**.
+* **Tooling:** Creating the **Build Script (5)** for JAR/JavaDoc generation and the **Command Line (5)** parser for host/port/username.
+
+**TAMER:**
+* **GUI (25):** Finalizing the user interface, specifically focusing on the Chat and Game screens.
+* **Librarian (10):** Integrating an external library (outside of JavaFX/JUnit) to enhance project functionality.
+
+
+## Entry #10 22.03.26
+
+Anton implemented lobby logics and chat messaging. Network protocol was updated with few entries, such as, separate communication commands
+for different types of messages i.e. broadcast, whisper and lobby messages handled differently. Such mechanics allows
+to separate and scale logic connected to different communication types. Lobbies are fully implemented, each lobby has 
+status fields(open, ongoing, running), set of clients and different useful getter and setter functions. Current implementation 
+allows it to integrate lobby logic with GUI components. 

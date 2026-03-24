@@ -17,7 +17,7 @@ public class ServerGameSimulation {
     private ScheduledExecutorService ticker;
 
     // number of ticks per second
-    private static final int TICK_RATE_MS = 100;
+    private static final int TICK_RATE_MS = 40;
 
     public ServerGameSimulation(ServerApi serverApi) {
         this.serverApi = serverApi;
