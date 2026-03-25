@@ -1,21 +1,34 @@
 package org.golfit.graphics;
 
+import javafx.geometry.Bounds;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
-import javafx.scene.shape.Ellipse;
-import javafx.scene.shape.Line;
-import javafx.scene.shape.Polygon;
-import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Course {
 
     private static final int COLS = 80;
     private static final int ROWS = 45;
-
     private static final int COURSE_COLS = 65;
     private Pane container;
     private Color backgroundColor = Color.rgb(121, 213, 33);
+
+    private static final int EMPTY = 0;
+    private static final int WALL  = 1;
+    private static final int SAND  = 2;
+    private static final int ICE   = 3;
+    private static final int WATER = 4;
+    private static final int BOUNCE = 5;
+    private static final int SWITCH = 6;
+
+    public int[][] grid = new int[COLS][ROWS];
+
+    public List<Shape> obstacles = new ArrayList<>();
+
 
     public Course(Scene scene) {
 
@@ -170,11 +183,12 @@ public class Course {
      * @param height height in grid units
      * @param color  the color of the shape
      */
-    private void addRect(Scene scene, int col, int row, int width, int height, Color color) {
+    private Rectangle addRect(Scene scene, int col, int row, int width, int height, Color color) {
         Rectangle rect = new Rectangle();
         rect.setFill(color);
         bindGrid(rect, scene, col, row, width, height);
         container.getChildren().add(rect);
+        return rect;
     }
 
     /**
@@ -187,12 +201,7 @@ public class Course {
      * @param width  ellipse width in grid size
      * @param height ellipse height in grid size
      */
-    private void bindGrid(Rectangle rect, Scene scene, int col, int row, int width, int height) {
-        rect.xProperty().bind(scene.widthProperty().divide(COLS).multiply(col));
-        rect.yProperty().bind(scene.heightProperty().divide(ROWS).multiply(row));
-        rect.widthProperty().bind(scene.widthProperty().divide(COLS).multiply(width));
-        rect.heightProperty().bind(scene.heightProperty().divide(ROWS).multiply(height));
-    }
+
 
     /**
      * Adds a wall to the course at a specified grid position.
@@ -204,7 +213,9 @@ public class Course {
      * @param height height in grid units (if applicable)
      */
     private void addWall(Scene scene, int col, int row, int width, int height) {
-        addRect(scene, col, row, width, height, Color.rgb(124, 63, 0));
+        Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(124, 63, 0));
+        rect.setUserData(WALL);
+        obstacles.add(rect);
     }
 
     /**
@@ -217,7 +228,9 @@ public class Course {
      * @param height height in grid units (if applicable)
      */
     private void addSand(Scene scene, int col, int row, int width, int height) {
-        addRect(scene, col, row, width, height, Color.rgb(203, 189, 147));
+        Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(203, 189, 147));
+        rect.setUserData(SAND);
+        obstacles.add(rect);
     }
 
     /**
@@ -231,7 +244,9 @@ public class Course {
      */
 
     private void addIce(Scene scene, int col, int row, int width, int height) {
-        addRect(scene, col, row, width, height, Color.rgb(148, 247, 255));
+        Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(148, 247, 255));
+        rect.setUserData(ICE);
+        obstacles.add(rect);
     }
 
     /**
@@ -245,7 +260,9 @@ public class Course {
      */
 
     private void addWater(Scene scene, int col, int row, int width, int height) {
-        addRect(scene, col, row, width, height, Color.rgb(35, 137, 218));
+        Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(35, 137, 218));
+        rect.setUserData(WATER);
+        obstacles.add(rect);
     }
 
 
@@ -269,7 +286,10 @@ public class Course {
      */
     private void addSwitch(Scene scene, int col, int row) {
         addRect(scene, col, row, 2, 1, Color.GRAY);
-        addEllipse(scene, col, row, 2, 1, Color.RED);
+        Ellipse ellipse = addEllipse(scene, col, row, 2, 1, Color.RED);
+        ellipse.setUserData(SWITCH);
+        obstacles.add(ellipse);
+
     }
 
     /**
@@ -280,7 +300,9 @@ public class Course {
      * @param row   the row of the position
      */
     private void addBall(Scene scene, int col, int row) {
-        addEllipse(scene, col, row, 3, 3, Color.rgb(255, 16, 240));
+        Ellipse ellipse = addEllipse(scene, col, row, 3, 3, Color.rgb(255, 16, 240));
+        ellipse.setUserData(BOUNCE);
+        obstacles.add(ellipse);
     }
 
     /**
@@ -292,8 +314,9 @@ public class Course {
      * @param width  ellipse width in grid size
      * @param height ellipse height in grid size
      * @param color  color of the ellipse
+     * @return
      */
-    private void addEllipse(Scene scene, int col, int row, int width, int height, Color color) {
+    private Ellipse addEllipse(Scene scene, int col, int row, int width, int height, Color color) {
         Ellipse ellipse = new Ellipse();
         ellipse.setFill(color);
 
@@ -311,6 +334,7 @@ public class Course {
         );
 
         container.getChildren().add(ellipse);
+        return ellipse;
     }
 
     /**
@@ -321,6 +345,7 @@ public class Course {
      */
     private void addPolygon(Scene scene, int... coords) {
         Polygon poly = new Polygon();
+
         container.getChildren().add(poly);
 
         // Bind each point dynamically
@@ -343,6 +368,8 @@ public class Course {
         }
 
         poly.setFill(Color.rgb(124, 63, 0)); // wall color
+        poly.setUserData(WALL);
+        obstacles.add(poly);
     }
 
     /**
@@ -358,12 +385,16 @@ public class Course {
         int trunkHeight = 1;
 
 
-        addRect(scene, col, row, trunkWidth, trunkHeight, Color.rgb(124, 63, 0)); // brown trunk
+        Rectangle rect = addRect(scene, col, row, trunkWidth, trunkHeight, Color.rgb(124, 63, 0)); // brown trunk
+        rect.setUserData(WALL);
+        obstacles.add(rect);
 
         // Canopy as triangle (polygon)
         int canopyWidth = 3;
         int canopyHeight = 2;
         Polygon canopy = new Polygon();
+
+
 
 
         // Coordinates of triangle in grid coordinates
@@ -402,6 +433,10 @@ public class Course {
 
         canopy.setFill(Color.rgb(34, 139, 34)); // green color
         container.getChildren().add(canopy);
+        canopy.setUserData(WALL);
+        obstacles.add(canopy);
+
+
     }
 
     /**
@@ -437,6 +472,85 @@ public class Course {
             container.getChildren().add(hLine);
         }
     }
+
+    /**
+     * Binds rect to grid for resizing
+     */
+    private void bindGrid(Rectangle rect, Scene scene, int col, int row, int width, int height) {
+        rect.xProperty().bind(scene.widthProperty().divide(COLS).multiply(col));
+        rect.yProperty().bind(scene.heightProperty().divide(ROWS).multiply(row));
+        rect.widthProperty().bind(scene.widthProperty().divide(COLS).multiply(width));
+        rect.heightProperty().bind(scene.heightProperty().divide(ROWS).multiply(height));
+    }
+    /**
+     * Updates the gridlist for distance calculation
+     */
+    public void updateGridFromList() {
+        if (container.getWidth() <= 0 || container.getHeight() <= 0) return;
+
+        // Wir berechnen die Faktoren einmal vorab
+        double cellW = container.getWidth() / COLS;
+        double cellH = container.getHeight() / ROWS;
+
+        for(int i=0; i<COLS; i++) for(int j=0; j<ROWS; j++) grid[i][j] = EMPTY;
+
+        for (Shape s : obstacles) {
+            Integer type = (Integer) s.getUserData();
+            if (type == null) continue;
+
+            // WICHTIG: Bounds im lokalen System des Containers holen
+            Bounds b = s.getBoundsInParent();
+
+            // Umrechnung mit Math.floor/round, um "Schwimmen" zu verhindern
+            int startCol = (int) Math.round(b.getMinX() / cellW);
+            int endCol   = (int) Math.round((b.getMinX() + b.getWidth()) / cellW) - 1;
+            int startRow = (int) Math.round(b.getMinY() / cellH);
+            int endRow   = (int) Math.round((b.getMinY() + b.getHeight()) / cellH) - 1;
+
+            for (int c = startCol; c <= endCol; c++) {
+                for (int r = startRow; r <= endRow; r++) {
+                    if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
+                        grid[c][r] = type;
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates a visible grid to test gridlist
+     *
+     */
+    public void debugViewGrid() {
+        double cellW = container.getWidth() / COLS;
+        double cellH = container.getHeight() / ROWS;
+
+        for (int c = 0; c < COLS; c++) {
+            for (int r = 0; r < ROWS; r++) {
+                // Innerhalb der Schleifen in toggleDebugView:
+                if (grid[c][r] != EMPTY) {
+                    // Quadrat erstellen
+                    Rectangle rect = new Rectangle(c * cellW, r * cellH, cellW, cellH);
+
+                    // Alles Schwarz (mit leichter Transparenz, damit man das Original noch sieht)
+                    rect.setFill(Color.rgb(0, 0, 0, 0.8));
+
+                    // Weißer Rahmen, um die Gitterzellen zu trennen
+                    rect.setStroke(Color.WHITE);
+                    rect.setStrokeWidth(0.5);
+
+                    rect.setMouseTransparent(true);
+
+                    container.getChildren().add(rect);
+
+                }
+            }
+        }
+    }
+
+    public int[][] getGrid() { return grid;}
+
+
 
 
 }

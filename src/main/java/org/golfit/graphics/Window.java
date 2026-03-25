@@ -29,6 +29,11 @@ public class Window extends Application {
         stage.setTitle("Golfit");
         stage.setScene(scene);
         stage.show();
+        Course course = game.getCourse();
+        course.updateGridFromList();
+        course.getGrid();
+        course.debugViewGrid();
+
     }
 
 

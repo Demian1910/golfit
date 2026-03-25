@@ -25,4 +25,5 @@ public class Game {
     public Pane getRoot() {
         return root;
     }
+    public Course getCourse(){return course;}
 }
