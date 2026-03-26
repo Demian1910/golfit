@@ -25,7 +25,7 @@ public class Course {
     private static final int BOUNCE = 5;
     private static final int SWITCH = 6;
 
-    public int[][] grid = new int[COLS][ROWS];
+
 
     public List<Shape> obstacles = new ArrayList<>();
     public Shape[][] shapeGrid = new Shape[COLS][ROWS];
@@ -486,32 +486,29 @@ public class Course {
      * Updates the gridlist for distance calculation
      */
     public void updateGridFromList() {
-        // Beides leeren
-        for(int i=0; i<COLS; i++) {
-            for(int j=0; j<ROWS; j++) {
-                grid[i][j] = EMPTY;
-                shapeGrid[i][j] = null; // Wichtig: alte Referenzen löschen
+        // 1. Grid leeren (alle Referenzen auf null setzen)
+        for (int i = 0; i < COLS; i++) {
+            for (int j = 0; j < ROWS; j++) {
+                shapeGrid[i][j] = null;
             }
         }
 
+        // 2. Alle Hindernisse "einstempeln"
         for (Shape s : obstacles) {
-            Integer type = (Integer) s.getUserData();
             Bounds b = s.getBoundsInParent();
-
             double cellW = container.getWidth() / COLS;
             double cellH = container.getHeight() / ROWS;
 
-            int startCol = (int) Math.floor(b.getMinX() / cellW);
-            int endCol   = (int) Math.ceil(b.getMaxX() / cellW) - 1;
-            int startRow = (int) Math.floor(b.getMinY() / cellH);
-            int endRow   = (int) Math.ceil(b.getMaxY() / cellH) - 1;
+            // Start- und Endpunkte im Raster berechnen
+            int startCol = (int) Math.max(0, Math.floor(b.getMinX() / cellW));
+            int endCol   = (int) Math.min(COLS - 1, Math.ceil(b.getMaxX() / cellW) - 1);
+            int startRow = (int) Math.max(0, Math.floor(b.getMinY() / cellH));
+            int endRow   = (int) Math.min(ROWS - 1, Math.ceil(b.getMaxY() / cellH) - 1);
 
             for (int c = startCol; c <= endCol; c++) {
                 for (int r = startRow; r <= endRow; r++) {
-                    if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
-                        grid[c][r] = (type != null) ? type : WALL;
-                        shapeGrid[c][r] = s; // <--- HIER wird die Verbindung gespeichert!
-                    }
+                    // Die Referenz auf das Shape in die Zelle schreiben
+                    shapeGrid[c][r] = s;
                 }
             }
         }
@@ -528,7 +525,7 @@ public class Course {
         for (int c = 0; c < COLS; c++) {
             for (int r = 0; r < ROWS; r++) {
                 // Innerhalb der Schleifen in toggleDebugView:
-                if (grid[c][r] != EMPTY) {
+                if (shapeGrid[c][r] == null) {
                     // Quadrat erstellen
                     Rectangle rect = new Rectangle(c * cellW, r * cellH, cellW, cellH);
 
@@ -563,7 +560,7 @@ public class Course {
         }
     }
 
-    public int[][] getGrid() { return grid;}
+    public Shape[][] getGrid() { return shapeGrid;}
 
 
 
