@@ -28,7 +28,7 @@ public class Course {
     public int[][] grid = new int[COLS][ROWS];
 
     public List<Shape> obstacles = new ArrayList<>();
-
+    public Shape[][] shapeGrid = new Shape[COLS][ROWS];
 
     public Course(Scene scene) {
 
@@ -486,31 +486,31 @@ public class Course {
      * Updates the gridlist for distance calculation
      */
     public void updateGridFromList() {
-        if (container.getWidth() <= 0 || container.getHeight() <= 0) return;
-
-        // Wir berechnen die Faktoren einmal vorab
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
-
-        for(int i=0; i<COLS; i++) for(int j=0; j<ROWS; j++) grid[i][j] = EMPTY;
+        // Beides leeren
+        for(int i=0; i<COLS; i++) {
+            for(int j=0; j<ROWS; j++) {
+                grid[i][j] = EMPTY;
+                shapeGrid[i][j] = null; // Wichtig: alte Referenzen löschen
+            }
+        }
 
         for (Shape s : obstacles) {
             Integer type = (Integer) s.getUserData();
-            if (type == null) continue;
-
-            // WICHTIG: Bounds im lokalen System des Containers holen
             Bounds b = s.getBoundsInParent();
 
-            // Umrechnung mit Math.floor/round, um "Schwimmen" zu verhindern
-            int startCol = (int) Math.round(b.getMinX() / cellW);
-            int endCol   = (int) Math.round((b.getMinX() + b.getWidth()) / cellW) - 1;
-            int startRow = (int) Math.round(b.getMinY() / cellH);
-            int endRow   = (int) Math.round((b.getMinY() + b.getHeight()) / cellH) - 1;
+            double cellW = container.getWidth() / COLS;
+            double cellH = container.getHeight() / ROWS;
+
+            int startCol = (int) Math.floor(b.getMinX() / cellW);
+            int endCol   = (int) Math.ceil(b.getMaxX() / cellW) - 1;
+            int startRow = (int) Math.floor(b.getMinY() / cellH);
+            int endRow   = (int) Math.ceil(b.getMaxY() / cellH) - 1;
 
             for (int c = startCol; c <= endCol; c++) {
                 for (int r = startRow; r <= endRow; r++) {
                     if (c >= 0 && c < COLS && r >= 0 && r < ROWS) {
-                        grid[c][r] = type;
+                        grid[c][r] = (type != null) ? type : WALL;
+                        shapeGrid[c][r] = s; // <--- HIER wird die Verbindung gespeichert!
                     }
                 }
             }
@@ -545,6 +545,21 @@ public class Course {
 
                 }
             }
+        }
+    }
+
+    public void printShapeGrid() {
+        System.out.println("--- ShapeGrid Analyse ---");
+        for (int r = 0; r < ROWS; r++) {
+            StringBuilder rowString = new StringBuilder();
+            for (int c = 0; c < COLS; c++) {
+                if (shapeGrid[c][r] != null) {
+                    rowString.append("X"); // Hier liegt ein Objekt
+                } else {
+                    rowString.append("."); // Hier ist leer
+                }
+            }
+            System.out.println(rowString.toString());
         }
     }
 

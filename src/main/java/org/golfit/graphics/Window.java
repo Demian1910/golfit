@@ -31,8 +31,10 @@ public class Window extends Application {
         stage.show();
         Course course = game.getCourse();
         course.updateGridFromList();
-        course.getGrid();
+
+
         course.debugViewGrid();
+        course.printShapeGrid();
 
     }
 

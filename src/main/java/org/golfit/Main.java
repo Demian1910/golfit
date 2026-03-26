@@ -12,16 +12,15 @@ public class Main  {
     public static Client currentClient;
 
     public static void main(String[] args) throws Exception {
-        /*
-        To display the window, uncomment and run Main
+
+        /* uncomment to view window
         try {
         Application.launch(Window.class, args);
         } catch (RuntimeException e) {
 
             throw new RuntimeException(e);
         }
-
-         */
+        */
         if (args.length == 0) {
             printUsage();
             return;
