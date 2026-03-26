@@ -33,6 +33,8 @@ public class Course {
     public Course(Scene scene) {
 
         container = new Pane();
+        container.widthProperty().addListener((obs, oldVal, newVal) -> updateGridFromList());
+        container.heightProperty().addListener((obs, oldVal, newVal) -> updateGridFromList());
 
         // Background
         addRect(scene, 0, 0, COURSE_COLS, ROWS, backgroundColor);
@@ -343,33 +345,37 @@ public class Course {
      * @param scene  the JavaFX scene to add the object to
      * @param coords coordinates of the polygon points
      */
-    private void addPolygon(Scene scene, int... coords) {
+    private void addPolygon(Scene scene, double... coords) {
         Polygon poly = new Polygon();
-
-        container.getChildren().add(poly);
 
         // Bind each point dynamically
         for (int i = 0; i < coords.length; i += 2) {
-            int col = coords[i];
-            int row = coords[i + 1];
+            final int index = i;
+            double gridX = coords[i];
+            double gridY = coords[i + 1];
 
-            final int index = i; // <-- make a final copy
+            // Wir fügen Initialwerte hinzu
+            poly.getPoints().addAll(0.0, 0.0);
 
-            javafx.beans.property.DoubleProperty xProp = new javafx.beans.property.SimpleDoubleProperty();
-            javafx.beans.property.DoubleProperty yProp = new javafx.beans.property.SimpleDoubleProperty();
+            // X-Koordinate binden
+            scene.widthProperty().addListener((obs, oldVal, newVal) ->
+                    poly.getPoints().set(index, newVal.doubleValue() / COLS * gridX));
 
-            xProp.bind(scene.widthProperty().divide(COLS).multiply(col));
-            yProp.bind(scene.heightProperty().divide(ROWS).multiply(row));
+            // Y-Koordinate binden
+            scene.heightProperty().addListener((obs, oldVal, newVal) ->
+                    poly.getPoints().set(index + 1, newVal.doubleValue() / ROWS * gridY));
 
-            poly.getPoints().addAll(xProp.get(), yProp.get());
-
-            xProp.addListener((obs, oldVal, newVal) -> poly.getPoints().set(index, newVal.doubleValue()));
-            yProp.addListener((obs, oldVal, newVal) -> poly.getPoints().set(index + 1, newVal.doubleValue()));
+            // Sofort berechnen für den aktuellen Stand
+            if (scene.getWidth() > 0) {
+                poly.getPoints().set(index, scene.getWidth() / COLS * gridX);
+                poly.getPoints().set(index + 1, scene.getHeight() / ROWS * gridY);
+            }
         }
 
-        poly.setFill(Color.rgb(124, 63, 0)); // wall color
+        poly.setFill(Color.rgb(124, 63, 0)); // Standardfarbe
         poly.setUserData(WALL);
         obstacles.add(poly);
+        container.getChildren().add(poly);
     }
 
     /**
@@ -380,63 +386,30 @@ public class Course {
      * @param row   the row of the position
      */
     private void addTree(Scene scene, int col, int row) {
-        // Trunk
-        int trunkWidth = 1;
-        int trunkHeight = 1;
+        // 1. Stamm
+        addWall(scene, col, row, 1, 1);
 
+        // 2. Krone Maße
+        double canopyWidth = 3.0;
+        double canopyHeight = 2.0;
 
-        Rectangle rect = addRect(scene, col, row, trunkWidth, trunkHeight, Color.rgb(124, 63, 0)); // brown trunk
-        rect.setUserData(WALL);
-        obstacles.add(rect);
+        // Präzise Koordinaten berechnen
+        double leftX   = col - canopyWidth / 2.0 + 0.5;
+        double rightX  = col + canopyWidth / 2.0 + 0.5;
+        double centerX = col + 0.5;
+        double bottomY = row;
+        double topY    = row - canopyHeight;
 
-        // Canopy as triangle (polygon)
-        int canopyWidth = 3;
-        int canopyHeight = 2;
-        Polygon canopy = new Polygon();
-
-
-
-
-        // Coordinates of triangle in grid coordinates
-        double leftX = col - canopyWidth / 2.0 + trunkWidth / 2.0;
-        double rightX = col + canopyWidth / 2.0 + trunkWidth / 2.0;
-        double topX = col + trunkWidth / 2.0;
-
-        int topRow = row - canopyHeight;
-
-        // Bind polygon points to scene width/height
-        javafx.beans.property.DoubleProperty leftXProp = new javafx.beans.property.SimpleDoubleProperty();
-        javafx.beans.property.DoubleProperty rightXProp = new javafx.beans.property.SimpleDoubleProperty();
-        javafx.beans.property.DoubleProperty topXProp = new javafx.beans.property.SimpleDoubleProperty();
-        javafx.beans.property.DoubleProperty topYProp = new javafx.beans.property.SimpleDoubleProperty();
-        javafx.beans.property.DoubleProperty bottomYProp = new javafx.beans.property.SimpleDoubleProperty();
-
-        leftXProp.bind(scene.widthProperty().divide(COLS).multiply(leftX));
-        rightXProp.bind(scene.widthProperty().divide(COLS).multiply(rightX));
-        topXProp.bind(scene.widthProperty().divide(COLS).multiply(topX));
-        topYProp.bind(scene.heightProperty().divide(ROWS).multiply(topRow));
-        bottomYProp.bind(scene.heightProperty().divide(ROWS).multiply(row));
-
-        canopy.getPoints().addAll(
-                leftXProp.get(), bottomYProp.get(),
-                rightXProp.get(), bottomYProp.get(),
-                topXProp.get(), topYProp.get()
+        // 3. Krone hinzufügen
+        addPolygon(scene,
+                leftX, bottomY,   // Punkt unten links
+                rightX, bottomY,  // Punkt unten rechts
+                centerX, topY     // Punkt oben mitte
         );
 
-        // Add listeners to scale polygon on resize
-        leftXProp.addListener((obs, oldVal, newVal) -> canopy.getPoints().set(0, newVal.doubleValue()));
-        bottomYProp.addListener((obs, oldVal, newVal) -> canopy.getPoints().set(1, newVal.doubleValue()));
-        rightXProp.addListener((obs, oldVal, newVal) -> canopy.getPoints().set(2, newVal.doubleValue()));
-        bottomYProp.addListener((obs, oldVal, newVal) -> canopy.getPoints().set(3, newVal.doubleValue()));
-        topXProp.addListener((obs, oldVal, newVal) -> canopy.getPoints().set(4, newVal.doubleValue()));
-        topYProp.addListener((obs, oldVal, newVal) -> canopy.getPoints().set(5, newVal.doubleValue()));
-
-        canopy.setFill(Color.rgb(34, 139, 34)); // green color
-        container.getChildren().add(canopy);
-        canopy.setUserData(WALL);
-        obstacles.add(canopy);
-
-
+        // Letztes hinzugefügtes Shape ist die Krone -> Farbe anpassen
+        Shape canopy = obstacles.get(obstacles.size() - 1);
+        canopy.setFill(Color.FORESTGREEN);
     }
 
     /**
@@ -481,34 +454,42 @@ public class Course {
         rect.yProperty().bind(scene.heightProperty().divide(ROWS).multiply(row));
         rect.widthProperty().bind(scene.widthProperty().divide(COLS).multiply(width));
         rect.heightProperty().bind(scene.heightProperty().divide(ROWS).multiply(height));
+        // In deiner start-Methode oder im Konstruktor:
+
     }
     /**
      * Updates the gridlist for distance calculation
      */
     public void updateGridFromList() {
-        // 1. Grid leeren (alle Referenzen auf null setzen)
+        double cellW = container.getWidth() / COLS;
+        double cellH = container.getHeight() / ROWS;
+
+        if (cellW <= 0 || cellH <= 0) return;
+
         for (int i = 0; i < COLS; i++) {
             for (int j = 0; j < ROWS; j++) {
                 shapeGrid[i][j] = null;
             }
         }
 
-        // 2. Alle Hindernisse "einstempeln"
         for (Shape s : obstacles) {
             Bounds b = s.getBoundsInParent();
-            double cellW = container.getWidth() / COLS;
-            double cellH = container.getHeight() / ROWS;
 
-            // Start- und Endpunkte im Raster berechnen
-            int startCol = (int) Math.max(0, Math.floor(b.getMinX() / cellW));
-            int endCol   = (int) Math.min(COLS - 1, Math.ceil(b.getMaxX() / cellW) - 1);
-            int startRow = (int) Math.max(0, Math.floor(b.getMinY() / cellH));
-            int endRow   = (int) Math.min(ROWS - 1, Math.ceil(b.getMaxY() / cellH) - 1);
+            int startCol = (int) Math.max(0, Math.floor((b.getMinX() + 0.1) / cellW));
+            int endCol   = (int) Math.min(COLS - 1, Math.floor((b.getMaxX() - 0.1) / cellW));
+            int startRow = (int) Math.max(0, Math.floor((b.getMinY() + 0.1) / cellH));
+            int endRow   = (int) Math.min(ROWS - 1, Math.floor((b.getMaxY() - 0.1) / cellH));
 
             for (int c = startCol; c <= endCol; c++) {
                 for (int r = startRow; r <= endRow; r++) {
-                    // Die Referenz auf das Shape in die Zelle schreiben
-                    shapeGrid[c][r] = s;
+                    // NEU: Berechne den Mittelpunkt dieser Zelle in Pixeln
+                    double centerX = (c + 0.5) * cellW;
+                    double centerY = (r + 0.5) * cellH;
+
+                    // Prüfe, ob dieser Punkt WIRKLICH innerhalb des Shapes liegt
+                    if (s.contains(centerX, centerY)) {
+                        shapeGrid[c][r] = s;
+                    }
                 }
             }
         }
@@ -518,28 +499,37 @@ public class Course {
      * Creates a visible grid to test gridlist
      *
      */
+    // Liste oben in der Klasse definieren, um die Kästchen wieder löschen zu können
+    private List<Rectangle> debugShapes = new ArrayList<>();
+
     public void debugViewGrid() {
+        // 1. Alte Debug-Shapes entfernen, bevor neue gezeichnet werden
+        container.getChildren().removeAll(debugShapes);
+        debugShapes.clear();
+
         double cellW = container.getWidth() / COLS;
         double cellH = container.getHeight() / ROWS;
 
         for (int c = 0; c < COLS; c++) {
             for (int r = 0; r < ROWS; r++) {
-                // Innerhalb der Schleifen in toggleDebugView:
-                if (shapeGrid[c][r] == null) {
-                    // Quadrat erstellen
+                // WICHTIG: Prüfen, ob ein Objekt EXISTIERT ( != null )
+                if (shapeGrid[c][r] != null) {
+                    System.out.println("Zelle " + c + "/" + r + " belegt durch: " + shapeGrid[c][r].getUserData());
+
                     Rectangle rect = new Rectangle(c * cellW, r * cellH, cellW, cellH);
 
-                    // Alles Schwarz (mit leichter Transparenz, damit man das Original noch sieht)
+                    // Schwarz für belegte Zellen
                     rect.setFill(Color.rgb(0, 0, 0, 0.8));
 
-                    // Weißer Rahmen, um die Gitterzellen zu trennen
+                    // Weißer Rahmen zur Abgrenzung
                     rect.setStroke(Color.WHITE);
                     rect.setStrokeWidth(0.5);
 
+                    // Damit der Ball nicht gegen die Debug-Kästchen prallt
                     rect.setMouseTransparent(true);
 
+                    debugShapes.add(rect);
                     container.getChildren().add(rect);
-
                 }
             }
         }

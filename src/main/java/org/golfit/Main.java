@@ -13,14 +13,16 @@ public class Main  {
 
     public static void main(String[] args) throws Exception {
 
-        /* uncomment to view window
+        /* uncomment for window
         try {
         Application.launch(Window.class, args);
         } catch (RuntimeException e) {
 
             throw new RuntimeException(e);
         }
-        */
+
+         */
+
         if (args.length == 0) {
             printUsage();
             return;
