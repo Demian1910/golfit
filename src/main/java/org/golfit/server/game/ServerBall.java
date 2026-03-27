@@ -1,6 +1,12 @@
 package org.golfit.server.game;
 
 import org.golfit.shared.constants.Constants;
+import org.golfit.shared.constants.MapData;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 import static org.golfit.shared.constants.Constants.GRASS_FRICTION;
 
@@ -48,8 +54,40 @@ public class ServerBall {
         px += vx * deltaTime;
         py += vy * deltaTime;
     }
-    public void collectNearbyShapes(double ballX, double Y){
+    /**
+     Gathers all nearby shapes
+     * @return A list of all shapes in specified area
+     */
+    public List<MapData.ServerShape> getNearbyShapes(double worldX, double worldY, double searchRadius) {
+        List<MapData.ServerShape> nearbyShapes = new ArrayList<>();
 
+        // Set um zu verhindern, dass dasselbe Shape mehrfach
+        // hinzugefügt wird, wenn es über mehrere Kacheln geht.
+        Set<Integer> foundIds = new HashSet<>();
+
+        // Bereich berechnen (Bounding Box im Grid)
+        int startCol = (int) Math.max(0, Math.floor(worldX - searchRadius));
+        int endCol   = (int) Math.min(MapData.COLS - 1, (int) Math.floor(worldX + searchRadius));
+        int startRow = (int) Math.max(0, Math.floor(worldY - searchRadius));
+        int endRow   = (int) Math.min(MapData.ROWS - 1, (int) Math.floor(worldY + searchRadius));
+
+        // Nur in diesem kleinen Quadrat im ID-Grid suchen
+        for (int r = startRow; r <= endRow; r++) {
+            for (int c = startCol; c <= endCol; c++) {
+
+                int id = MapData.SHAPE_ID_MAP[r][c];
+
+                // Wenn eine gültige ID gefunden wurde, die wir noch nicht im Set haben
+                if (id != -1 && !foundIds.contains(id)) {
+                    // Shape aus der zentralen Liste holen
+                    MapData.ServerShape ss = MapData.LEVEL_1_OBSTACLES.get(id);
+                    nearbyShapes.add(ss);
+                    foundIds.add(id);
+                }
+            }
+        }
+
+        return nearbyShapes;
     }
 
     public double getPx() {

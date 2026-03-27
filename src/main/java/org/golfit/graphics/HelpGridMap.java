@@ -7,192 +7,181 @@ import javafx.scene.shape.Ellipse;
 import javafx.scene.shape.Shape;
 import javafx.scene.shape.Polygon;
 import javafx.scene.shape.Rectangle;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 import org.golfit.shared.constants.MapData;
 
 import java.util.ArrayList;
 import java.util.List;
 
 public class HelpGridMap {
-    public List<Shape> obstacles = new ArrayList<>();
-    List<MapData.ServerShape> serverShapeList = MapData.LEVEL_1_OBSTACLES;
     private static final int EMPTY = 0;
-    private static final int WALL  = 1;
-    private static final int SAND  = 2;
-    private static final int ICE   = 3;
-    private static final int WATER = 4;
-    private static final int BOUNCE = 5;
-    private static final int SWITCH = 6;
     private static final int COLS = 80;
     private static final int ROWS = 45;
-    private static final int COURSE_COLS = 65;
-    int[][] grid;
-    Pane container;
-    Course course;
 
-    public HelpGridMap(Course course ){
+    private List<Shape> obstacles;
+    private int[][] grid;    // Für Terrain (SERVER_MAP[45][80])
+    private int[][] idGrid;  // Für IDs (SHAPE_ID_MAP[45][80])
+    private Pane container;
+    private List<MapData.ServerShape> serverShapeList = MapData.LEVEL_1_OBSTACLES;
+
+    public HelpGridMap(Course course) {
         this.container = course.getPane();
-        this.course = course;
         this.obstacles = course.getObstacles();
-        this.grid = MapData.SERVER_MAP;
+        // Initialisierung passend zu deiner MapData Struktur [row][col]
+        this.grid = new int[ROWS][COLS];
+        this.idGrid = new int[ROWS][COLS];
     }
 
-    public void updateGridFromList() {
+    public void updateGrids() {
         if (container.getWidth() <= 0 || container.getHeight() <= 0) return;
 
         double cellW = container.getWidth() / COLS;
         double cellH = container.getHeight() / ROWS;
 
-        // 1. Grid leeren
-        for (int i = 0; i < COLS; i++) {
-            for (int j = 0; j < ROWS; j++) {
-                grid[i][j] = EMPTY;
+        // Grids leeren
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                grid[r][c] = EMPTY;
+                idGrid[r][c] = -1;
             }
         }
 
-        // 2. Shapes prüfen
-        for (Shape s : obstacles) {
-            Object userData = s.getUserData();
-            if (!(userData instanceof Integer)) continue;
-            int type = (int) userData;
+        for (int i = 0; i < obstacles.size(); i++) {
+            Shape s = obstacles.get(i);
+            Integer type = (Integer) s.getUserData();
+            if (type == null) continue;
 
             Bounds b = s.getBoundsInParent();
 
-            // Grobe Vorauswahl der betroffenen Zellen
+            // Sicherheits-Begrenzung (Clamping), um Index 45 zu verhindern
             int startCol = (int) Math.max(0, Math.floor(b.getMinX() / cellW));
-            int endCol   = (int) Math.min(COLS - 1, Math.floor(b.getMaxX() / cellW));
+            int endCol   = (int) Math.min(COLS - 1, (int) Math.floor((b.getMaxX() - 0.01) / cellW));
             int startRow = (int) Math.max(0, Math.floor(b.getMinY() / cellH));
-            int endRow   = (int) Math.min(ROWS - 1, Math.floor(b.getMaxY() / cellH));
+            int endRow   = (int) Math.min(ROWS - 1, (int) Math.floor((b.getMaxY() - 0.01) / cellH));
 
-            for (int c = startCol; c <= endCol; c++) {
-                for (int r = startRow; r <= endRow; r++) {
-                    // Mittelpunkt der Gitterzelle in Pixeln
+            for (int r = startRow; r <= endRow; r++) {
+                for (int c = startCol; c <= endCol; c++) {
                     double px = (c + 0.5) * cellW;
                     double py = (r + 0.5) * cellH;
 
-                    // WICHTIG: sceneToLocal konvertiert den Pixel-Punkt in das
-                    // lokale System des Shapes (inklusive Scale-Transformation)
+                    // Nutzt sceneToLocal für skalierte Polygone
                     if (s.contains(s.sceneToLocal(px, py))) {
-                        grid[c][r] = type;
+                        grid[r][c] = type;
+                        idGrid[r][c] = i; // i ist der Index in der Liste
                     }
                 }
             }
         }
     }
+
     public void debugViewGrid() {
+        container.getChildren().removeIf(node -> "DEBUG_GRID".equals(node.getUserData()));
         double cellW = container.getWidth() / COLS;
         double cellH = container.getHeight() / ROWS;
 
-        for (int c = 0; c < COLS-1; c++) {
-            for (int r = 0; r < 45; r++) {
-                // Innerhalb der Schleifen in toggleDebugView:
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
                 if (grid[r][c] != EMPTY) {
-                    // Quadrat erstellen
                     Rectangle rect = new Rectangle(c * cellW, r * cellH, cellW, cellH);
-
-                    // Alles Schwarz (mit leichter Transparenz, damit man das Original noch sieht)
-                    rect.setFill(Color.rgb(0, 0, 0, 0.8));
-
-                    // Weißer Rahmen, um die Gitterzellen zu trennen
+                    rect.setFill(Color.rgb(0, 0, 0, 0.6));
                     rect.setStroke(Color.WHITE);
                     rect.setStrokeWidth(0.5);
-
                     rect.setMouseTransparent(true);
-
+                    rect.setUserData("DEBUG_GRID");
                     container.getChildren().add(rect);
-
                 }
             }
         }
     }
-    public void printHardcodedArray() {
-        System.out.println("public static final int[][] SERVER_MAP = {");
-        for (int r = 0; r < ROWS; r++) {
-            System.out.print("    {");
-            for (int c = 0; c < COLS; c++) {
-                System.out.print(grid[c][r] + (c < COLS - 1 ? ", " : ""));
-            }
-            System.out.println("}" + (r < ROWS - 1 ? "," : ""));
-        }
-        System.out.println("};");
-    }
 
-    public void printServerShapes() {
+    public void printServerData() {
         double cellW = container.getWidth() / COLS;
         double cellH = container.getHeight() / ROWS;
 
+        // 1. Export der LEVEL_1_OBSTACLES Liste
         System.out.println("public static final List<ServerShape> LEVEL_1_OBSTACLES = List.of(");
-
         for (int i = 0; i < obstacles.size(); i++) {
             Shape s = obstacles.get(i);
             int terrain = (int) s.getUserData();
             String line = "";
 
             if (s instanceof Rectangle r) {
-                // Rechtecke nutzen X/Y Properties -> müssen normalisiert werden
-                line = String.format("    new ServerShape(%d, ServerShape.RECT, %.4f, %.4f, %.4f, %.4f)",
-                        terrain, r.getX() / cellW, r.getY() / cellH, r.getWidth() / cellW, r.getHeight() / cellH);
-            }
-            else if (s instanceof Ellipse e) {
+                line = String.format("    new ServerShape(%d, %d, ServerShape.RECT, %.4f, %.4f, %.4f, %.4f)",
+                        i, terrain, r.getX() / cellW, r.getY() / cellH, r.getWidth() / cellW, r.getHeight() / cellH);
+            } else if (s instanceof Ellipse e) {
                 double x = (e.getCenterX() - e.getRadiusX()) / cellW;
                 double y = (e.getCenterY() - e.getRadiusY()) / cellH;
                 double w = (e.getRadiusX() * 2) / cellW;
                 double h = (e.getRadiusY() * 2) / cellH;
-                line = String.format("    new ServerShape(%d, ServerShape.ELLIPSE, %.4f, %.4f, %.4f, %.4f)",
-                        terrain, x, y, w, h);
-            }
-            else if (s instanceof Polygon p) {
+                line = String.format("    new ServerShape(%d, %d, ServerShape.ELLIPSE, %.4f, %.4f, %.4f, %.4f)",
+                        i, terrain, x, y, w, h);
+            } else if (s instanceof Polygon p) {
                 StringBuilder pts = new StringBuilder("new double[]{");
                 for (int j = 0; j < p.getPoints().size(); j++) {
-                    // Polygon-Punkte sind bei dir bereits im Grid-Format (z.B. 1.0, 15.0)
-                    // Daher hier KEINE Division mehr nötig!
-                    double val = p.getPoints().get(j);
-                    pts.append(String.format("%.2f", val));
+                    pts.append(String.format("%.2f", p.getPoints().get(j)));
                     if (j < p.getPoints().size() - 1) pts.append(", ");
                 }
                 pts.append("}");
-                line = String.format("    new ServerShape(%d, ServerShape.POLYGON, %s)",
-                        terrain, pts.toString());
+                line = String.format("    new ServerShape(%d, %d, %s)", i, terrain, pts.toString());
             }
-
-            if (!line.isEmpty()) {
-                System.out.print(line + (i < obstacles.size() - 1 ? ",\n" : "\n"));
-            }
+            System.out.print(line + (i < obstacles.size() - 1 ? ",\n" : "\n"));
         }
-        System.out.println(");");
+        System.out.println(");\n");
+
+        // 2. Grids drucken [r][c]
+        printGridExport("SERVER_MAP", grid);
+        printGridExport("SHAPE_ID_MAP", idGrid);
     }
 
-    public void verifyServerData() {
-        // Alte rote Testrahmen entfernen
-        container.getChildren().removeIf(node -> "VERIFY".equals(node.getUserData()));
+    private void printGridExport(String varName, int[][] targetGrid) {
+        System.out.println("public static final int[][] " + varName + " = {");
+        for (int r = 0; r < ROWS; r++) {
+            System.out.print("    {");
+            for (int c = 0; c < COLS; c++) {
+                System.out.print(targetGrid[r][c] + (c < COLS - 1 ? ", " : ""));
+            }
+            System.out.println("}" + (r < ROWS - 1 ? "," : ""));
+        }
+        System.out.println("};");
+    }
+    public void verifyIdMapping() {
+        // 1. Alte Test-Elemente (Kacheln und Text) entfernen
+        container.getChildren().removeIf(node -> "ID_VERIFY".equals(node.getUserData()));
 
         double cellW = container.getWidth() / COLS;
         double cellH = container.getHeight() / ROWS;
 
-        for (MapData.ServerShape ss : serverShapeList) {
-            Shape debugShape;
-            if (ss.formType == MapData.ServerShape.RECT || ss.formType == MapData.ServerShape.ELLIPSE) {
-                Rectangle r = new Rectangle(ss.x * cellW, ss.y * cellH, ss.w * cellW, ss.h * cellH);
-                if (ss.formType == MapData.ServerShape.ELLIPSE) {
-                    r.setArcWidth(ss.w * cellW);
-                    r.setArcHeight(ss.h * cellH);
-                }
-                debugShape = r;
-            } else {
-                double[] scaledPoints = new double[ss.points.length];
-                for (int i = 0; i < ss.points.length; i++) {
-                    scaledPoints[i] = ss.points[i] * (i % 2 == 0 ? cellW : cellH);
-                }
-                debugShape = new Polygon(scaledPoints);
-            }
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                int id = idGrid[r][c];
 
-            debugShape.setStroke(Color.RED);
-            debugShape.setStrokeWidth(1.5);
-            debugShape.getStrokeDashArray().addAll(5.0, 5.0); // Gestrichelt für bessere Sichtbarkeit
-            debugShape.setFill(Color.rgb(255, 0, 0, 0.15));
-            debugShape.setMouseTransparent(true);
-            debugShape.setUserData("VERIFY");
-            container.getChildren().add(debugShape);
+                if (id != -1) {
+                    // 2. Hintergrund-Rechteck (Farbe pro ID)
+                    Rectangle debugTile = new Rectangle(c * cellW, r * cellH, cellW, cellH);
+                    int colorHash = Integer.hashCode(id) * 0x45d9f3b;
+                    debugTile.setFill(Color.hsb((colorHash % 360 + 360) % 360, 0.5, 0.9, 0.3));
+                    debugTile.setStroke(Color.web("white", 0.2));
+                    debugTile.setStrokeWidth(0.5);
+                    debugTile.setUserData("ID_VERIFY");
+                    debugTile.setMouseTransparent(true);
+                    container.getChildren().add(debugTile);
+
+                    // 3. Text-ID direkt in die Zelle
+                    javafx.scene.text.Text t = new javafx.scene.text.Text(String.valueOf(id));
+                    // Positionierung: Mitte der Zelle
+                    t.setX(c * cellW + (cellW / 4));
+                    t.setY(r * cellH + (cellH / 1.5));
+
+                    t.setFont(new javafx.scene.text.Font("Arial", 7)); // Sehr klein
+                    t.setFill(Color.WHITE);
+                    t.setUserData("ID_VERIFY");
+                    t.setMouseTransparent(true);
+                    t.setManaged(false); // Wichtig für Performance!
+
+                    container.getChildren().add(t);
+                }
+            }
         }
     }
-
 }
