@@ -4,6 +4,9 @@ import javafx.application.Application;
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
+import org.golfit.shared.constants.MapData;
+
+import java.util.List;
 
 
 public class Window extends Application {
@@ -33,11 +36,14 @@ public class Window extends Application {
         Course course = game.getCourse();
 
 
-        course.updateGridFromList();
+        // Run once for MapData
+         HelpGridMap helpGridMap = new HelpGridMap(course);
+        //helpGridMap.updateGridFromList();
+        //helpGridMap.printHardcodedArray();
+        //helpGridMap.printServerShapes();
+        helpGridMap.verifyServerData();
+        //helpGridMap.debugViewGrid();
 
-
-        course.debugViewGrid();
-        course.printShapeGrid();
 
     }
 

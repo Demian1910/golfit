@@ -48,6 +48,9 @@ public class ServerBall {
         px += vx * deltaTime;
         py += vy * deltaTime;
     }
+    public void collectNearbyShapes(double ballX, double Y){
+
+    }
 
     public double getPx() {
         return px;

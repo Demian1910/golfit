@@ -1,10 +1,13 @@
 package org.golfit.graphics;
 
+import javafx.beans.binding.DoubleBinding;
+import javafx.beans.value.ChangeListener;
 import javafx.geometry.Bounds;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.Scene;
 import javafx.scene.shape.*;
+import javafx.scene.transform.Scale;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,23 +21,21 @@ public class Course {
     private Color backgroundColor = Color.rgb(121, 213, 33);
 
     private static final int EMPTY = 0;
-    private static final int WALL  = 1;
-    private static final int SAND  = 2;
-    private static final int ICE   = 3;
+    private static final int WALL = 1;
+    private static final int SAND = 2;
+    private static final int ICE = 3;
     private static final int WATER = 4;
     private static final int BOUNCE = 5;
     private static final int SWITCH = 6;
 
-
+    public int[][] grid = new int[COLS][ROWS];
 
     public List<Shape> obstacles = new ArrayList<>();
-    public Shape[][] shapeGrid = new Shape[COLS][ROWS];
+
 
     public Course(Scene scene) {
 
         container = new Pane();
-        container.widthProperty().addListener((obs, oldVal, newVal) -> updateGridFromList());
-        container.heightProperty().addListener((obs, oldVal, newVal) -> updateGridFromList());
 
         // Background
         addRect(scene, 0, 0, COURSE_COLS, ROWS, backgroundColor);
@@ -177,13 +178,6 @@ public class Course {
     /** ================= Helper Functions ================= **/
     /**
      * Adds a rectangle to the course at a specified grid position.
-     *
-     * @param scene  the JavaFX scene to add the object to
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  width in grid units
-     * @param height height in grid units
-     * @param color  the color of the shape
      */
     private Rectangle addRect(Scene scene, int col, int row, int width, int height, Color color) {
         Rectangle rect = new Rectangle();
@@ -193,26 +187,11 @@ public class Course {
         return rect;
     }
 
-    /**
-     * Binds a rectangle to the grid (makes it scalable with window size)
-     *
-     * @param rect   the given rectangle
-     * @param scene  y
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  ellipse width in grid size
-     * @param height ellipse height in grid size
-     */
+
 
 
     /**
      * Adds a wall to the course at a specified grid position.
-     *
-     * @param scene  the JavaFX scene to add the object to
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  width in grid units (if applicable)
-     * @param height height in grid units (if applicable)
      */
     private void addWall(Scene scene, int col, int row, int width, int height) {
         Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(124, 63, 0));
@@ -223,11 +202,6 @@ public class Course {
     /**
      * Adds sand terrain to the course at a specified grid position.
      *
-     * @param scene  the JavaFX scene to add the object to
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  width in grid units (if applicable)
-     * @param height height in grid units (if applicable)
      */
     private void addSand(Scene scene, int col, int row, int width, int height) {
         Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(203, 189, 147));
@@ -237,12 +211,6 @@ public class Course {
 
     /**
      * Adds ice terrain to the course at a specified grid position.
-     *
-     * @param scene  the JavaFX scene to add the object to
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  width in grid units (if applicable)
-     * @param height height in grid units (if applicable)
      */
 
     private void addIce(Scene scene, int col, int row, int width, int height) {
@@ -253,12 +221,6 @@ public class Course {
 
     /**
      * Adds water terrain to the course at a specified grid position.
-     *
-     * @param scene  the JavaFX scene to add the object to
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  width in grid units (if applicable)
-     * @param height height in grid units (if applicable)
      */
 
     private void addWater(Scene scene, int col, int row, int width, int height) {
@@ -270,10 +232,6 @@ public class Course {
 
     /**
      * Adds the golf hole to a specified grid position.
-     *
-     * @param scene the JavaFX scene to add the object to
-     * @param col   the column in the grid
-     * @param row   the row in the grid
      */
     private void addGolfHole(Scene scene, int col, int row) {
         addEllipse(scene, col, row, 3, 1, Color.BLACK);
@@ -281,10 +239,6 @@ public class Course {
 
     /**
      * Adds a switch to the course at a specified grid position.
-     *
-     * @param scene the JavaFX scene to add the object to
-     * @param col   the column in the grid
-     * @param row   the row in the grid
      */
     private void addSwitch(Scene scene, int col, int row) {
         addRect(scene, col, row, 2, 1, Color.GRAY);
@@ -297,9 +251,6 @@ public class Course {
     /**
      * Creates a ball at the given grid position
      *
-     * @param scene the given JavaFX scene
-     * @param col   the column of the position
-     * @param row   the row of the position
      */
     private void addBall(Scene scene, int col, int row) {
         Ellipse ellipse = addEllipse(scene, col, row, 3, 3, Color.rgb(255, 16, 240));
@@ -309,14 +260,6 @@ public class Course {
 
     /**
      * Adds an ellipse to the course at a specified grid position.
-     *
-     * @param scene  the JavaFX scene to add the object to
-     * @param col    the column in the grid
-     * @param row    the row in the grid
-     * @param width  ellipse width in grid size
-     * @param height ellipse height in grid size
-     * @param color  color of the ellipse
-     * @return
      */
     private Ellipse addEllipse(Scene scene, int col, int row, int width, int height, Color color) {
         Ellipse ellipse = new Ellipse();
@@ -341,75 +284,80 @@ public class Course {
 
     /**
      * Adds a polygon shape to the course at a specified grid position.
-     *
-     * @param scene  the JavaFX scene to add the object to
-     * @param coords coordinates of the polygon points
      */
-    private void addPolygon(Scene scene, double... coords) {
+    private void addPolygon(Scene scene, int... coords) {
         Polygon poly = new Polygon();
 
-        // Bind each point dynamically
-        for (int i = 0; i < coords.length; i += 2) {
-            final int index = i;
-            double gridX = coords[i];
-            double gridY = coords[i + 1];
-
-            // Wir fügen Initialwerte hinzu
-            poly.getPoints().addAll(0.0, 0.0);
-
-            // X-Koordinate binden
-            scene.widthProperty().addListener((obs, oldVal, newVal) ->
-                    poly.getPoints().set(index, newVal.doubleValue() / COLS * gridX));
-
-            // Y-Koordinate binden
-            scene.heightProperty().addListener((obs, oldVal, newVal) ->
-                    poly.getPoints().set(index + 1, newVal.doubleValue() / ROWS * gridY));
-
-            // Sofort berechnen für den aktuellen Stand
-            if (scene.getWidth() > 0) {
-                poly.getPoints().set(index, scene.getWidth() / COLS * gridX);
-                poly.getPoints().set(index + 1, scene.getHeight() / ROWS * gridY);
-            }
+        // 1. Punkte im "Grid-Format" hinzufügen (1 Einheit = 1 Pixel Basis)
+        for (int i = 0; i < coords.length; i++) {
+            poly.getPoints().add((double) coords[i]);
         }
 
-        poly.setFill(Color.rgb(124, 63, 0)); // Standardfarbe
+        // 2. Erstelle eine neue Skalierungs-Transformation
+        Scale scale = new Scale();
+
+        // 3. Binde die Skalierung an die Container-Größe
+        // Wichtig: Wir nutzen (double) COLS, um Integer-Fehler zu vermeiden
+        scale.xProperty().bind(container.widthProperty().divide((double)COLS));
+        scale.yProperty().bind(container.heightProperty().divide((double)ROWS));
+
+        // 4. Setze den Pivot-Punkt auf 0,0, damit von oben links skaliert wird
+        scale.setPivotX(0);
+        scale.setPivotY(0);
+
+        // 5. Füge die Transformation dem Polygon hinzu
+        poly.getTransforms().add(scale);
+
+        // Optik & Daten
+        poly.setFill(Color.rgb(124, 63, 0));
         poly.setUserData(WALL);
-        obstacles.add(poly);
+
         container.getChildren().add(poly);
+        obstacles.add(poly);
     }
 
     /**
      * Creates a tree at the specified grid position
-     *
-     * @param scene the given JavaFX scene
-     * @param col   the column of the position
-     * @param row   the row of the position
      */
     private void addTree(Scene scene, int col, int row) {
-        // 1. Stamm
-        addWall(scene, col, row, 1, 1);
+        // 1. Stamm (Trunk) - Nutzt addRect, was bereits funktioniert
+        Rectangle trunk = addRect(scene, col, row, 1, 1, Color.rgb(124, 63, 0));
+        trunk.setUserData(WALL);
+        obstacles.add(trunk);
 
-        // 2. Krone Maße
-        double canopyWidth = 3.0;
-        double canopyHeight = 2.0;
+        // 2. Krone (Canopy) - Wir berechnen die Eckpunkte im GRID-System
+        // Beispiel: Ein Baum an (5, 18) mit Breite 3 und Höhe 2
+        int canopyWidth = 3;
+        int canopyHeight = 2;
 
-        // Präzise Koordinaten berechnen
-        double leftX   = col - canopyWidth / 2.0 + 0.5;
-        double rightX  = col + canopyWidth / 2.0 + 0.5;
-        double centerX = col + 0.5;
-        double bottomY = row;
-        double topY    = row - canopyHeight;
+        // Wir berechnen die Grid-Punkte (Ganzzahlen oder .5 Werte sind okay)
+        double topX = col + 0.5;           // Mitte vom Stamm
+        double topY = row - canopyHeight;  // Über dem Stamm
+        double leftX = col - 1.0;          // Links daneben
+        double rightX = col + 2.0;         // Rechts daneben
+        double bottomY = row;              // Basis der Krone
 
-        // 3. Krone hinzufügen
-        addPolygon(scene,
-                leftX, bottomY,   // Punkt unten links
-                rightX, bottomY,  // Punkt unten rechts
-                centerX, topY     // Punkt oben mitte
+        Polygon canopy = new Polygon();
+        // Punkte als "rohe" Grid-Werte hinzufügen
+        canopy.getPoints().addAll(
+                leftX, bottomY,
+                rightX, bottomY,
+                topX, topY
         );
 
-        // Letztes hinzugefügtes Shape ist die Krone -> Farbe anpassen
-        Shape canopy = obstacles.get(obstacles.size() - 1);
-        canopy.setFill(Color.FORESTGREEN);
+        // Jetzt dieselbe Scale-Logik wie in addPolygon
+        Scale scale = new Scale();
+        scale.xProperty().bind(container.widthProperty().divide((double)COLS));
+        scale.yProperty().bind(container.heightProperty().divide((double)ROWS));
+        scale.setPivotX(0);
+        scale.setPivotY(0);
+
+        canopy.getTransforms().add(scale);
+        canopy.setFill(Color.rgb(34, 139, 34));
+        canopy.setUserData(WALL);
+
+        container.getChildren().add(canopy);
+        obstacles.add(canopy);
     }
 
     /**
@@ -421,8 +369,6 @@ public class Course {
 
     /**
      * Creates a visible grid
-     *
-     * @param scene the JavaFX scene to add the grid to
      */
     private void showGrid(Scene scene) {
         for (int c = 0; c <= COURSE_COLS; c++) {
@@ -454,105 +400,18 @@ public class Course {
         rect.yProperty().bind(scene.heightProperty().divide(ROWS).multiply(row));
         rect.widthProperty().bind(scene.widthProperty().divide(COLS).multiply(width));
         rect.heightProperty().bind(scene.heightProperty().divide(ROWS).multiply(height));
-        // In deiner start-Methode oder im Konstruktor:
-
     }
+
     /**
-     * Updates the gridlist for distance calculation
-     */
-    public void updateGridFromList() {
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
-
-        if (cellW <= 0 || cellH <= 0) return;
-
-        for (int i = 0; i < COLS; i++) {
-            for (int j = 0; j < ROWS; j++) {
-                shapeGrid[i][j] = null;
-            }
-        }
-
-        for (Shape s : obstacles) {
-            Bounds b = s.getBoundsInParent();
-
-            int startCol = (int) Math.max(0, Math.floor((b.getMinX() + 0.1) / cellW));
-            int endCol   = (int) Math.min(COLS - 1, Math.floor((b.getMaxX() - 0.1) / cellW));
-            int startRow = (int) Math.max(0, Math.floor((b.getMinY() + 0.1) / cellH));
-            int endRow   = (int) Math.min(ROWS - 1, Math.floor((b.getMaxY() - 0.1) / cellH));
-
-            for (int c = startCol; c <= endCol; c++) {
-                for (int r = startRow; r <= endRow; r++) {
-                    // NEU: Berechne den Mittelpunkt dieser Zelle in Pixeln
-                    double centerX = (c + 0.5) * cellW;
-                    double centerY = (r + 0.5) * cellH;
-
-                    // Prüfe, ob dieser Punkt WIRKLICH innerhalb des Shapes liegt
-                    if (s.contains(centerX, centerY)) {
-                        shapeGrid[c][r] = s;
-                    }
-                }
-            }
-        }
-    }
 
     /**
      * Creates a visible grid to test gridlist
      *
      */
-    // Liste oben in der Klasse definieren, um die Kästchen wieder löschen zu können
-    private List<Rectangle> debugShapes = new ArrayList<>();
-
-    public void debugViewGrid() {
-        // 1. Alte Debug-Shapes entfernen, bevor neue gezeichnet werden
-        container.getChildren().removeAll(debugShapes);
-        debugShapes.clear();
-
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
-
-        for (int c = 0; c < COLS; c++) {
-            for (int r = 0; r < ROWS; r++) {
-                // WICHTIG: Prüfen, ob ein Objekt EXISTIERT ( != null )
-                if (shapeGrid[c][r] != null) {
-                    System.out.println("Zelle " + c + "/" + r + " belegt durch: " + shapeGrid[c][r].getUserData());
-
-                    Rectangle rect = new Rectangle(c * cellW, r * cellH, cellW, cellH);
-
-                    // Schwarz für belegte Zellen
-                    rect.setFill(Color.rgb(0, 0, 0, 0.8));
-
-                    // Weißer Rahmen zur Abgrenzung
-                    rect.setStroke(Color.WHITE);
-                    rect.setStrokeWidth(0.5);
-
-                    // Damit der Ball nicht gegen die Debug-Kästchen prallt
-                    rect.setMouseTransparent(true);
-
-                    debugShapes.add(rect);
-                    container.getChildren().add(rect);
-                }
-            }
-        }
-    }
-
-    public void printShapeGrid() {
-        System.out.println("--- ShapeGrid Analyse ---");
-        for (int r = 0; r < ROWS; r++) {
-            StringBuilder rowString = new StringBuilder();
-            for (int c = 0; c < COLS; c++) {
-                if (shapeGrid[c][r] != null) {
-                    rowString.append("X"); // Hier liegt ein Objekt
-                } else {
-                    rowString.append("."); // Hier ist leer
-                }
-            }
-            System.out.println(rowString.toString());
-        }
-    }
-
-    public Shape[][] getGrid() { return shapeGrid;}
 
 
+    public int[][] getGrid() {return grid;}
 
 
+    public List<Shape> getObstacles() {return obstacles;}
 }

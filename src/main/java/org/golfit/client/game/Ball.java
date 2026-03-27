@@ -9,6 +9,7 @@ public class Ball {
         this.py = py;
     }
 
+
     public double getPx() {
         return px;
     }

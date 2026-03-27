@@ -5,6 +5,19 @@ public class Constants {
     /**
      * Protocol
      */
+    public static final int RECT = 0;
+    public static final int ELLIPSE = 1;
+    public static final int POLYGON = 2;
+    private static final int EMPTY = 0;
+    private static final int WALL  = 1;
+    private static final int SAND  = 2;
+    private static final int ICE   = 3;
+    private static final int WATER = 4;
+    private static final int BOUNCE = 5;
+    private static final int SWITCH = 6;
+    private static final int COLS = 80;
+    private static final int ROWS = 45;
+    private static final int COURSE_COLS = 65;
     public static final int TIMEOUT_MS = 2000;
     public static final int MAX_PACKET_SIZE = 8192;
     public static final int TIMEOUT_PING_MS = 10000;
