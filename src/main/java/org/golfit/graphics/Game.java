@@ -2,11 +2,15 @@ package org.golfit.graphics;
 
 import javafx.scene.Scene;
 import javafx.scene.layout.Pane;
+import org.golfit.client.game.Ball;
+import org.golfit.client.game.BallRender;
 
 public class Game {
 
     private Pane root;
     private Course course;
+    private Ball ball;
+    private BallRender ballRender;;
 
     /**
      * Initiates the main pane for the game
@@ -17,6 +21,7 @@ public class Game {
         root = new Pane();
         course = new Course(scene);
         root.getChildren().add(course.getPane());
+
     }
 
     /**
