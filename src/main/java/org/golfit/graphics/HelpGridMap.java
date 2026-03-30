@@ -184,4 +184,9 @@ public class HelpGridMap {
             }
         }
     }
+    public void setupResizing() {
+        // Sobald sich die Breite oder Höhe des Panes ändert, Grid neu berechnen
+        container.widthProperty().addListener((obs, oldVal, newVal) -> updateGrids());
+        container.heightProperty().addListener((obs, oldVal, newVal) -> updateGrids());
+    }
 }

@@ -3,24 +3,27 @@ package org.golfit.server.game;
 import org.golfit.shared.constants.Constants;
 import org.golfit.shared.constants.MapData;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import static org.golfit.shared.constants.Constants.GRASS_FRICTION;
 
 public class ServerBall {
     private double px, py;
     private double vx, vy;
+    private final double radius;
     private final double STOPPING_VELOCITY = Constants.STOPPING_VELOCITY;
     private double friction = GRASS_FRICTION;
+
+    // Help var for collisions
+    private double lastNormalX, lastNormalY;
+    private double overlap;
 
     public ServerBall(double px, double py) {
         this.px = px;
         this.py = py;
         this.vx = 0;
         this.vy = 0;
+        this.radius = 0.5; // based on grid!
     }
 
     public void stroke(double initialVx, double initialVy) {
@@ -28,20 +31,8 @@ public class ServerBall {
         this.vy = initialVy;
     }
 
-    /**
-     * Updates the ball's position and velocity over a given time step.
-     * <p>
-     * This method applies a time-adjusted friction factor to the ball's velocity components (vx, vy),
-     * gradually slowing it down. If the velocity drops below a predefined {@code STOPPING_VELOCITY} threshold,
-     * it is clamped to exactly zero to completely halt movement and prevent micro-drifting.
-     * Finally, the ball's physical position (px, py) is updated based on the
-     * resulting velocity and the elapsed time since the last frame.
-     * </p>
-     *
-     * @param deltaTime The time elapsed since the last update tick, used to calculate
-     *                  proportional friction and displacement frame-independently.
-     */
-    public void update(double deltaTime) {
+    public void update(double deltaTime, List<MapData.ServerShape> nearbyShapes ) {
+        // Apply friction
         double frictionFactor = Math.pow(friction, deltaTime);
         vx *= frictionFactor;
         vy *= frictionFactor;
@@ -49,60 +40,83 @@ public class ServerBall {
         if (Math.abs(vx) < STOPPING_VELOCITY && Math.abs(vy) < STOPPING_VELOCITY) {
             vx = 0;
             vy = 0;
+            return;
         }
 
-        px += vx * deltaTime;
-        py += vy * deltaTime;
-    }
-    /**
-     Gathers all nearby shapes
-     * @return A list of all shapes in specified area
-     */
-    public List<MapData.ServerShape> getNearbyShapes(double worldX, double worldY, double searchRadius) {
-        List<MapData.ServerShape> nearbyShapes = new ArrayList<>();
-
-        // Set um zu verhindern, dass dasselbe Shape mehrfach
-        // hinzugefügt wird, wenn es über mehrere Kacheln geht.
-        Set<Integer> foundIds = new HashSet<>();
-
-        // Bereich berechnen (Bounding Box im Grid)
-        int startCol = (int) Math.max(0, Math.floor(worldX - searchRadius));
-        int endCol   = (int) Math.min(MapData.COLS - 1, (int) Math.floor(worldX + searchRadius));
-        int startRow = (int) Math.max(0, Math.floor(worldY - searchRadius));
-        int endRow   = (int) Math.min(MapData.ROWS - 1, (int) Math.floor(worldY + searchRadius));
-
-        // Nur in diesem kleinen Quadrat im ID-Grid suchen
-        for (int r = startRow; r <= endRow; r++) {
-            for (int c = startCol; c <= endCol; c++) {
-
-                int id = MapData.SHAPE_ID_MAP[r][c];
-
-                // Wenn eine gültige ID gefunden wurde, die wir noch nicht im Set haben
-                if (id != -1 && !foundIds.contains(id)) {
-                    // Shape aus der zentralen Liste holen
-                    MapData.ServerShape ss = MapData.LEVEL_1_OBSTACLES.get(id);
-                    nearbyShapes.add(ss);
-                    foundIds.add(id);
-                }
+        // Check collision
+        for (MapData.ServerShape shape : nearbyShapes) {
+            if (checkCollision(shape)) {
+                resolveCollision();
+                break;
             }
         }
 
-        return nearbyShapes;
+        // 3. Apply movement
+        px += vx * deltaTime;
+        py += vy * deltaTime;
     }
 
-    public double getPx() {
-        return px;
+    private boolean checkCollision(MapData.ServerShape shape) {
+        if (shape.formType == MapData.ServerShape.RECT) {
+            double closestX = Math.max(shape.x, Math.min(px, shape.x + shape.w));
+            double closestY = Math.max(shape.y, Math.min(py, shape.y + shape.h));
+            return updateCollisionData(closestX, closestY);
+        }
+        else if (shape.formType == MapData.ServerShape.POLYGON) {
+            double[] pts = shape.points;
+            boolean hit = false;
+            for (int i = 0; i < pts.length; i += 2) {
+                double x1 = pts[i], y1 = pts[i + 1];
+                double x2 = pts[(i + 2) % pts.length], y2 = pts[(i + 3) % pts.length];
+
+                double dx = x2 - x1, dy = y2 - y1;
+                double l2 = dx * dx + dy * dy;
+                if (l2 == 0) continue;
+
+                double t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / l2));
+                if (updateCollisionData(x1 + t * dx, y1 + t * dy)) hit = true;
+            }
+            return hit;
+        }
+        else if (shape.formType == MapData.ServerShape.ELLIPSE) {
+            // TODO include switch mechanic for ellipse
+            return updateCollisionData(shape.x + shape.w / 2.0, shape.y + shape.h / 2.0);
+        }
+        return false;
     }
 
-    public double getPy() {
-        return py;
+    private boolean updateCollisionData(double nearestX, double nearestY) {
+        double dx = px - nearestX;
+        double dy = py - nearestY;
+        double distSq = dx * dx + dy * dy;
+
+        if (distSq < radius * radius && distSq > 0) {
+            double dist = Math.sqrt(distSq);
+            lastNormalX = dx / dist;
+            lastNormalY = dy / dist;
+            overlap = radius - dist;
+            return true;
+        }
+        return false;
     }
 
-    public boolean isMoving() {
-        return vx != 0 || vy != 0;
+    private void resolveCollision() {
+        // Correct position
+        px += lastNormalX * overlap;
+        py += lastNormalY * overlap;
+
+        // Reflect vel
+        double dotProduct = vx * lastNormalX + vy * lastNormalY;
+        if (dotProduct < 0) {
+            double bounciness = 0.7;
+            vx = (vx - 2 * dotProduct * lastNormalX) * bounciness;
+            vy = (vy - 2 * dotProduct * lastNormalY) * bounciness;
+        }
     }
 
-    public void changeFriction(double newFriction) {
-        friction = newFriction;
-    }
+
+    public double getPx() { return px; }
+    public double getPy() { return py; }
+    public boolean isMoving() { return vx != 0 || vy != 0; }
+    public void changeFriction(double newFriction) { friction = newFriction; }
 }
