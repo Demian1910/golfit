@@ -39,9 +39,8 @@ public class App extends Application {
     private void launchGame(String ip, int port, String username) {
         try {
             client = new Client(ip, port, username);
+            org.golfit.Main.currentClient = client;
             client.start();
-            client.getClientApi().connect(username);
-            client.pingService.start();
 
             StackPane gameArea = new StackPane();
             Game game = new Game(gameArea);
@@ -49,6 +48,10 @@ public class App extends Application {
             gameArea.getChildren().addAll(game.getRoot(), gameView.getRoot());
 
             client.getMovementHandler().setGamePane(gameView.getRoot());
+            
+            // Connect to server only AFTER pane is ready to avoid missing initial spawn packets
+            client.getClientApi().connect(username);
+            client.pingService.start();
 
             VBox sidebar = new VBox(10);
             sidebar.setPrefWidth(250);

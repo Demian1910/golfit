@@ -5,11 +5,13 @@ import org.golfit.client.App;
 import org.golfit.server.Server;
 
 
+import org.golfit.client.clientLogic.Client;
+
 /**
  * Entry point for the GolfIt application. Starts either a server or client based on CLI arguments.
  */
 public class Main  {
-//    public static Client currentClient;
+    public static Client currentClient;
 
     public static void main(String[] args) throws Exception {
 
