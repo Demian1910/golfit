@@ -1,6 +1,6 @@
 package org.golfit.client.cli;
 
-import org.golfit.client.ClientApi;
+import org.golfit.client.clientLogic.ClientApi;
 
 import java.util.Arrays;
 

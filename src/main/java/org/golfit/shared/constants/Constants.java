@@ -5,6 +5,16 @@ public class Constants {
     /**
      * Protocol
      */
+    public static final int TIMEOUT_MS = 2000;
+    public static final int MAX_PACKET_SIZE = 8192;
+    public static final int TIMEOUT_PING_MS = 10000;
+    public static final int MAX_RETRIES = 3;
+
+    /** Visual radius of the golf ball. Unit: px. */
+    public static final double BALL_RADIUS = 10;
+
+    /** Geometry
+     */
     public static final int RECT = 0;
     public static final int ELLIPSE = 1;
     public static final int POLYGON = 2;
@@ -18,13 +28,12 @@ public class Constants {
     private static final int COLS = 80;
     private static final int ROWS = 45;
     private static final int COURSE_COLS = 65;
-    public static final int TIMEOUT_MS = 2000;
-    public static final int MAX_PACKET_SIZE = 8192;
-    public static final int TIMEOUT_PING_MS = 10000;
-    public static final int MAX_RETRIES = 3;
 
-    /** Visual radius of the golf ball. Unit: px. */
-    public static final double BALL_RADIUS = 10;
+    /** GUI
+     */
+
+    public static final int INIT_WIDTH = 1280;
+    public static final int INIT_HEIGHT = 720;
 
     /**
      * Fraction of velocity retained per second on grass (0 = instant stop, 1 = no

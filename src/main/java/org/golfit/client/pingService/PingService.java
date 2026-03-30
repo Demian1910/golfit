@@ -1,6 +1,6 @@
 package org.golfit.client.pingService;
 
-import org.golfit.client.ClientApi;
+import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,7 +8,6 @@ import org.slf4j.LoggerFactory;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.atomic.AtomicLong;
 
 /** Periodically pings the server to measure latency and detect disconnections or server restarts. Automatically reconnects when needed. */
 public class PingService {

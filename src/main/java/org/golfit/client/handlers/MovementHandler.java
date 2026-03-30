@@ -1,6 +1,6 @@
 package org.golfit.client.handlers;
 
-import org.golfit.client.ClientApi;
+import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.client.game.BallRender;
 import org.golfit.client.game.Ball;

@@ -1,4 +1,4 @@
-package org.golfit.client;
+package org.golfit.client.clientLogic;
 
 import org.golfit.client.cli.ClientCli;
 import org.golfit.client.cli.ConsoleManager;
@@ -42,7 +42,7 @@ public class Client {
     /** Public API for the client **/
     public ClientApi clientApi;
     /** Service for sending pings **/
-    PingService pingService;
+    public PingService pingService;
     /** CLI interface for user input **/
     ClientCli clientCli;
 
@@ -152,14 +152,17 @@ public class Client {
         inputThread.setDaemon(true);
         inputThread.start();
 
-        clientApi.connect(username);
-        pingService.start();
+//        clientApi.connect(username);
+//        pingService.start();
     }
 
     public MovementHandler getMovementHandler() {
         return movementHandler;
     }
 
+    public ClientApi getClientApi() {
+        return clientApi;
+    }
     /**
      * Dispatches an incoming parsed message to the appropriate handler.
      *

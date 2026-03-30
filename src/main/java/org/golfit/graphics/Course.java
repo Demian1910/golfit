@@ -26,7 +26,7 @@ public class Course {
     AddObstacle addObstacle;
 
 
-    public Course(Scene scene) {
+    public Course(Pane scene) {
 
 
         container = new Pane();

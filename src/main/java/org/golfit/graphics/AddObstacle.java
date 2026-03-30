@@ -24,10 +24,10 @@ public class AddObstacle {
 
     public List<Shape> obstacles = new ArrayList<>();
 
-    Scene scene;
+    Pane scene;
     Pane container;
 
-    public AddObstacle(Scene scene, Pane container){
+    public AddObstacle(Pane scene, Pane container){
         this.scene = scene;
         this.container = container;
     }
@@ -39,7 +39,7 @@ public class AddObstacle {
     /**
      * Adds a rectangle to the course at a specified grid position.
      */
-    public Rectangle addRect(Scene scene, int col, int row, int width, int height, Color color) {
+    public Rectangle addRect(Pane scene, int col, int row, int width, int height, Color color) {
         Rectangle rect = new Rectangle();
         rect.setFill(color);
         bindGrid(rect, scene, col, row, width, height);
@@ -53,7 +53,7 @@ public class AddObstacle {
     /**
      * Adds a wall to the course at a specified grid position.
      */
-    public void addWall(Scene scene, int col, int row, int width, int height) {
+    public void addWall(Pane scene, int col, int row, int width, int height) {
         Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(124, 63, 0));
         rect.setUserData(WALL);
         obstacles.add(rect);
@@ -63,7 +63,7 @@ public class AddObstacle {
      * Adds sand terrain to the course at a specified grid position.
      *
      */
-    public void addSand(Scene scene, int col, int row, int width, int height) {
+    public void addSand(Pane scene, int col, int row, int width, int height) {
         Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(203, 189, 147));
         rect.setUserData(SAND);
         obstacles.add(rect);
@@ -73,7 +73,7 @@ public class AddObstacle {
      * Adds ice terrain to the course at a specified grid position.
      */
 
-    public void addIce(Scene scene, int col, int row, int width, int height) {
+    public void addIce(Pane scene, int col, int row, int width, int height) {
         Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(148, 247, 255));
         rect.setUserData(ICE);
         obstacles.add(rect);
@@ -83,7 +83,7 @@ public class AddObstacle {
      * Adds water terrain to the course at a specified grid position.
      */
 
-    public void addWater(Scene scene, int col, int row, int width, int height) {
+    public void addWater(Pane scene, int col, int row, int width, int height) {
         Rectangle rect = addRect(scene, col, row, width, height, Color.rgb(35, 137, 218));
         rect.setUserData(WATER);
         obstacles.add(rect);
@@ -93,14 +93,14 @@ public class AddObstacle {
     /**
      * Adds the golf hole to a specified grid position.
      */
-    public void addGolfHole(Scene scene, int col, int row) {
+    public void addGolfHole(Pane scene, int col, int row) {
         addEllipse(scene, col, row, 3, 1, Color.BLACK);
     }
 
     /**
      * Adds a switch to the course at a specified grid position.
      */
-    public void addSwitch(Scene scene, int col, int row) {
+    public void addSwitch(Pane scene, int col, int row) {
         addRect(scene, col, row, 2, 1, Color.GRAY);
         Ellipse ellipse = addEllipse(scene, col, row, 2, 1, Color.RED);
         ellipse.setUserData(SWITCH);
@@ -112,7 +112,7 @@ public class AddObstacle {
      * Creates a ball at the given grid position
      *
      */
-    public void addBall(Scene scene, int col, int row) {
+    public void addBall(Pane scene, int col, int row) {
         Ellipse ellipse = addEllipse(scene, col, row, 3, 3, Color.rgb(255, 16, 240));
         ellipse.setUserData(BOUNCE);
         obstacles.add(ellipse);
@@ -121,7 +121,7 @@ public class AddObstacle {
     /**
      * Adds an ellipse to the course at a specified grid position.
      */
-    public Ellipse addEllipse(Scene scene, int col, int row, int width, int height, Color color) {
+    public Ellipse addEllipse(Pane scene, int col, int row, int width, int height, Color color) {
         Ellipse ellipse = new Ellipse();
         ellipse.setFill(color);
 
@@ -145,7 +145,7 @@ public class AddObstacle {
     /**
      * Adds a polygon shape to the course at a specified grid position.
      */
-    public void addPolygon(Scene scene, int... coords) {
+    public void addPolygon(Pane scene, int... coords) {
         Polygon poly = new Polygon();
 
         // 1. Punkte im "Grid-Format" hinzufügen (1 Einheit = 1 Pixel Basis)
@@ -179,7 +179,7 @@ public class AddObstacle {
     /**
      * Creates a tree at the specified grid position
      */
-    public void addTree(Scene scene, int col, int row) {
+    public void addTree(Pane scene, int col, int row) {
         // 1. Stamm (Trunk) - Nutzt addRect, was bereits funktioniert
         Rectangle trunk = addRect(scene, col, row, 1, 1, Color.rgb(124, 63, 0));
         trunk.setUserData(WALL);
@@ -230,7 +230,7 @@ public class AddObstacle {
     /**
      * Creates a visible grid
      */
-    public void showGrid(Scene scene) {
+    public void showGrid(Pane scene) {
         for (int c = 0; c <= COURSE_COLS; c++) {
             Line vLine = new Line();
             vLine.startXProperty().bind(scene.widthProperty().divide(COLS).multiply(c));
@@ -255,7 +255,7 @@ public class AddObstacle {
     /**
      * Binds rect to grid for resizing
      */
-    public void bindGrid(Rectangle rect, Scene scene, int col, int row, int width, int height) {
+    public void bindGrid(Rectangle rect, Pane scene, int col, int row, int width, int height) {
         rect.xProperty().bind(scene.widthProperty().divide(COLS).multiply(col));
         rect.yProperty().bind(scene.heightProperty().divide(ROWS).multiply(row));
         rect.widthProperty().bind(scene.widthProperty().divide(COLS).multiply(width));
