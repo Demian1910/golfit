@@ -24,40 +24,49 @@ public class MovementHandler {
     }
 
     public void onMoveUpdate(MessageParser.Message message) {
-        if (gamePane == null)
-            return; // UI not ready
+        if (gamePane == null) return;
 
         String payload = message.payload;
-        if (payload == null || payload.isEmpty())
-            return;
+        if (payload == null || payload.isEmpty()) return;
+
+        // CALCULATE BASED ON GRID!
+        double currentWidth = gamePane.getWidth() > 0 ? gamePane.getWidth() : 1100.0;
+        double currentHeight = gamePane.getHeight() > 0 ? gamePane.getHeight() : 600.0;
+
+        double scaleX = currentWidth / 80.0;  // COLS = 80
+        double scaleY = currentHeight / 45.0; // ROWS = 45
 
         String[] playerUpdates = payload.split(";");
         for (String update : playerUpdates) {
-            if (update.isEmpty())
-                continue;
             String[] parts = update.split(":");
             if (parts.length == 2) {
                 try {
                     int playerId = Integer.parseInt(parts[0]);
                     String[] coords = parts[1].split(",");
-                    double x = Double.parseDouble(coords[0]);
-                    double y = Double.parseDouble(coords[1]);
+
+                    // Das sind die GRID-Koordinaten vom Server (z.B. 40.5)
+                    double gridX = Double.parseDouble(coords[0]);
+                    double gridY = Double.parseDouble(coords[1]);
+
+                    // UMRECHNUNG: Grid -> Pixel
+                    double pixelX = gridX * scaleX;
+                    double pixelY = gridY * scaleY;
 
                     Platform.runLater(() -> {
                         BallRender render = players.get(playerId);
                         if (render == null) {
-                            // Player not seen yet, create it
-                            // Using a default color, we could use different colors based on ID
-                            Ball initialBall = new Ball(x, y);
+                            // Falls der Ball neu ist, mit Pixel-Werten erstellen
+                            Ball initialBall = new Ball(pixelX, pixelY);
                             render = new BallRender(gamePane, initialBall);
                             players.put(playerId, render);
                         } else {
-                            // Update existing
-                            Ball tempBall = new Ball(x, y);
+                            // Bestehenden Ball auf die neuen Pixel-Koordinaten schieben
+                            Ball tempBall = new Ball(pixelX, pixelY);
                             render.updatePosition(tempBall);
                         }
                     });
                 } catch (NumberFormatException e) {
+                    // Ignore malformed numbers
                 }
             }
         }

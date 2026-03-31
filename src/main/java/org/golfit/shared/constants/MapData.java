@@ -8,7 +8,7 @@ public class MapData {
     public int terrainType;
     public int formType;
     public int id;
-
+    //TODO: fix Data entries for some trees (especially top right)
     public static final List<ServerShape> LEVEL_1_OBSTACLES = List.of(
             new ServerShape(0, 1, ServerShape.RECT, 1.9744, 21.9634, 3.9488, 1.9967),
             new ServerShape(1, 1, ServerShape.RECT, 12.8337, 21.9634, 3.9488, 1.9967),
