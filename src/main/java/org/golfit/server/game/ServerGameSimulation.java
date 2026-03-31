@@ -1,8 +1,6 @@
 package org.golfit.server.game;
 
 import org.golfit.server.serverApi.ServerApi;
-import org.golfit.shared.constants.Constants;
-
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
@@ -12,6 +10,8 @@ import java.util.concurrent.TimeUnit;
 import org.golfit.shared.constants.MapData;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static org.golfit.shared.constants.Constants.*;
 
 public class ServerGameSimulation {
     private static final Logger logger = LoggerFactory.getLogger(ServerGameSimulation.class);
@@ -38,11 +38,6 @@ public class ServerGameSimulation {
 
     private boolean forceUpdate = false;
 
-    public void addPlayer(int playerId, double startX, double startY) {
-
-        balls.put(playerId, new ServerBall(startX, startY));
-        forceUpdate = true;
-    }
 
     public void removePlayer(int playerId) {
         balls.remove(playerId);
@@ -90,10 +85,9 @@ public class ServerGameSimulation {
         return nearbyShapes;
     }
 
+    // In ServerGameSimulation.java
     private void tick() {
         try {
-            // NOT-MESSUNG: Deine Basis-Werte (müssen mit dem Client-Start übereinstimmen)
-
             double deltaTime = TICK_RATE_MS / 1000.0;
             boolean anyMoving = false;
             StringBuilder payloadBuilder = new StringBuilder();
@@ -102,23 +96,54 @@ public class ServerGameSimulation {
                 int playerId = entry.getKey();
                 ServerBall ball = entry.getValue();
 
-                if (ball.isMoving()) {
+                if (ball.isMoving() || forceUpdate) {
+                    // Aktuelle Grid-Position
+                    int col = (int) ball.getPx();
+                    int row = (int) ball.getPy();
 
-                    double gridX = ball.getPx();
-                    double gridY = ball.getPy();
+                    // 1. TERRAIN-DEBUGGING
+                    if (col >= 0 && col < MapData.COLS && row >= 0 && row < MapData.ROWS) {
+                        int terrainType = MapData.SERVER_MAP[row][col];
 
-                    List<MapData.ServerShape> nearby = getNearbyShapes(gridX, gridY, 2.0);
+                        double friction = switch (terrainType) {
+                            case 2 -> FRICTION_SAND; // SAND
+                            case 3 -> FRICTION_ICE; // ICE
+                            default -> 0.15; // GRASS
+                        };
+
+                        // Nur loggen, wenn der Ball sich bewegt, um den Spam zu begrenzen
+                        if (ball.isMoving()) {
+                            String terrainName = switch(terrainType) {
+                                case 2 -> "SAND";
+                                case 3 -> "ICE";
+                                case 4 -> "WATER";
+                                default -> "GRASS";
+                            };
+                            // Dieser Log zeigt dir, ob der Server "weiß", wo der Ball gerade rollt
+                            System.out.println("[TICK] Player " + playerId + " is on " + terrainName +
+                                    " (Grid: " + col + "/" + row + ") -> Friction: " + friction);
+                        }
+
+                        ball.changeFriction(friction);
+                    } else {
+                        // Falls der Ball außerhalb des Grids ist
+                        System.err.println("[TICK] WARNING: Ball out of bounds at " + col + "/" + row);
+                    }
+
+                    // 2. PHYSIK-UPDATE
+                    List<MapData.ServerShape> nearby = getNearbyShapes(ball.getPx(), ball.getPy(), 3.0);
                     ball.update(deltaTime, nearby);
-                    anyMoving = true;
+
+                    if (ball.isMoving()) anyMoving = true;
                 }
 
-                // Wir senden GRID-KOORDINATEN zurück (0-80)
-                // Der Client rechnet diese dann mal (aktuelleBreite / 80)
+                // Payload-Bau (wie vorher)
                 payloadBuilder.append(playerId).append(":")
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPx())).append(",")
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPy())).append(";");
             }
 
+            // Broadcast (wie vorher)
             if (payloadBuilder.length() > 0 && (anyMoving || forceUpdate)) {
                 serverApi.broadcastMovement(payloadBuilder.toString());
                 forceUpdate = false;
@@ -126,6 +151,30 @@ public class ServerGameSimulation {
         } catch (Exception e) {
             logger.error("Error in physics tick", e);
         }
+    }
+
+    // Auch beim Hinzufügen direkt umrechnen!
+    public void addPlayer(int playerId, double startX, double startY) {
+        // Wenn der Client 550 (Mitte) schickt, speichert der Server 40.0
+        double gridX = startX / (1100.0 / 80.0);
+        double gridY = startY / (600.0 / 45.0);
+        balls.put(playerId, new ServerBall(gridX, gridY));
+        forceUpdate = true;
+    }
+
+    /**
+     * Hilfsmethode: Ist der Mittelpunkt des Balls innerhalb der Shape?
+     */
+    private boolean isBallOverShape(ServerBall ball, MapData.ServerShape shape) {
+        double bx = ball.getPx();
+        double by = ball.getPy();
+
+        if (shape.formType == MapData.ServerShape.RECT) {
+            return bx >= shape.x && bx <= shape.x + shape.w &&
+                    by >= shape.y && by <= shape.y + shape.h;
+        }
+        // Für Polygons/Ellipsen kannst du hier eine vereinfachte Distanzprüfung machen
+        return false;
     }
 
 

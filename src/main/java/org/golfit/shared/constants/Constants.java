@@ -10,8 +10,8 @@ public class Constants {
     public static final int TIMEOUT_PING_MS = 10000;
     public static final int MAX_RETRIES = 3;
 
-    /** Visual radius of the golf ball. Unit: px. */
-    public static final double BALL_RADIUS = 10;
+    /** Visual radius of the golf ball. Unit: grid */
+    public static final double BALL_RADIUS = 0.5;
 
     /** Geometry
      */
@@ -29,6 +29,12 @@ public class Constants {
     private static final int ROWS = 45;
     private static final int COURSE_COLS = 65;
 
+
+    public static final double FRICTION_GRASS = 0.15; // Standard
+    public static final double FRICTION_SAND  = 0.05; // Bremst extrem
+    public static final double FRICTION_ICE   = 0.3; // Rutscht ewig
+    public static final double FRICTION_WATER = 0.00; // Sofort-Stop (oder Reset)
+
     /** GUI
      */
 
@@ -39,8 +45,7 @@ public class Constants {
      * Fraction of velocity retained per second on grass (0 = instant stop, 1 = no
      * friction). Unit: dimensionless [0–1].
      */
-    public static final double GRASS_FRICTION = 0.5;
-    public static final double SAND_FRICTION = 0.2;
+
 
     /**
      * Both velocity components must drop below this to stop the ball completely.

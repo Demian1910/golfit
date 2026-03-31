@@ -6,25 +6,23 @@ import org.golfit.shared.constants.MapData;
 import java.util.List;
 import java.util.Locale;
 
-import static org.golfit.shared.constants.Constants.GRASS_FRICTION;
+import static org.golfit.shared.constants.Constants.FRICTION_GRASS;
 
 public class ServerBall {
     private double px, py;
     private double vx, vy;
     private final double radius;
     private final double STOPPING_VELOCITY = Constants.STOPPING_VELOCITY;
-    private double friction = GRASS_FRICTION;
+    private double friction = FRICTION_GRASS;
 
-    // Hilfsvariablen für Kollisionen
     private double lastNormalX, lastNormalY;
     private double overlap;
 
-    // Notfall-Konstanten für die Umrechnung (Pixel zu Grid)
+
     private final double BASE_WIDTH = 1100.0;
     private final double BASE_HEIGHT = 600.0;
 
     public ServerBall(double px, double py) {
-        // Falls die Startwerte in Pixeln kommen (z.B. > 80), direkt umrechnen
         this.px = (px > MapData.COLS) ? px / (BASE_WIDTH / MapData.COLS) : px;
         this.py = (py > MapData.ROWS) ? py / (BASE_HEIGHT / MapData.ROWS) : py;
 
@@ -45,18 +43,16 @@ public class ServerBall {
     }
 
     public void update(double deltaTime, List<MapData.ServerShape> nearbyShapes) {
-        // NOTFALL-KONVERTIERUNG: Wenn px/py Pixel sind, mache Grid-Einheiten daraus
-        if (this.px > 80) {
-            this.px /= 13.75; // 1100 / 80
-        }
-        if (this.py > 45) {
-            this.py /= 13.33; // 600 / 45
-        }
-
         // 1. Reibung anwenden
         double frictionFactor = Math.pow(friction, deltaTime);
         vx *= frictionFactor;
         vy *= frictionFactor;
+
+        // Debugging für Reibung (nur wenn der Ball sich bewegt)
+        if (isMoving()) {
+            System.out.format(Locale.US, "[PHYSICS] Grid: %.2f,%.2f | Vel: %.2f,%.2f | Friction: %.3f%n",
+                    px, py, vx, vy, friction);
+        }
 
         if (Math.abs(vx) < STOPPING_VELOCITY && Math.abs(vy) < STOPPING_VELOCITY) {
             vx = 0;
@@ -64,28 +60,32 @@ public class ServerBall {
             return;
         }
 
-        // 2. Bewegung ausführen (in Grid-Einheiten)
+        // 2. Bewegung ausführen
         px += vx * deltaTime;
         py += vy * deltaTime;
 
-        // 3. Kollisionsprüfung
-        // DEBUG: Zeige aktuelle Grid-Position und wie viele Objekte der Server in der Nähe sieht
-        if (isMoving()) {
-            System.out.println(String.format(Locale.US, "[DEBUG] Ball Grid-Pos: %.2f / %.2f | Nearby: %d", px, py, nearbyShapes.size()));
-        }
-
+        // 3. Kollisionsprüfung (NUR für Wände/Bounce-Objekte)
         for (MapData.ServerShape shape : nearbyShapes) {
-            if (checkCollision(shape)) {
-                String type = switch (shape.formType) {
-                    case MapData.ServerShape.RECT -> "Rectangle/Wall";
-                    case MapData.ServerShape.POLYGON -> "Polygon";
-                    case MapData.ServerShape.ELLIPSE -> "Ellipse/Hole";
-                    default -> "Unknown";
-                };
 
-                System.out.println("[DEBUG] !!! COLLISION !!! with " + type + " at " + shape.x + "/" + shape.y);
-                resolveCollision();
-                break;
+            // Check: Ist das Objekt überhaupt eine Wand?
+            if (shape.terrainType == 1 || shape.terrainType == 5) {
+
+                if (checkCollision(shape)) {
+                    // Detail-Log für die Kollision
+                    System.out.println("[COLLISION] Hit Wall ID: " + shape.terrainType+
+                            " at Pos: " + shape.x + "/" + shape.y +
+                            " | Ball Overlap: " + String.format("%.4f", overlap));
+
+                    resolveCollision();
+
+                    // Log nach dem Abprall
+                    System.out.format(Locale.US, "[BOUNCE] New Velocity: %.2f,%.2f%n", vx, vy);
+                    break;
+                }
+            } else {
+                // Dies ist Terrain (Sand/Eis/etc.) -> Wir ignorieren die physische Kollision hier
+                // Aber wir können loggen, dass wir es sehen, aber nicht davon abprallen
+                // System.out.println("[DEBUG] Passing over Terrain Type: " + shape.userData);
             }
         }
     }
@@ -152,4 +152,8 @@ public class ServerBall {
     public double getPx() { return px; }
     public double getPy() { return py; }
     public boolean isMoving() { return vx != 0 || vy != 0; }
+
+    public void changeFriction(double currentFriction) {
+        this.friction = currentFriction;
+    }
 }
