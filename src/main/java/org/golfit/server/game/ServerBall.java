@@ -32,22 +32,46 @@ public class ServerBall {
     }
 
     public void stroke(double initialVx, double initialVy) {
-        // Falls die Kraft in Pixel/s kommt, auch hier herunterskalieren
-        double scaleX = BASE_WIDTH / MapData.COLS;
-        double scaleY = BASE_HEIGHT / MapData.ROWS;
+        this.vx = initialVx;
+        this.vy = initialVy;
 
-        this.vx = (Math.abs(initialVx) > MapData.COLS) ? initialVx / scaleX : initialVx;
-        this.vy = (Math.abs(initialVy) > MapData.ROWS) ? initialVy / scaleY : initialVy;
+        // REALISMUS-CHECK: Ein Hard-Limit für die physikalische Stabilität.
+        // Verhindert, dass der Ball durch Wände glitched, wenn der Client manipulierte Werte sendet.
+        double maxGridSpeed = 60.0;
+        double currentSpeed = Math.sqrt(vx * vx + vy * vy);
 
-        System.out.println(String.format(Locale.US, "[DEBUG] Stroke received. Grid-Vel: %.2f / %.2f", vx, vy));
+        if (currentSpeed > maxGridSpeed) {
+            double ratio = maxGridSpeed / currentSpeed;
+            this.vx *= ratio;
+            this.vy *= ratio;
+        }
+
+        System.out.println(String.format(Locale.US,
+                "[DEBUG] Stroke processed. Speed: %.2f | Grid-Vel: %.2f / %.2f",
+                Math.sqrt(vx*vx + vy*vy), vx, vy));
     }
 
     public void update(double deltaTime, List<MapData.ServerShape> nearbyShapes) {
-        // 1. Reibung anwenden
-        double frictionFactor = Math.pow(friction, deltaTime);
+        // In ServerBall.update()
+        double currentFriction = this.friction;
+
+        // Realismus-Trick: Wenn der Ball langsamer als 3 Einheiten/s ist,
+        // greift die Bodenhaftung stärker (höhere Reibung = kleinerer Wert).
+        double speed = Math.sqrt(vx * vx + vy * vy);
+        if (speed < 3.0) {
+            // Progressiv stärker bremsen, je langsamer er wird
+            currentFriction *= 0.85;
+        }
+
+        double frictionFactor = Math.pow(currentFriction, deltaTime);
         vx *= frictionFactor;
         vy *= frictionFactor;
 
+        // Sehr niedrige Stopping Velocity für sanftes Ausrollen
+        if (speed < 0.15) {
+            vx = 0;
+            vy = 0;
+        }
         // Debugging für Reibung (nur wenn der Ball sich bewegt)
         if (isMoving()) {
             System.out.format(Locale.US, "[PHYSICS] Grid: %.2f,%.2f | Vel: %.2f,%.2f | Friction: %.3f%n",
@@ -72,7 +96,7 @@ public class ServerBall {
 
                 if (checkCollision(shape)) {
                     // Detail-Log für die Kollision
-                    System.out.println("[COLLISION] Hit Wall ID: " + shape.terrainType+
+                    System.out.println("[COLLISION] Hit Wall ID: " + shape.terrainType  +
                             " at Pos: " + shape.x + "/" + shape.y +
                             " | Ball Overlap: " + String.format("%.4f", overlap));
 
