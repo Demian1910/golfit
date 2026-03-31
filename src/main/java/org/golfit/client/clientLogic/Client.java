@@ -160,6 +160,10 @@ public class Client {
         return movementHandler;
     }
 
+    public SystemHandler getSystemHandler() {
+        return systemHandler;
+    }
+
     public ClientApi getClientApi() {
         return clientApi;
     }

@@ -2,6 +2,7 @@ package org.golfit.client.handlers;
 
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.cli.ConsoleManager;
+import org.golfit.client.gui.Sidebar;
 import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,9 +13,14 @@ import java.util.Collections;
 public class SystemHandler {
     private final ClientApi clientApi;
     private final Logger logger = LoggerFactory.getLogger(SystemHandler.class);
+    private Sidebar sidebar;
 
     public SystemHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
+    }
+
+    public void setSidebar(Sidebar sidebar) {
+        this.sidebar = sidebar;
     }
 
 
@@ -39,20 +45,26 @@ public class SystemHandler {
     /** Handles chat messages*/
     public void onChatBroadcast(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
-        ConsoleManager.println("["+parts[0]+"]" + (parts.length > 1 ? parts[1] : ""));
+        String display = "[" + parts[0] + "] " + (parts.length > 1 ? parts[1] : "");
+        ConsoleManager.println(display);
+        if (sidebar != null) sidebar.addMessage(display);
     }
 
     /** Handles an incoming private chat message. */
     public void onChatPrivate(MessageParser.Message message) {
        String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
-       ConsoleManager.println("Whisper from "+"["+parts[0]+"]" + parts[1]);
+        String display = "Whisper from [" + parts[0] + "] " + parts[1];
+        ConsoleManager.println(display);
+        if (sidebar != null) sidebar.addMessage(display);
     }
 
     public void onChatLobby(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
-        ConsoleManager.println("Lobby message from ["+parts[0]+"]: " + parts[1]);
+        String display = "Lobby [" + parts[0] + "] " + parts[1];
+        ConsoleManager.println(display);
+        if (sidebar != null) sidebar.addMessage(display);
     }
 
     /** Handles the lobby list response from the server. */
