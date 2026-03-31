@@ -19,11 +19,13 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         List<String> params = getParameters().getRaw();
-        if (params.size() < 3) {
-            System.err.println("Usage: client <host> <port> <username>");
-            Platform.exit();
-            return;
-        }
+
+        //TODO: We dont need this block, as its already handled in Main.java
+//        if (params.size() < 3) {
+//            System.err.println("Usage: client <host> <port> <username>");
+//            Platform.exit();
+//            return;
+//        }
         String host = params.get(0);
         int port = Integer.parseInt(params.get(1));
         String username = params.get(2);
@@ -58,7 +60,6 @@ public class App extends Application {
             client.pingService.start();
 
             Sidebar sidebar = new Sidebar(client.getClientApi());
-            client.getSystemHandler().setSidebar(sidebar);
 
             HBox root = new HBox(gameArea, sidebar);
             HBox.setHgrow(gameArea, Priority.ALWAYS);

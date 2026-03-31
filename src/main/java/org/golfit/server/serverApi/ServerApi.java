@@ -7,6 +7,7 @@ import org.golfit.shared.protocol.Protocol;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 
 /** Implements server-side actions: sending responses to clients, managing usernames, and broadcasting messages. */
@@ -46,14 +47,14 @@ public class ServerApi implements IServerApi{
     /** Sends the list of available lobbies to the requesting client. */
     @Override
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
-        StringBuilder payload = new StringBuilder();
-        Map<Integer, Lobby> lobbies = serverContext.getLobbies();
-        for (Lobby lobby : lobbies.values()) {
-            payload.append(lobby.getId()).append(":");
-        }
-        clientHandler.getChannelManager().send( Protocol.SYS_LOBBY_LIST,Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload.toString());
-    }
+        String payload = serverContext.getLobbies().values().stream()
+                .map(Lobby::getLobbyListContext)
+                .collect(Collectors.joining("&")); // no trailing &
 
+        clientHandler.getChannelManager().send(
+                Protocol.SYS_LOBBY_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload
+        );
+    }
     /** Sends a lobby leave confirmation to the client. */
     public void sendLeaveLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);

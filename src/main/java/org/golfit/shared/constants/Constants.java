@@ -47,4 +47,14 @@ public class Constants {
      * Unit: px/s.
      */
     public static final double STOPPING_VELOCITY = 20;
+
+
+    /**
+     * Events
+     */
+    public static final String BROADCAST_MESSAGE = "BROADCAST_MESSAGE";
+    public static final String PRIVATE_MESSAGE= "PRIVATE_MESSAGE";
+    public static final String LOBBY_MESSAGE = "LOBBY_MESSAGE";
+    public static final String LOBBY_LIST =  "LOBBY_LIST";
+
 }

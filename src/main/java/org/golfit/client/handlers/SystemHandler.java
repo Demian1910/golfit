@@ -2,11 +2,14 @@ package org.golfit.client.handlers;
 
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.cli.ConsoleManager;
+import org.golfit.client.eventBus.EventBus;
 import org.golfit.client.gui.Sidebar;
+import org.golfit.shared.constants.Constants;
 import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.lang.constant.Constable;
 import java.util.Collections;
 
 /** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
@@ -45,35 +48,40 @@ public class SystemHandler {
     /** Handles chat messages*/
     public void onChatBroadcast(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
-        String display = "[" + parts[0] + "] " + (parts.length > 1 ? parts[1] : "");
-        ConsoleManager.println(display);
-        if (sidebar != null) sidebar.addMessage(display);
+        if (parts.length < 2) return;
+//        String display = "[" + parts[0] + "] " + (parts.length > 1 ? parts[1] : "");
+//        ConsoleManager.println(display);
+//        if (sidebar != null) sidebar.addMessage(display);
+        EventBus.get().emit(Constants.BROADCAST_MESSAGE, parts);
     }
 
     /** Handles an incoming private chat message. */
     public void onChatPrivate(MessageParser.Message message) {
        String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
-        String display = "Whisper from [" + parts[0] + "] " + parts[1];
-        ConsoleManager.println(display);
-        if (sidebar != null) sidebar.addMessage(display);
+//        String display = "Whisper from [" + parts[0] + "] " + parts[1];
+//        ConsoleManager.println(display);
+//        if (sidebar != null) sidebar.addMessage(display);
+        EventBus.get().emit(Constants.PRIVATE_MESSAGE, parts);
     }
 
     public void onChatLobby(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
-        String display = "Lobby [" + parts[0] + "] " + parts[1];
-        ConsoleManager.println(display);
-        if (sidebar != null) sidebar.addMessage(display);
+//        String display = "Lobby [" + parts[0] + "] " + parts[1];
+//        ConsoleManager.println(display);
+//        if (sidebar != null) sidebar.addMessage(display);
+        EventBus.get().emit(Constants.LOBBY_MESSAGE, parts);
     }
 
     /** Handles the lobby list response from the server. */
     public void onLobbyList(MessageParser.Message message) throws Exception {
-        String[] lobbies = message.payload.split(":");
-        ConsoleManager.println("Available lobbies:");
-        for(String lobby : lobbies) {
-            ConsoleManager.println("Lobby: "+lobby);
-        }
+        String[] lobbies = message.payload.split("&");
+//        ConsoleManager.println("Available lobbies:");
+//        for(String lobby : lobbies) {
+//            ConsoleManager.println("Lobby: "+lobby);
+//        }
+        EventBus.get().emit(Constants.LOBBY_LIST, lobbies);
     }
 
     /**

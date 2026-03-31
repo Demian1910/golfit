@@ -1,10 +1,14 @@
 package org.golfit.client.gui;
 
+import javafx.application.Platform;
 import javafx.geometry.Insets;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
 import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.client.gui.lobby.LobbyMenu;
+import org.golfit.shared.constants.Constants;
 
 /**
  * Chat sidebar with three modes: broadcast, private, and lobby chat.
@@ -18,8 +22,19 @@ public class Sidebar extends VBox {
     private final TextField targetField;
     private final Label targetLabel;
 
+    private final LobbyMenu lobbyMenu;
+
     public Sidebar(ClientApi clientApi) {
         this.clientApi = clientApi;
+
+        lobbyMenu = new LobbyMenu(clientApi);
+        lobbyMenu.setPrefHeight(200);
+        lobbyMenu.setMaxHeight(Double.MAX_VALUE);
+        VBox.setVgrow(lobbyMenu, Priority.ALWAYS);
+
+        EventBus.get().on(Constants.BROADCAST_MESSAGE, data -> addMessage ((String[]) data, Constants.BROADCAST_MESSAGE));
+        EventBus.get().on(Constants.PRIVATE_MESSAGE, data -> addMessage((String[]) data, Constants.PRIVATE_MESSAGE));
+        EventBus.get().on(Constants.LOBBY_MESSAGE, data -> addMessage((String[]) data, Constants.LOBBY_MESSAGE));
 
         setPrefWidth(250);
         setPadding(new Insets(10));
@@ -49,6 +64,8 @@ public class Sidebar extends VBox {
 
         // Message display
         chatMessages = new ListView<>();
+        chatMessages.setPrefHeight(200);
+        chatMessages.setMaxHeight(Double.MAX_VALUE);
         VBox.setVgrow(chatMessages, Priority.ALWAYS);
 
         // Input area
@@ -60,7 +77,7 @@ public class Sidebar extends VBox {
         sendButton.setMaxWidth(Double.MAX_VALUE);
         sendButton.setOnAction(e -> sendMessage());
 
-        getChildren().addAll(title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton);
+        getChildren().addAll(title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
     }
 
     private void onModeChanged() {
@@ -116,4 +133,31 @@ public class Sidebar extends VBox {
             });
         }
     }
-}
+
+
+
+    public void addMessage(String[] messageArray, String type) {
+        final String username = messageArray[0];
+        final String message = messageArray[1];
+        switch (type) {
+            case Constants.BROADCAST_MESSAGE -> Platform.runLater(() -> {
+                chatMessages.getItems().add("[Broadcast] " + username + ": " + message);
+                chatMessages.scrollTo(chatMessages.getItems().size() - 1);
+            });
+            case Constants.PRIVATE_MESSAGE   -> Platform.runLater(() -> {
+                chatMessages.getItems().add("[Whisper] " + username + ": " + message);
+                chatMessages.scrollTo(chatMessages.getItems().size() - 1);
+            });
+
+            case Constants.LOBBY_MESSAGE     -> Platform.runLater(() -> {
+                chatMessages.getItems().add("[Lobby] " + username + ": " + message);
+                chatMessages.scrollTo(chatMessages.getItems().size() - 1);
+            });
+
+            default -> Platform.runLater(() -> {
+                chatMessages.getItems().add(message);
+                chatMessages.scrollTo(chatMessages.getItems().size() - 1);
+            });
+        }
+        }
+    }
