@@ -39,6 +39,7 @@ public class ServerGameSimulation {
     private boolean forceUpdate = false;
 
     public void addPlayer(int playerId, double startX, double startY) {
+
         balls.put(playerId, new ServerBall(startX, startY));
         forceUpdate = true;
     }
@@ -91,6 +92,8 @@ public class ServerGameSimulation {
 
     private void tick() {
         try {
+            // NOT-MESSUNG: Deine Basis-Werte (müssen mit dem Client-Start übereinstimmen)
+
             double deltaTime = TICK_RATE_MS / 1000.0;
             boolean anyMoving = false;
             StringBuilder payloadBuilder = new StringBuilder();
@@ -100,28 +103,31 @@ public class ServerGameSimulation {
                 ServerBall ball = entry.getValue();
 
                 if (ball.isMoving()) {
-                    List<MapData.ServerShape> nearby = getNearbyShapes(
-                            ball.getPx(),
-                            ball.getPy(),
-                            1.5 // 1.5 grids
-                    );
+                    // Hier passiert die Magie: Wir füttern die Kollision mit Grid-Werten
+                    // Falls px/py noch Pixel sind, rechnen wir sie hier kurz um:
+                    double gridX = ball.getPx();
+                    double gridY = ball.getPy();
 
+                    List<MapData.ServerShape> nearby = getNearbyShapes(gridX, gridY, 3.0);
                     ball.update(deltaTime, nearby);
                     anyMoving = true;
                 }
 
+                // Wir senden GRID-KOORDINATEN zurück (0-80)
+                // Der Client rechnet diese dann mal (aktuelleBreite / 80)
                 payloadBuilder.append(playerId).append(":")
-                        .append(ball.getPx()).append(",")
-                        .append(ball.getPy()).append(";");
+                        .append(String.format(java.util.Locale.US, "%.2f", ball.getPx())).append(",")
+                        .append(String.format(java.util.Locale.US, "%.2f", ball.getPy())).append(";");
             }
 
             if (payloadBuilder.length() > 0 && (anyMoving || forceUpdate)) {
                 serverApi.broadcastMovement(payloadBuilder.toString());
                 forceUpdate = false;
             }
-
         } catch (Exception e) {
             logger.error("Error in physics tick", e);
         }
     }
+
+
 }
