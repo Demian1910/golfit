@@ -36,7 +36,7 @@ public class Main  {
                 String[] hostPort = args[1].split(":");
                 String host = hostPort[0];
                 String port = hostPort[1];
-                String username = args.length >= 3 ? args[2] : "Player" + (int)(Math.random() * 10000);
+                String username = args.length >= 3 ? args[2] : System.getProperty("user.name");
                 String[] argsFinal = new String[] {host, port, username};
 
                 Application.launch(App.class, argsFinal);

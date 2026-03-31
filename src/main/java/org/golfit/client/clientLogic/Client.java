@@ -80,7 +80,6 @@ public class Client {
     public Client(String host, int port, String username) {
         this.host = host;
         this.port = port;
-        this.username = username != null ? username : System.getProperty("user.name");
     }
 
     /**
@@ -151,13 +150,14 @@ public class Client {
         });
         inputThread.setDaemon(true);
         inputThread.start();
-
-//        clientApi.connect(username);
-//        pingService.start();
     }
 
     public MovementHandler getMovementHandler() {
         return movementHandler;
+    }
+
+    public SystemHandler getSystemHandler() {
+        return systemHandler;
     }
 
     public ClientApi getClientApi() {

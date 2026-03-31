@@ -25,6 +25,7 @@ public class Lobby {
         this.id = id;
         this.lobbyHost = lobbyHost;
         this.clients.add(lobbyHost);
+        setStatus(LobbyStatus.open);
     }
 
     public int getId() {
@@ -84,5 +85,8 @@ public class Lobby {
         return getId() + ":" +
                 clientString;
 
+    }
+    public String getLobbyListContext() {
+        return getId() + ":" + getLobbyHost().getUsername() + ":" + clients.size() + ":" + getStatus();
     }
 }

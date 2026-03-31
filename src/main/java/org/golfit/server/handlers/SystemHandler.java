@@ -80,6 +80,7 @@ public class SystemHandler {
 
     public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) return;
         int lobbyId = Integer.parseInt(parts[0]);
         String payload = clientHandler.getUsername() + ":" + parts[1];
 
@@ -109,6 +110,13 @@ public class SystemHandler {
         serverContext.getLobbies().put(lobbyId, new Lobby(lobbyId, clientHandler));
         serverApi.sendCreateLobby(clientHandler, String.valueOf(lobbyId));
         serverApi.sendLobbyInfo(clientHandler, String.valueOf(lobbyId));
+        serverApi.getClients().values().forEach(client -> {
+            try {
+                serverApi.sendLobbyList(client);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /** Handles a request for the list of available lobbies. */
@@ -132,6 +140,13 @@ public class SystemHandler {
                 throw new RuntimeException(e);
             }
         }));
+        serverApi.getClients().values().forEach(client -> {
+            try {
+                serverApi.sendLobbyList(client);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /** Handles a request to leave the current lobby. */
@@ -150,6 +165,13 @@ public class SystemHandler {
             }
         }));
         serverApi.sendLeaveLobby(clientHandler, message.payload);
+        serverApi.getClients().values().forEach(client -> {
+            try {
+                serverApi.sendLobbyList(client);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 
     /** Handles movement input from a client. */

@@ -2,13 +2,12 @@ package org.golfit.client;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.geometry.Insets;
 import javafx.scene.Scene;
-import javafx.scene.control.*;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.golfit.client.clientLogic.Client;
 import org.golfit.client.game.GameView;
+import org.golfit.client.gui.Sidebar;
 import org.golfit.graphics.Game;
 
 import java.util.List;
@@ -20,6 +19,13 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         List<String> params = getParameters().getRaw();
+
+        //TODO: We dont need this block, as its already handled in Main.java
+//        if (params.size() < 3) {
+//            System.err.println("Usage: client <host> <port> <username>");
+//            Platform.exit();
+//            return;
+//        }
         String host = params.get(0);
         int port = Integer.parseInt(params.get(1));
         String username = params.get(2);
@@ -53,17 +59,7 @@ public class App extends Application {
             client.getClientApi().connect(username);
             client.pingService.start();
 
-            VBox sidebar = new VBox(10);
-            sidebar.setPrefWidth(250);
-            sidebar.setPadding(new Insets(10));
-            sidebar.getChildren().addAll(
-                    new Label("Lobby"),
-                    new ListView<String>(),
-                    new Label("Chat"),
-                    new ListView<String>(),
-                    new TextField(),
-                    new Button("Send")
-            );
+            Sidebar sidebar = new Sidebar(client.getClientApi());
 
             HBox root = new HBox(gameArea, sidebar);
             HBox.setHgrow(gameArea, Priority.ALWAYS);

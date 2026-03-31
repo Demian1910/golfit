@@ -10,8 +10,8 @@ public class Constants {
     public static final int TIMEOUT_PING_MS = 10000;
     public static final int MAX_RETRIES = 3;
 
-    /** Visual radius of the golf ball. Unit: grid */
-    public static final double BALL_RADIUS = 1.0;
+    /** Visual radius of the golf ball. Unit: px. */
+    public static final double BALL_RADIUS = 10;
 
     /** Geometry
      */
@@ -29,13 +29,6 @@ public class Constants {
     private static final int ROWS = 45;
     private static final int COURSE_COLS = 65;
 
-
-    public static final double FRICTION_GRASS = 0.95; // Standard
-    public static final double FRICTION_SAND  = 0.65; // Bremst extrem
-    public static final double FRICTION_ICE   = 0.995; // Rutscht ewig
-    public static final double FRICTION_WATER = 0.00; // Sofort-Stop (oder Reset)
-    public static final double FRICTION_BOUNCE = 0.6;
-
     /** GUI
      */
 
@@ -46,11 +39,22 @@ public class Constants {
      * Fraction of velocity retained per second on grass (0 = instant stop, 1 = no
      * friction). Unit: dimensionless [0–1].
      */
-
+    public static final double GRASS_FRICTION = 0.5;
+    public static final double SAND_FRICTION = 0.2;
 
     /**
      * Both velocity components must drop below this to stop the ball completely.
      * Unit: px/s.
      */
-    public static final double STOPPING_VELOCITY = 2.5;
+    public static final double STOPPING_VELOCITY = 20;
+
+
+    /**
+     * Events
+     */
+    public static final String BROADCAST_MESSAGE = "BROADCAST_MESSAGE";
+    public static final String PRIVATE_MESSAGE= "PRIVATE_MESSAGE";
+    public static final String LOBBY_MESSAGE = "LOBBY_MESSAGE";
+    public static final String LOBBY_LIST =  "LOBBY_LIST";
+
 }

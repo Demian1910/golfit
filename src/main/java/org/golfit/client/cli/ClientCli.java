@@ -16,6 +16,7 @@ public class ClientCli {
 
     /** Parses and executes a slash command entered by the user. */
     public void processCommand(String command) throws Exception {
+        if(command.isEmpty()) return;
         if(command.charAt(0) == '/') {
             try{
                 String[] args = command.split(" ");
