@@ -1,13 +1,12 @@
 package org.golfit.client.handlers;
 
-import org.golfit.client.ClientApi;
+import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.cli.ConsoleManager;
 import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
-import java.util.LinkedHashSet;
 
 /** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
 public class SystemHandler {
@@ -46,11 +45,13 @@ public class SystemHandler {
     /** Handles an incoming private chat message. */
     public void onChatPrivate(MessageParser.Message message) {
        String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) return;
        ConsoleManager.println("Whisper from "+"["+parts[0]+"]" + parts[1]);
     }
 
     public void onChatLobby(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) return;
         ConsoleManager.println("Lobby message from ["+parts[0]+"]: " + parts[1]);
     }
 

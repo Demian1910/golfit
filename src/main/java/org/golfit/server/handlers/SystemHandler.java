@@ -62,7 +62,11 @@ public class SystemHandler {
 
     /** Handles a private chat message by forwarding it to the target client. */
     public void onChatPrivate(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        String[] parts = message.payload.split(":",2);
+        String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) {
+            System.out.println("Invalid private chat format from " + clientHandler.getUsername());
+            return;
+        }
         String targetUsername = parts[0];
         String data = clientHandler.getUsername() + ":" + parts[1];
         Map<String, ClientHandler> targetClientHandler = serverApi.getClients();
@@ -115,6 +119,10 @@ public class SystemHandler {
     /** Handles a request to join a lobby. */
     public void onLobbyJoin(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));
+        if (lobby == null) {
+            System.out.println("Lobby not found: " + message.payload);
+            return;
+        }
         lobby.addClient(clientHandler);
         LinkedHashSet<ClientHandler> clients = lobby.getClients();
         clients.forEach((client -> {
@@ -124,14 +132,15 @@ public class SystemHandler {
                 throw new RuntimeException(e);
             }
         }));
-
-
-        serverApi.sendLobbyInfo(clientHandler, message.payload);
     }
 
     /** Handles a request to leave the current lobby. */
     public void onLobbyLeave(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));
+        if (lobby == null) {
+            System.out.println("Lobby not found: " + message.payload);
+            return;
+        }
         lobby.removeClient(clientHandler);
         lobby.getClients().forEach((client -> {
             try {

@@ -100,14 +100,6 @@ public class Server implements ServerContext{
                     return false;
                 });
             }, 0, 10, TimeUnit.SECONDS);
-//            ScheduledExecutorService moveUpdates = Executors.newSingleThreadScheduledExecutor();
-//            moveUpdates.scheduleAtFixedRate(() -> {
-//                try {
-//                    serverApi.broadcastMovement();
-//                } catch (Exception e) {
-//                    throw new RuntimeException(e);
-//                }
-//            }, 0, 20000, TimeUnit.MILLISECONDS);
 
             while (true) {
                 DatagramPacket packet = new DatagramPacket(buffer, buffer.length);

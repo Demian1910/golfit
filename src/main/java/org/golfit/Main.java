@@ -1,9 +1,11 @@
 package org.golfit;
 
 import javafx.application.Application;
-import org.golfit.client.Client;
+import org.golfit.client.App;
 import org.golfit.server.Server;
-import org.golfit.graphics.Window;
+
+
+import org.golfit.client.clientLogic.Client;
 
 /**
  * Entry point for the GolfIt application. Starts either a server or client based on CLI arguments.
@@ -12,17 +14,6 @@ public class Main  {
     public static Client currentClient;
 
     public static void main(String[] args) throws Exception {
-
-
-        try {
-            Application.launch(Window.class, args);
-        } catch (RuntimeException e) {
-
-            throw new RuntimeException(e);
-        }
-
-
-
 
         if (args.length == 0) {
             printUsage();
@@ -44,13 +35,15 @@ public class Main  {
                 }
                 String[] hostPort = args[1].split(":");
                 String host = hostPort[0];
-                int port = Integer.parseInt(hostPort[1]);
+                String port = hostPort[1];
                 String username = args.length >= 3 ? args[2] : "Player" + (int)(Math.random() * 10000);
+                String[] argsFinal = new String[] {host, port, username};
 
-                currentClient = new Client(host, port, username);
-                currentClient.start();
+                Application.launch(App.class, argsFinal);
+//                currentClient = new Client(host, port, username);
+//                currentClient.start();
 
-                org.golfit.client.game.GraphicInit.main(args);
+//                org.golfit.client.game.GraphicInit.main(args);
             }
             default -> printUsage();
         }

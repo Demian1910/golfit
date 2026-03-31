@@ -17,12 +17,13 @@ public class Game {
      *
      * @param scene the JavaFX scene
      */
-    public Game(Scene scene) {
+    public Game(Pane scene) {
         root = new Pane();
         course = new Course(scene);
         root.getChildren().add(course.getPane());
 
     }
+
 
     /**
      * returns the main pane

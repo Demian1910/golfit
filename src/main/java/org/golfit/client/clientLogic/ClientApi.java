@@ -1,4 +1,4 @@
-package org.golfit.client;
+package org.golfit.client.clientLogic;
 
 import org.golfit.shared.protocol.Protocol;
 import org.golfit.shared.protocol.channelManager.ChannelManager;
@@ -23,6 +23,16 @@ public class ClientApi implements IClientApi {
     }
 
     /**
+     * Sends a ping message to the server.
+     *
+     * @throws Exception if the ping fails
+     */
+    @Override
+    public void ping() throws Exception {
+        channelManager.send( Protocol.SYS_PING, Protocol.CH_PINGS,getId(), "");
+    }
+
+    /**
      * Connects the client to the game server with the specified username.
      *
      * @param username The username to use for connecting.
@@ -31,19 +41,8 @@ public class ClientApi implements IClientApi {
     @Override
     public void  connect(String username) throws Exception {
         if(username != null) {
-            String payload = username;
-            channelManager.send( Protocol.SYS_CONNECT,Protocol.CH_SYSTEM, getId() , payload);
+            channelManager.send( Protocol.SYS_CONNECT,Protocol.CH_SYSTEM, getId() , username);
         }
-    }
-
-    /**
-     * Sends a ping message to the server.
-     *
-     * @throws Exception if the ping fails
-     */
-    @Override
-    public void ping() throws Exception {
-        channelManager.send( Protocol.SYS_PING, Protocol.CH_PINGS,getId(), "");
     }
 
     /**

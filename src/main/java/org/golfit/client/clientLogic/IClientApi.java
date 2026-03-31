@@ -1,4 +1,4 @@
-package org.golfit.client;
+package org.golfit.client.clientLogic;
 
 /** Defines the client-side API for sending protocol messages to the server. */
 public interface IClientApi {

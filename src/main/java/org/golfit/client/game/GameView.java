@@ -15,10 +15,7 @@ public class GameView {
     public GameView() {
         this.root = new Pane();
 
-        this.root.setBackground(new Background(new BackgroundFill(
-                Color.WHITE,
-                CornerRadii.EMPTY,
-                Insets.EMPTY)));
+        this.root.setBackground(Background.EMPTY);
                 
         setupMouseControls();
     }
@@ -30,9 +27,13 @@ public class GameView {
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
             try {
                 if (org.golfit.Main.currentClient != null) {
-                    org.golfit.Main.currentClient.clientApi.sendMovement((startX - e.getX()) * 5, (startY - e.getY()) * 5);
+                    double fx = (startX - e.getX()) * 5;
+                    double fy = (startY - e.getY()) * 5;
+                    org.golfit.Main.currentClient.clientApi.sendMovement(fx, fy);
                 }
-            } catch (Exception ex) {}
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         });
     }
 
