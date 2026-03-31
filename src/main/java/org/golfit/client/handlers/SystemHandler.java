@@ -99,6 +99,7 @@ public class SystemHandler {
 
     public void onLobbyInfo(MessageParser.Message message) throws Exception {
         String[] lobbyInfo = message.payload.split(":", 2);
+        if (lobbyInfo.length < 2) return;
         ConsoleManager.println("Lobby Update: " + lobbyInfo[0] + "//" + lobbyInfo[1]);
         clientApi.setLobbyId(Integer.parseInt(lobbyInfo[0]));
 

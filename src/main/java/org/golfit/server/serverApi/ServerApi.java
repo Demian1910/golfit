@@ -61,6 +61,7 @@ public class ServerApi implements IServerApi{
 
     public void sendLobbyInfo(ClientHandler clientHandler, String lobbyId) throws Exception {
         Lobby lobbyContext = serverContext.getLobbies().get(Integer.parseInt(lobbyId));
+        if (lobbyContext == null) return;
         String payload = lobbyContext.getLobbyContext();
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_INFO, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }

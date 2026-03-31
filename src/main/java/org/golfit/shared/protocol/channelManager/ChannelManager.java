@@ -132,12 +132,20 @@ public class ChannelManager {
      */
     public void onPacketReceived(String raw) throws Exception {
         MessageParser.Message message = MessageParser.parseMessage(raw);
+        if (message == null) {
+            logger.warn("Failed to parse message: " + raw.trim());
+            return;
+        }
         if(message.type.equals(Protocol.SYS_PING) || message.type.equals(Protocol.SYS_PONG)) {}
         else {
             logger.info("Received message: " + raw.trim());
         }
 
         Channel channel = channels.get(message.channel);
+        if (channel == null) {
+            logger.warn("Unknown channel: " + message.channel);
+            return;
+        }
         if (message.type.equals(Protocol.SYS_ACK)) {
             channel.pendingAck.remove(message.sequence);
             return;

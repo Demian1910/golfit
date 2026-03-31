@@ -19,6 +19,11 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         List<String> params = getParameters().getRaw();
+        if (params.size() < 3) {
+            System.err.println("Usage: client <host> <port> <username>");
+            Platform.exit();
+            return;
+        }
         String host = params.get(0);
         int port = Integer.parseInt(params.get(1));
         String username = params.get(2);

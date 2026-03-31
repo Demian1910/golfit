@@ -80,6 +80,7 @@ public class SystemHandler {
 
     public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) return;
         int lobbyId = Integer.parseInt(parts[0]);
         String payload = clientHandler.getUsername() + ":" + parts[1];
 
