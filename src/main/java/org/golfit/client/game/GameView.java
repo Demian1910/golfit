@@ -27,8 +27,8 @@ public class GameView {
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
             try {
                 if (org.golfit.Main.currentClient != null) {
-                    double fx = (startX - e.getX()) * 5;
-                    double fy = (startY - e.getY()) * 5;
+                    double fx = (startX - e.getX()) * 4;
+                    double fy = (startY - e.getY()) * 4;
                     org.golfit.Main.currentClient.clientApi.sendMovement(fx, fy);
                 }
             } catch (Exception ex) {

@@ -103,12 +103,11 @@ public class ServerGameSimulation {
                 ServerBall ball = entry.getValue();
 
                 if (ball.isMoving()) {
-                    // Hier passiert die Magie: Wir füttern die Kollision mit Grid-Werten
-                    // Falls px/py noch Pixel sind, rechnen wir sie hier kurz um:
+
                     double gridX = ball.getPx();
                     double gridY = ball.getPy();
 
-                    List<MapData.ServerShape> nearby = getNearbyShapes(gridX, gridY, 3.0);
+                    List<MapData.ServerShape> nearby = getNearbyShapes(gridX, gridY, 2.0);
                     ball.update(deltaTime, nearby);
                     anyMoving = true;
                 }
