@@ -1,6 +1,9 @@
 package org.golfit.graphics;
 
 import javafx.geometry.Bounds;
+import javafx.scene.SnapshotParameters;
+import javafx.scene.image.PixelReader;
+import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Ellipse;
@@ -10,8 +13,6 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.golfit.shared.constants.MapData;
-
-import java.util.ArrayList;
 import java.util.List;
 
 public class HelpGridMap {
@@ -20,24 +21,24 @@ public class HelpGridMap {
     private static final int ROWS = 45;
 
     private List<Shape> obstacles;
-    private int[][] grid;    // Für Terrain (SERVER_MAP[45][80])
-    private int[][] idGrid;  // Für IDs (SHAPE_ID_MAP[45][80])
+    private int[][] grid;
+    private int[][] idGrid;
     private Pane container;
-    private List<MapData.ServerShape> serverShapeList = MapData.LEVEL_1_OBSTACLES;
 
     public HelpGridMap(Course course) {
         this.container = course.getPane();
         this.obstacles = course.getObstacles();
-        // Initialisierung passend zu deiner MapData Struktur [row][col]
         this.grid = new int[ROWS][COLS];
         this.idGrid = new int[ROWS][COLS];
     }
 
     public void updateGrids() {
-        if (container.getWidth() <= 0 || container.getHeight() <= 0) return;
+        double w = container.getWidth();
+        double h = container.getHeight();
+        if (w <= 0 || h <= 0) return;
 
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
+        double cellW = w / (double)COLS;
+        double cellH = h / (double)ROWS;
 
         // Grids leeren
         for (int r = 0; r < ROWS; r++) {
@@ -54,39 +55,40 @@ public class HelpGridMap {
 
             Bounds b = s.getBoundsInParent();
 
-            // Sicherheits-Begrenzung (Clamping), um Index 45 zu verhindern
-            int startCol = (int) Math.max(0, Math.floor(b.getMinX() / cellW));
-            int endCol   = (int) Math.min(COLS - 1, (int) Math.floor((b.getMaxX() - 0.01) / cellW));
-            int startRow = (int) Math.max(0, Math.floor(b.getMinY() / cellH));
-            int endRow   = (int) Math.min(ROWS - 1, (int) Math.floor((b.getMaxY() - 0.01) / cellH));
+            // Wir bestimmen den Bereich im Grid basierend auf den Pixel-Bounds
+            int startCol = (int) Math.floor((b.getMinX() + 0.1) / cellW);
+            int endCol   = (int) Math.floor((b.getMaxX() - 0.1) / cellW);
+            int startRow = (int) Math.floor((b.getMinY() + 0.1) / cellH);
+            int endRow   = (int) Math.floor((b.getMaxY() - 0.1) / cellH);
 
             for (int r = startRow; r <= endRow; r++) {
                 for (int c = startCol; c <= endCol; c++) {
+                    // Punkt-Test in der exakten Mitte der Grid-Zelle
                     double px = (c + 0.5) * cellW;
                     double py = (r + 0.5) * cellH;
 
-                    // Nutzt sceneToLocal für skalierte Polygone
-                    if (s.contains(s.sceneToLocal(px, py))) {
+                    if (s.contains(s.parentToLocal(px, py))) {
                         grid[r][c] = type;
-                        idGrid[r][c] = i; // i ist der Index in der Liste
+                        idGrid[r][c] = i;
                     }
                 }
             }
         }
     }
-
     public void debugViewGrid() {
         container.getChildren().removeIf(node -> "DEBUG_GRID".equals(node.getUserData()));
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
+
+        double cellW = container.getWidth() / (double)COLS;
+        double cellH = container.getHeight() / (double)ROWS;
 
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 if (grid[r][c] != EMPTY) {
                     Rectangle rect = new Rectangle(c * cellW, r * cellH, cellW, cellH);
-                    rect.setFill(Color.rgb(0, 0, 0, 0.6));
                     rect.setStroke(Color.WHITE);
                     rect.setStrokeWidth(0.5);
+                    rect.setStrokeType(javafx.scene.shape.StrokeType.INSIDE);
+                    rect.setFill(Color.rgb(0, 0, 0, 0.5));
                     rect.setMouseTransparent(true);
                     rect.setUserData("DEBUG_GRID");
                     container.getChildren().add(rect);
@@ -95,41 +97,87 @@ public class HelpGridMap {
         }
     }
 
-    public void printServerData() {
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
+    public void verifyIdMapping() {
+        // 1. Alte Elemente entfernen
+        container.getChildren().removeIf(node -> "ID_VERIFY".equals(node.getUserData()));
 
-        // 1. Export der LEVEL_1_OBSTACLES Liste
+        double w = container.getWidth();
+        double h = container.getHeight();
+        if (w <= 0 || h <= 0) return;
+
+        for (int r = 0; r < ROWS; r++) {
+            for (int c = 0; c < COLS; c++) {
+                int id = idGrid[r][c];
+
+                if (id != -1) {
+                    // 2. Pixel-Grenzen exakt berechnen (kein schleichender Versatz)
+                    double x1 = Math.round(c * w / (double)COLS);
+                    double x2 = Math.round((c + 1) * w / (double)COLS);
+                    double y1 = Math.round(r * h / (double)ROWS);
+                    double y2 = Math.round((r + 1) * h / (double)ROWS);
+
+                    // Das Rechteck füllt jetzt exakt den Raum zwischen den Pixel-Kanten
+                    Rectangle debugTile = new Rectangle(x1, y1, x2 - x1, y2 - y1);
+
+                    // Stroke nach innen, damit die 0.5px Breite nicht nach außen addiert wird
+                    debugTile.setStrokeType(javafx.scene.shape.StrokeType.INSIDE);
+                    debugTile.setStroke(Color.web("white", 0.3));
+                    debugTile.setStrokeWidth(0.5);
+
+                    // Farbe basierend auf ID
+                    int colorHash = Integer.hashCode(id) * 0x45d9f3b;
+                    debugTile.setFill(Color.hsb((colorHash % 360 + 360) % 360, 0.5, 0.9, 0.4));
+
+                    debugTile.setUserData("ID_VERIFY");
+                    debugTile.setMouseTransparent(true);
+                    container.getChildren().add(debugTile);
+
+                    // 3. Text-ID positionieren
+                    Text t = new Text(String.valueOf(id));
+                    // Position innerhalb der gerundeten Zelle
+                    t.setX(x1 + (x2 - x1) * 0.1);
+                    t.setY(y1 + (y2 - y1) * 0.8);
+
+                    t.setFont(new Font("Arial", 7));
+                    t.setFill(Color.WHITE);
+                    t.setUserData("ID_VERIFY");
+                    t.setMouseTransparent(true);
+                    t.setManaged(false);
+                    container.getChildren().add(t);
+                }
+            }
+        }
+    }
+    public void printServerData() {
+        double cellW = container.getWidth() / (double)COLS;
+        double cellH = container.getHeight() / (double)ROWS;
+
         System.out.println("public static final List<ServerShape> LEVEL_1_OBSTACLES = List.of(");
         for (int i = 0; i < obstacles.size(); i++) {
             Shape s = obstacles.get(i);
-            int terrain = (int) s.getUserData();
+            int terrain = (s.getUserData() instanceof Integer) ? (int) s.getUserData() : 0;
             String line = "";
 
             if (s instanceof Rectangle r) {
                 line = String.format("    new ServerShape(%d, %d, ServerShape.RECT, %.4f, %.4f, %.4f, %.4f)",
                         i, terrain, r.getX() / cellW, r.getY() / cellH, r.getWidth() / cellW, r.getHeight() / cellH);
             } else if (s instanceof Ellipse e) {
-                double x = (e.getCenterX() - e.getRadiusX()) / cellW;
-                double y = (e.getCenterY() - e.getRadiusY()) / cellH;
-                double w = (e.getRadiusX() * 2) / cellW;
-                double h = (e.getRadiusY() * 2) / cellH;
                 line = String.format("    new ServerShape(%d, %d, ServerShape.ELLIPSE, %.4f, %.4f, %.4f, %.4f)",
-                        i, terrain, x, y, w, h);
+                        i, terrain, (e.getCenterX()-e.getRadiusX())/cellW, (e.getCenterY()-e.getRadiusY())/cellH, (e.getRadiusX()*2)/cellW, (e.getRadiusY()*2)/cellH);
             } else if (s instanceof Polygon p) {
                 StringBuilder pts = new StringBuilder("new double[]{");
                 for (int j = 0; j < p.getPoints().size(); j++) {
-                    pts.append(String.format("%.2f", p.getPoints().get(j)));
+                    double val = p.getPoints().get(j) / (j % 2 == 0 ? cellW : cellH);
+                    pts.append(String.format("%.4f", val));
                     if (j < p.getPoints().size() - 1) pts.append(", ");
                 }
                 pts.append("}");
-                line = String.format("    new ServerShape(%d, %d, %s)", i, terrain, pts.toString());
+                line = String.format("    new ServerShape(%d, %d, ServerShape.POLYGON, %s)", i, terrain, pts.toString());
             }
             System.out.print(line + (i < obstacles.size() - 1 ? ",\n" : "\n"));
         }
         System.out.println(");\n");
 
-        // 2. Grids drucken [r][c]
         printGridExport("SERVER_MAP", grid);
         printGridExport("SHAPE_ID_MAP", idGrid);
     }
@@ -144,44 +192,5 @@ public class HelpGridMap {
             System.out.println("}" + (r < ROWS - 1 ? "," : ""));
         }
         System.out.println("};");
-    }
-    public void verifyIdMapping() {
-        // 1. Alte Test-Elemente (Kacheln und Text) entfernen
-        container.getChildren().removeIf(node -> "ID_VERIFY".equals(node.getUserData()));
-
-        double cellW = container.getWidth() / COLS;
-        double cellH = container.getHeight() / ROWS;
-
-        for (int r = 0; r < ROWS; r++) {
-            for (int c = 0; c < COLS; c++) {
-                int id = idGrid[r][c];
-
-                if (id != -1) {
-                    // 2. Hintergrund-Rechteck (Farbe pro ID)
-                    Rectangle debugTile = new Rectangle(c * cellW, r * cellH, cellW, cellH);
-                    int colorHash = Integer.hashCode(id) * 0x45d9f3b;
-                    debugTile.setFill(Color.hsb((colorHash % 360 + 360) % 360, 0.5, 0.9, 0.3));
-                    debugTile.setStroke(Color.web("white", 0.2));
-                    debugTile.setStrokeWidth(0.5);
-                    debugTile.setUserData("ID_VERIFY");
-                    debugTile.setMouseTransparent(true);
-                    container.getChildren().add(debugTile);
-
-                    // 3. Text-ID direkt in die Zelle
-                    javafx.scene.text.Text t = new javafx.scene.text.Text(String.valueOf(id));
-                    // Positionierung: Mitte der Zelle
-                    t.setX(c * cellW + (cellW / 4));
-                    t.setY(r * cellH + (cellH / 1.5));
-
-                    t.setFont(new javafx.scene.text.Font("Arial", 7)); // Sehr klein
-                    t.setFill(Color.WHITE);
-                    t.setUserData("ID_VERIFY");
-                    t.setMouseTransparent(true);
-                    t.setManaged(false); // Wichtig für Performance!
-
-                    container.getChildren().add(t);
-                }
-            }
-        }
     }
 }

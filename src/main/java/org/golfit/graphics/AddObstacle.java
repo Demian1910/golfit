@@ -1,10 +1,9 @@
 package org.golfit.graphics;
 
-import javafx.scene.Scene;
+import javafx.beans.binding.DoubleBinding;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.*;
-import javafx.scene.transform.Scale;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,7 +11,7 @@ import java.util.List;
 public class AddObstacle {
     private static final int COLS = 80;
     private static final int ROWS = 45;
-    private static final int COURSE_COLS = 65;
+
     private static final int EMPTY = 0;
     private static final int WALL = 1;
     private static final int SAND = 2;
@@ -113,7 +112,7 @@ public class AddObstacle {
      *
      */
     public void addBall(Pane scene, int col, int row) {
-        Ellipse ellipse = addEllipse(scene, col, row, 3, 3, Color.rgb(255, 16, 240));
+        Ellipse ellipse = addEllipse(scene, col, row, 4, 3, Color.rgb(255, 16, 240));
         ellipse.setUserData(BOUNCE);
         obstacles.add(ellipse);
     }
@@ -145,81 +144,74 @@ public class AddObstacle {
     /**
      * Adds a polygon shape to the course at a specified grid position.
      */
-    public void addPolygon(Pane scene, int... coords) {
+    public void addPolygon(Pane scene, double... coords) {
         Polygon poly = new Polygon();
+        DoubleBinding unitW = container.widthProperty().divide((double)COLS);
+        DoubleBinding unitH = container.heightProperty().divide((double)ROWS);
 
-        // 1. Punkte im "Grid-Format" hinzufügen (1 Einheit = 1 Pixel Basis)
-        for (int i = 0; i < coords.length; i++) {
-            poly.getPoints().add((double) coords[i]);
-        }
+        // Update-Logik ohne Scale-Transformation
+        Runnable update = () -> {
+            poly.getPoints().clear();
+            for (int i = 0; i < coords.length; i += 2) {
+                poly.getPoints().add(coords[i] * unitW.get());
+                poly.getPoints().add(coords[i+1] * unitH.get());
+            }
+        };
 
-        // 2. Erstelle eine neue Skalierungs-Transformation
-        Scale scale = new Scale();
+        unitW.addListener((obs, ov, nv) -> update.run());
+        unitH.addListener((obs, ov, nv) -> update.run());
 
-        // 3. Binde die Skalierung an die Container-Größe
-        // Wichtig: Wir nutzen (double) COLS, um Integer-Fehler zu vermeiden
-        scale.xProperty().bind(container.widthProperty().divide((double)COLS));
-        scale.yProperty().bind(container.heightProperty().divide((double)ROWS));
-
-        // 4. Setze den Pivot-Punkt auf 0,0, damit von oben links skaliert wird
-        scale.setPivotX(0);
-        scale.setPivotY(0);
-
-        // 5. Füge die Transformation dem Polygon hinzu
-        poly.getTransforms().add(scale);
-
-        // Optik & Daten
         poly.setFill(Color.rgb(124, 63, 0));
         poly.setUserData(WALL);
-
         container.getChildren().add(poly);
         obstacles.add(poly);
+        javafx.application.Platform.runLater(update);
     }
 
     /**
      * Creates a tree at the specified grid position
      */
     public void addTree(Pane scene, int col, int row) {
-        // 1. Stamm (Trunk) - Nutzt addRect, was bereits funktioniert
+        // 1. Stamm (Trunk) - Wir nutzen dein addRect, das bereits perfekt bindet
         Rectangle trunk = addRect(scene, col, row, 1, 1, Color.rgb(124, 63, 0));
         trunk.setUserData(WALL);
-        obstacles.add(trunk);
 
-        // 2. Krone (Canopy) - Wir berechnen die Eckpunkte im GRID-System
-        // Beispiel: Ein Baum an (5, 18) mit Breite 3 und Höhe 2
-        int canopyWidth = 3;
-        int canopyHeight = 2;
-
-        // Wir berechnen die Grid-Punkte (Ganzzahlen oder .5 Werte sind okay)
-        double topX = col + 0.5;           // Mitte vom Stamm
-        double topY = row - canopyHeight;  // Über dem Stamm
-        double leftX = col - 1.0;          // Links daneben
-        double rightX = col + 2.0;         // Rechts daneben
-        double bottomY = row;              // Basis der Krone
-
+        // 2. Krone (Canopy)
         Polygon canopy = new Polygon();
-        // Punkte als "rohe" Grid-Werte hinzufügen
-        canopy.getPoints().addAll(
-                leftX, bottomY,
-                rightX, bottomY,
-                topX, topY
-        );
-
-        // Jetzt dieselbe Scale-Logik wie in addPolygon
-        Scale scale = new Scale();
-        scale.xProperty().bind(container.widthProperty().divide((double)COLS));
-        scale.yProperty().bind(container.heightProperty().divide((double)ROWS));
-        scale.setPivotX(0);
-        scale.setPivotY(0);
-
-        canopy.getTransforms().add(scale);
         canopy.setFill(Color.rgb(34, 139, 34));
         canopy.setUserData(WALL);
 
+        // WICHTIG: Wir nutzen KEIN Scale-Objekt.
+        // Wir binden die Punkte direkt an die Breite/Höhe des Fensters.
+
+        DoubleBinding unitW = scene.widthProperty().divide((double)COLS);
+        DoubleBinding unitH = scene.heightProperty().divide((double)ROWS);
+
+        // Wir erstellen einen Listener, der die Punkte des Polygons
+        // bei jeder Größenänderung neu berechnet.
+        Runnable updatePoints = () -> {
+            double w = unitW.get();
+            double h = unitH.get();
+
+            canopy.getPoints().setAll(
+                    (col - 1.0) * w, (double)row * h,          // Links unten
+                    (col + 2.0) * w, (double)row * h,          // Rechts unten
+                    (col + 0.5) * w, (double)(row - 2) * h     // Spitze oben Mitte
+            );
+        };
+
+        // Die Bindings aktivieren
+        unitW.addListener((obs, oldVal, newVal) -> updatePoints.run());
+        unitH.addListener((obs, oldVal, newVal) -> updatePoints.run());
+
+        // Sofortiges Zeichnen sicherstellen
         container.getChildren().add(canopy);
         obstacles.add(canopy);
-    }
+        obstacles.add(trunk);
 
+        // Initialer Aufruf, sobald das System bereit ist
+        javafx.application.Platform.runLater(updatePoints);
+    }
     /**
      * returns the created pane
      */
@@ -231,7 +223,7 @@ public class AddObstacle {
      * Creates a visible grid
      */
     public void showGrid(Pane scene) {
-        for (int c = 0; c <= COURSE_COLS; c++) {
+        for (int c = 0; c <= COLS; c++) {
             Line vLine = new Line();
             vLine.startXProperty().bind(scene.widthProperty().divide(COLS).multiply(c));
             vLine.endXProperty().bind(scene.widthProperty().divide(COLS).multiply(c));

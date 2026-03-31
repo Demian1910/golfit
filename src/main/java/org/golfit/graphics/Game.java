@@ -24,6 +24,7 @@ public class Game {
 
     }
 
+
     /**
      * returns the main pane
      */
