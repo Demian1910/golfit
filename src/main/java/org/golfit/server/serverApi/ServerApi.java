@@ -68,7 +68,7 @@ public class ServerApi implements IServerApi{
     /** Sends a private chat message to the specified client. */
     @Override
     public void sendPrivateChat(ClientHandler clientHandler, int targetId, String data) throws Exception {
-        clientHandler.getChannelManager().send( Protocol .SYS_CHAT_PRIVATE,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
+        clientHandler.getChannelManager().send( Protocol.SYS_CHAT_PRIVATE, Protocol.CH_SYSTEM, targetId, data);
     }
 
     /** Broadcasts a chat message to all connected clients. */

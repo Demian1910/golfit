@@ -45,11 +45,13 @@ public class SystemHandler {
     /** Handles an incoming private chat message. */
     public void onChatPrivate(MessageParser.Message message) {
        String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) return;
        ConsoleManager.println("Whisper from "+"["+parts[0]+"]" + parts[1]);
     }
 
     public void onChatLobby(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
+        if (parts.length < 2) return;
         ConsoleManager.println("Lobby message from ["+parts[0]+"]: " + parts[1]);
     }
 
