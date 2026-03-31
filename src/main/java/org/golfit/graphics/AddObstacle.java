@@ -146,25 +146,33 @@ public class AddObstacle {
      */
     public void addPolygon(Pane scene, double... coords) {
         Polygon poly = new Polygon();
+
+        // Wir nutzen DoubleBindings für die aktuelle Zellengröße
         DoubleBinding unitW = container.widthProperty().divide((double)COLS);
         DoubleBinding unitH = container.heightProperty().divide((double)ROWS);
 
-        // Update-Logik ohne Scale-Transformation
+        // Diese Funktion berechnet die Punkte basierend auf den aktuellen Maßen neu
         Runnable update = () -> {
-            poly.getPoints().clear();
+            double w = unitW.get();
+            double h = unitH.get();
+            List<Double> newPoints = new ArrayList<>();
             for (int i = 0; i < coords.length; i += 2) {
-                poly.getPoints().add(coords[i] * unitW.get());
-                poly.getPoints().add(coords[i+1] * unitH.get());
+                newPoints.add(coords[i] * w);     // X-Koordinate * aktuelle Zellenbreite
+                newPoints.add(coords[i+1] * h);   // Y-Koordinate * aktuelle Zellenhöhe
             }
+            poly.getPoints().setAll(newPoints);
         };
 
-        unitW.addListener((obs, ov, nv) -> update.run());
-        unitH.addListener((obs, ov, nv) -> update.run());
+        // WICHTIG: Die Listener müssen an den Container gebunden sein
+        container.widthProperty().addListener((obs, ov, nv) -> update.run());
+        container.heightProperty().addListener((obs, ov, nv) -> update.run());
 
         poly.setFill(Color.rgb(124, 63, 0));
         poly.setUserData(WALL);
         container.getChildren().add(poly);
         obstacles.add(poly);
+
+        // Initialer Aufruf
         javafx.application.Platform.runLater(update);
     }
 
@@ -172,8 +180,9 @@ public class AddObstacle {
      * Creates a tree at the specified grid position
      */
     public void addTree(Pane scene, int col, int row) {
-        // 1. Stamm (Trunk) - Wir nutzen dein addRect, das bereits perfekt bindet
-        Rectangle trunk = addRect(scene, col, row, 1, 1, Color.rgb(124, 63, 0));
+        // 1. Stamm (Trunk) - Wir erstellen ein nacktes Rectangle ohne bindGrid!
+        Rectangle trunk = new Rectangle();
+        trunk.setFill(Color.rgb(124, 63, 0));
         trunk.setUserData(WALL);
 
         // 2. Krone (Canopy)
@@ -181,18 +190,22 @@ public class AddObstacle {
         canopy.setFill(Color.rgb(34, 139, 34));
         canopy.setUserData(WALL);
 
-        // WICHTIG: Wir nutzen KEIN Scale-Objekt.
-        // Wir binden die Punkte direkt an die Breite/Höhe des Fensters.
+        // Wir nutzen den Container für die Berechnung
+        DoubleBinding unitW = container.widthProperty().divide((double)COLS);
+        DoubleBinding unitH = container.heightProperty().divide((double)ROWS);
 
-        DoubleBinding unitW = scene.widthProperty().divide((double)COLS);
-        DoubleBinding unitH = scene.heightProperty().divide((double)ROWS);
-
-        // Wir erstellen einen Listener, der die Punkte des Polygons
-        // bei jeder Größenänderung neu berechnet.
-        Runnable updatePoints = () -> {
+        // EIN gemeinsames Update für beide Teile
+        Runnable updateTree = () -> {
             double w = unitW.get();
             double h = unitH.get();
 
+            // Stamm positionieren (Manuelle Berechnung statt Binding)
+            trunk.setX(col * w);
+            trunk.setY(row * h);
+            trunk.setWidth(w);   // 1 Zelle breit
+            trunk.setHeight(h);  // 1 Zelle hoch
+
+            // Krone positionieren (Exakt die gleichen 'w' und 'h' Werte)
             canopy.getPoints().setAll(
                     (col - 1.0) * w, (double)row * h,          // Links unten
                     (col + 2.0) * w, (double)row * h,          // Rechts unten
@@ -200,17 +213,16 @@ public class AddObstacle {
             );
         };
 
-        // Die Bindings aktivieren
-        unitW.addListener((obs, oldVal, newVal) -> updatePoints.run());
-        unitH.addListener((obs, oldVal, newVal) -> updatePoints.run());
+        // Listener auf den Container setzen
+        container.widthProperty().addListener((obs, oldVal, newVal) -> updateTree.run());
+        container.heightProperty().addListener((obs, oldVal, newVal) -> updateTree.run());
 
-        // Sofortiges Zeichnen sicherstellen
-        container.getChildren().add(canopy);
-        obstacles.add(canopy);
+        container.getChildren().addAll(trunk, canopy);
         obstacles.add(trunk);
+        obstacles.add(canopy);
 
-        // Initialer Aufruf, sobald das System bereit ist
-        javafx.application.Platform.runLater(updatePoints);
+        // Sofort ausführen
+        javafx.application.Platform.runLater(updateTree);
     }
     /**
      * returns the created pane
