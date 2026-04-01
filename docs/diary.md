@@ -118,6 +118,15 @@ to separate and scale logic connected to different communication types. Lobbies 
 status fields(open, ongoing, running), set of clients and different useful getter and setter functions. Current implementation 
 allows it to integrate lobby logic with GUI components. 
 
-## Entry #11 31.03.26
+## Entry #11 27.03.26
+Constantin worked on the implementation of bounce logic, by collecting obstacle data and terrain data in arrays.
+and storing them in an array. And also implemented a function to collect shapes close to the ball.
+
+## Entry #12 31.03.26
 Tamer did some bugfixes but most importantly Tamer Implemented a Chat GUI. However it still needs polishing 
-and making it align with the milestone tasks will probably be needed.
+and making it align with the milestone tasks will probably be needed. 
+
+Constantin worked on the implementation of bounce logic,
+including adding more realistic friction to the ball and adding collision to the ball. 
+The array containing mapdata is not perfect and will need readjustments in the future.
+Also fixed the course rendering since the blue sidebar had to be deleted.
