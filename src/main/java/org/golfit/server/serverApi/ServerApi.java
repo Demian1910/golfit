@@ -33,9 +33,31 @@ public class ServerApi implements IServerApi{
 
     /** Removes a client from the server: releases their username, stops their handler, and removes them from the client map. */
     public void disconnectClient(ClientHandler clientHandler) {
-        serverContext.getUsernameSet().remove(clientHandler.getUsername());
+        // Remove client from any lobby they're in
+        for (Lobby lobby : serverContext.getLobbies().values()) {
+            if (lobby.getClients().contains(clientHandler)) {
+                lobby.removeClient(clientHandler);
+                // If lobby is now empty, remove it
+                if (lobby.getClients().isEmpty()) {
+                    serverContext.getLobbies().remove(lobby.getId());
+                }
+            }
+        }
+
+        if (clientHandler.getUsername() != null) {
+            serverContext.getUsernameSet().remove(clientHandler.getUsername());
+        }
         clientHandler.shutdown();
-        serverContext.getClients().remove(clientHandler.getClientKey());
+        if (clientHandler.getClientKey() != null) {
+            serverContext.getClients().remove(clientHandler.getClientKey());
+        }
+
+        // Update lobby list for remaining clients
+        for (ClientHandler client : serverContext.getClients().values()) {
+            try {
+                sendLobbyList(client);
+            } catch (Exception ignored) {}
+        }
     }
 
     /** Creates a lobby and sends a SYS_LOBBY_CREATED confirmation to the requesting client. */
@@ -48,6 +70,7 @@ public class ServerApi implements IServerApi{
     @Override
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
         String payload = serverContext.getLobbies().values().stream()
+                .sorted((a, b) -> Integer.compare(a.getId(), b.getId()))
                 .map(Lobby::getLobbyListContext)
                 .collect(Collectors.joining("&")); // no trailing &
 

@@ -75,7 +75,7 @@ public class App extends Application {
     public void stop() throws Exception {
         if (client != null) {
             client.getClientApi().shutdown();
-            Platform.exit();
         }
+        System.exit(0);
     }
 }

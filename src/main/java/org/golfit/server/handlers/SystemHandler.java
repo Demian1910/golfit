@@ -106,10 +106,14 @@ public class SystemHandler {
 
     /** Handles a lobby creation request. */
     public void onCreateLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
-        int lobbyId = serverContext.generateUniqueId();
+        if (serverContext.getLobbies().size() >= 10) {
+            System.out.println("Max lobby limit reached (10)");
+            return;
+        }
+        // Find the lowest available ID from 1-10
+        int lobbyId = 1;
+        while (serverContext.getLobbies().containsKey(lobbyId) && lobbyId <= 10) lobbyId++;
         serverContext.getLobbies().put(lobbyId, new Lobby(lobbyId, clientHandler));
-        serverApi.sendCreateLobby(clientHandler, String.valueOf(lobbyId));
-        serverApi.sendLobbyInfo(clientHandler, String.valueOf(lobbyId));
         serverApi.getClients().values().forEach(client -> {
             try {
                 serverApi.sendLobbyList(client);
@@ -132,6 +136,9 @@ public class SystemHandler {
             return;
         }
         lobby.addClient(clientHandler);
+        // Send join confirmation to the joining client
+        clientHandler.getChannelManager().send(
+                Protocol.SYS_LOBBY_JOINED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, message.payload);
         LinkedHashSet<ClientHandler> clients = lobby.getClients();
         clients.forEach((client -> {
             try {
@@ -157,13 +164,17 @@ public class SystemHandler {
             return;
         }
         lobby.removeClient(clientHandler);
-        lobby.getClients().forEach((client -> {
-            try {
-                serverApi.sendLobbyInfo(client,message.payload);
-            } catch (Exception e) {
-                throw new RuntimeException(e);
-            }
-        }));
+        if (lobby.getClients().isEmpty()) {
+            serverContext.getLobbies().remove(lobby.getId());
+        } else {
+            lobby.getClients().forEach((client -> {
+                try {
+                    serverApi.sendLobbyInfo(client, message.payload);
+                } catch (Exception e) {
+                    throw new RuntimeException(e);
+                }
+            }));
+        }
         serverApi.sendLeaveLobby(clientHandler, message.payload);
         serverApi.getClients().values().forEach(client -> {
             try {

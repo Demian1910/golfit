@@ -177,8 +177,9 @@ public class Client {
             case Protocol.SYS_CHAT_LOBBY -> systemHandler.onChatLobby(message);
             case Protocol.SYS_LOBBY_LIST -> systemHandler.onLobbyList(message);
             case Protocol.SYS_LOBBY_CREATED -> systemHandler.onLobbyCreated(message);
+            case Protocol.SYS_LOBBY_JOINED -> systemHandler.onLobbyJoined(message);
             case Protocol.SYS_LOBBY_INFO -> systemHandler.onLobbyInfo(message);
-            case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeft(message);
+            case Protocol.SYS_LOBBY_LEFT -> systemHandler.onLobbyLeft(message);
             case Protocol.MOVE_UPDATE -> movementHandler.onMoveUpdate(message);
         }
     }

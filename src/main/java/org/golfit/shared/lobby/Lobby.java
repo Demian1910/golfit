@@ -24,7 +24,6 @@ public class Lobby {
     public Lobby(int id, ClientHandler lobbyHost) {
         this.id = id;
         this.lobbyHost = lobbyHost;
-        this.clients.add(lobbyHost);
         setStatus(LobbyStatus.open);
     }
 
@@ -58,6 +57,10 @@ public class Lobby {
             System.err.println("Client doesn't exists!");
         }
         clients.remove(client);
+        // If the host left, reassign to next client (or null if empty)
+        if (client.equals(lobbyHost) && !clients.isEmpty()) {
+            lobbyHost = clients.iterator().next();
+        }
         return true;
     }
 
@@ -87,6 +90,6 @@ public class Lobby {
 
     }
     public String getLobbyListContext() {
-        return getId() + ":" + getLobbyHost().getUsername() + ":" + clients.size() + ":" + getStatus();
+        return getId() + ":Lobby " + getId() + ":" + clients.size() + ":" + getStatus();
     }
 }

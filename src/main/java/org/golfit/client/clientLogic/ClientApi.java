@@ -160,11 +160,10 @@ public class ClientApi implements IClientApi {
 
     public void shutdown(){
         try {
-            channelManager.send(Protocol.SYS_DISCONNECT, Protocol.CH_PINGS, getId(), "");
+            channelManager.send(Protocol.SYS_DISCONNECT, Protocol.CH_SYSTEM, getId(), "");
         } catch (Exception ignored) {}
         client.pingService.stop();
         client.socket.close();
-        System.exit(0);
     }
 
 

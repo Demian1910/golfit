@@ -9,7 +9,6 @@ import org.golfit.shared.messageParser.MessageParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.lang.constant.Constable;
 import java.util.Collections;
 
 /** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
@@ -90,19 +89,20 @@ public class SystemHandler {
      */
     public void onLobbyCreated(MessageParser.Message message) throws Exception {
         ConsoleManager.println("Lobby created with id: "+message.payload);
-        clientApi.setLobbyId(Integer.parseInt(message.payload));
     }
 
     /** Handles confirmation that the client has joined a lobby. */
     public void onLobbyJoined(MessageParser.Message message) {
         ConsoleManager.println("Joined lobby with id: "+message.payload);
         clientApi.setLobbyId(Integer.parseInt(message.payload));
+        EventBus.get().emit(Constants.LOBBY_JOINED, message.payload);
     }
 
     /** Handles the leaving of a lobby*/
     public void onLobbyLeft(MessageParser.Message message) throws Exception {
         clientApi.setLobbyId(-1);
         ConsoleManager.println("Left lobby");
+        EventBus.get().emit(Constants.LOBBY_LEFT, null);
     }
 
     public void onLobbyInfo(MessageParser.Message message) throws Exception {
@@ -110,6 +110,7 @@ public class SystemHandler {
         if (lobbyInfo.length < 2) return;
         ConsoleManager.println("Lobby Update: " + lobbyInfo[0] + "//" + lobbyInfo[1]);
         clientApi.setLobbyId(Integer.parseInt(lobbyInfo[0]));
+        EventBus.get().emit(Constants.LOBBY_JOINED, lobbyInfo[0]);
 
         String[] players = lobbyInfo[1].split(",");
         clientApi.getLobbyPlayers().clear();

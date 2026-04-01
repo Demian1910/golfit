@@ -43,6 +43,8 @@ public class Constants {
     public static final String PRIVATE_MESSAGE= "PRIVATE_MESSAGE";
     public static final String LOBBY_MESSAGE = "LOBBY_MESSAGE";
     public static final String LOBBY_LIST =  "LOBBY_LIST";
+    public static final String LOBBY_JOINED = "LOBBY_JOINED";
+    public static final String LOBBY_LEFT = "LOBBY_LEFT";
 
 
     // Frictions

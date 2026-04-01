@@ -21,6 +21,7 @@ public class Sidebar extends VBox {
     private final ComboBox<String> chatMode;
     private final TextField targetField;
     private final Label targetLabel;
+    private final Label usernameLabel;
 
     private final LobbyMenu lobbyMenu;
 
@@ -40,6 +41,10 @@ public class Sidebar extends VBox {
         setPadding(new Insets(10));
         setSpacing(8);
         setStyle("-fx-background-color: #2c3e50;");
+
+        // Whoami — username display
+        usernameLabel = new Label(clientApi.getUsername());
+        usernameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
 
         // Title
         Label title = new Label("Chat");
@@ -77,7 +82,7 @@ public class Sidebar extends VBox {
         sendButton.setMaxWidth(Double.MAX_VALUE);
         sendButton.setOnAction(e -> sendMessage());
 
-        getChildren().addAll(title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
+        getChildren().addAll(usernameLabel, title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
     }
 
     private void onModeChanged() {
@@ -91,6 +96,12 @@ public class Sidebar extends VBox {
     private void sendMessage() {
         String text = messageInput.getText().trim();
         if (text.isEmpty()) return;
+
+        if (text.startsWith("/")) {
+            handleCommand(text);
+            messageInput.clear();
+            return;
+        }
 
         try {
             switch (chatMode.getValue()) {
@@ -114,6 +125,111 @@ public class Sidebar extends VBox {
                 }
             }
             messageInput.clear();
+        } catch (Exception ex) {
+            addMessage("[Error] " + ex.getMessage());
+        }
+    }
+
+    private void handleCommand(String input) {
+        String[] args = input.split(" ");
+        String cmd = args[0].substring(1).toLowerCase();
+
+        try {
+            switch (cmd) {
+                case "help" -> {
+                    addMessage("[System] Available commands:");
+                    addMessage("  /help — Show this list");
+                    addMessage("  /whoami — Show your username");
+                    addMessage("  /changeUsername <name> — Change your username");
+                    addMessage("  /chat <msg> — Send broadcast message");
+                    addMessage("  /whisper <user> <msg> — Send private message");
+                    addMessage("  /lobby <msg> — Send lobby message");
+                    addMessage("  /lobbyList — Refresh lobby list");
+                    addMessage("  /createLobby — Create a new lobby");
+                    addMessage("  /joinLobby <id> — Join a lobby");
+                    addMessage("  /leaveLobby — Leave current lobby");
+                    addMessage("  /q — Disconnect");
+                }
+                case "whoami" -> {
+                    addMessage("[System] You are: " + clientApi.getUsername());
+                }
+                case "changeusername" -> {
+                    if (args.length < 2) {
+                        addMessage("[System] Usage: /changeUsername <name>");
+                        return;
+                    }
+                    clientApi.connect(args[1]);
+                    usernameLabel.setText(args[1]);
+                    addMessage("[System] Username changed to: " + args[1]);
+                }
+                case "chat" -> {
+                    if (args.length < 2) {
+                        addMessage("[System] Usage: /chat <message>");
+                        return;
+                    }
+                    String msg = input.substring(input.indexOf(' ') + 1);
+                    clientApi.sendChatBroadcast(msg);
+                }
+                case "whisper" -> {
+                    if (args.length < 3) {
+                        addMessage("[System] Usage: /whisper <username> <message>");
+                        return;
+                    }
+                    String target = args[1];
+                    String msg = input.substring(input.indexOf(' ', input.indexOf(' ') + 1) + 1);
+                    clientApi.sendPrivateChat(target + ":" + msg);
+                }
+                case "lobby" -> {
+                    if (clientApi.getLobbyId() <= 0) {
+                        addMessage("[System] You are not in a lobby.");
+                        return;
+                    }
+                    if (args.length < 2) {
+                        addMessage("[System] Usage: /lobby <message>");
+                        return;
+                    }
+                    String msg = input.substring(input.indexOf(' ') + 1);
+                    clientApi.sendLobbyChat(msg);
+                }
+                case "lobbylist" -> {
+                    clientApi.lobbyList();
+                    addMessage("[System] Refreshing lobby list...");
+                }
+                case "createlobby" -> {
+                    if (clientApi.getLobbyId() > 0) {
+                        addMessage("[System] You are already in a lobby. Leave first.");
+                        return;
+                    }
+                    clientApi.createLobby();
+                    addMessage("[System] Creating lobby...");
+                }
+                case "joinlobby" -> {
+                    if (args.length < 2) {
+                        addMessage("[System] Usage: /joinLobby <lobbyId>");
+                        return;
+                    }
+                    if (clientApi.getLobbyId() > 0) {
+                        addMessage("[System] You are already in a lobby. Leave first.");
+                        return;
+                    }
+                    clientApi.joinLobby(args[1]);
+                    addMessage("[System] Joining lobby...");
+                }
+                case "leavelobby" -> {
+                    if (clientApi.getLobbyId() <= 0) {
+                        addMessage("[System] You are not in a lobby.");
+                        return;
+                    }
+                    clientApi.leaveLobby(String.valueOf(clientApi.getLobbyId()));
+                    addMessage("[System] Leaving lobby...");
+                }
+                case "q" -> {
+                    addMessage("[System] Disconnecting...");
+                    clientApi.shutdown();
+                    Platform.exit();
+                }
+                default -> addMessage("[System] Unknown command: /" + cmd + ". Type /help for a list of commands.");
+            }
         } catch (Exception ex) {
             addMessage("[Error] " + ex.getMessage());
         }
