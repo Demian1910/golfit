@@ -130,3 +130,26 @@ Constantin worked on the implementation of bounce logic,
 including adding more realistic friction to the ball and adding collision to the ball. 
 The array containing mapdata is not perfect and will need readjustments in the future.
 Also fixed the course rendering since the blue sidebar had to be deleted.
+
+## Entry #13 02.04.26
+Worked on the chat GUI sidebar today. Started by adding a username label at the top so players can see who 
+theyre logged in as, then added Create Lobby and Leave Lobby buttons to the lobby section. The Leave Lobby button 
+dims out when your not in a lobby and lights up when you join one which is handled through EventBus events that get 
+emitted when the server confirms a join or leave. After that I implemented slash command support in the chat input 
+field, typing something like /help, /whoami, /changeUsername, /whisper, or /q now gets intercepted and handled as a 
+command instead of being sent as a regular message. While testing all of this I ran into several bugs that had been 
+sitting in the codebase for a while. the client dispatch was missing a case for SYS_LOBBY_JOINED so the join button 
+worked but the leave button never enabled, there was a mismatch between SYS_LOBBY_LEAVE and SYS_LOBBY_LEFT that caused 
+leave responses to be silently dropped which took me a bit to figure out. the disconnect packet was being sent on an 
+unreliable channel so the server often never recieved it, and disconnecting while in a lobby left ghost state on the 
+server because nobody cleaned up lobby membership. Fixed all of those along the way. Also reworked lobby creation so it 
+no longer auto joins the creator, added a max limit of 10 lobbies with sequential IDs made empty lobbies get deleted 
+when the last player leaves. and added host reassignment so the lobby doesnt break when the original creator leaves. 
+Oh also the leave lobby mismatch thing I mentoned earlier was probably the most annoying one because everything looked 
+fine on the client side but the server was just dropping the packet silently so I had to dig into the dispatch to find 
+it. Removed the pencil edit button for username changes and the disconnect button since they felt redundant, username 
+changes go through /changeUsername now and disconnecting is handled by /q or just closing the window. i can say summing 
+up i would say that lobby functions and chat gui logic should be at least 95% finished the 5% being if they are ever 
+going to be moved in a way that for example we make a start screen then an active lobbies screen etc. which in that 
+case the change will just be like i said moving them to their own individual places which would just change where the 
+components live in the UI not what actually they do.
