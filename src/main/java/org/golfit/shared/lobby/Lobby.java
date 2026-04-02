@@ -24,6 +24,7 @@ public class Lobby {
     public Lobby(int id, ClientHandler lobbyHost) {
         this.id = id;
         this.lobbyHost = lobbyHost;
+        clients.add(lobbyHost);
         setStatus(LobbyStatus.open);
     }
 
@@ -90,6 +91,6 @@ public class Lobby {
 
     }
     public String getLobbyListContext() {
-        return getId() + ":Lobby " + getId() + ":" + clients.size() + ":" + getStatus();
+        return getId() + ":" + getLobbyHost().getUsername() + ":" + clients.size() + ":" + getStatus();
     }
 }

@@ -76,10 +76,6 @@ public class SystemHandler {
     /** Handles the lobby list response from the server. */
     public void onLobbyList(MessageParser.Message message) throws Exception {
         String[] lobbies = message.payload.split("&");
-//        ConsoleManager.println("Available lobbies:");
-//        for(String lobby : lobbies) {
-//            ConsoleManager.println("Lobby: "+lobby);
-//        }
         EventBus.get().emit(Constants.LOBBY_LIST, lobbies);
     }
 
@@ -107,14 +103,19 @@ public class SystemHandler {
 
     public void onLobbyInfo(MessageParser.Message message) throws Exception {
         String[] lobbyInfo = message.payload.split(":", 2);
-        if (lobbyInfo.length < 2) return;
-        ConsoleManager.println("Lobby Update: " + lobbyInfo[0] + "//" + lobbyInfo[1]);
-        clientApi.setLobbyId(Integer.parseInt(lobbyInfo[0]));
-        EventBus.get().emit(Constants.LOBBY_JOINED, lobbyInfo[0]);
+        String lobbyId = lobbyInfo[0];
+        String[] players   = lobbyInfo[1].split(",");
+        ConsoleManager.println("Lobby Update: " + lobbyId + "//" + lobbyInfo[1]);
+        clientApi.setLobbyId(Integer.parseInt(lobbyId));
+        EventBus.get().emit(Constants.LOBBY_INFO, players);
 
-        String[] players = lobbyInfo[1].split(",");
         clientApi.getLobbyPlayers().clear();
         Collections.addAll(clientApi.getLobbyPlayers(), players);
+    }
+
+    public void onPlayerList(MessageParser.Message message) throws Exception {
+        String[] players = message.payload.split(":");
+        EventBus.get().emit(Constants.PLAYERS_LIST, players);
     }
 
     /** Handles a movement update from the server. */

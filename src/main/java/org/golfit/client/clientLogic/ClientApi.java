@@ -111,6 +111,10 @@ public class ClientApi implements IClientApi {
         channelManager.send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_CHAT, getId(), payload);
     }
 
+    public void requestPlayersList() throws Exception {
+        channelManager.send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, getId(), "");
+    }
+
     /**
      * Sends movement data to the server.
      *

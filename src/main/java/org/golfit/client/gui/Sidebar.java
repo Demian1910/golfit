@@ -2,9 +2,12 @@ package org.golfit.client.gui;
 
 import javafx.application.Platform;
 import javafx.geometry.Insets;
+import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
 
+import javafx.stage.Modality;
+import javafx.stage.Stage;
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.client.gui.lobby.LobbyMenu;
@@ -36,6 +39,22 @@ public class Sidebar extends VBox {
         EventBus.get().on(Constants.BROADCAST_MESSAGE, data -> addMessage ((String[]) data, Constants.BROADCAST_MESSAGE));
         EventBus.get().on(Constants.PRIVATE_MESSAGE, data -> addMessage((String[]) data, Constants.PRIVATE_MESSAGE));
         EventBus.get().on(Constants.LOBBY_MESSAGE, data -> addMessage((String[]) data, Constants.LOBBY_MESSAGE));
+        EventBus.get().on(Constants.PLAYERS_LIST, data -> {
+            Platform.runLater(() -> {
+                openPlayerWindow((String[]) data);
+            });
+        });
+
+        Button playerButton = new Button("Players");
+        playerButton.setPrefHeight(25);
+        playerButton.setMaxHeight(Double.MAX_VALUE);
+        playerButton.setOnAction(event -> {
+            try{
+                clientApi.requestPlayersList();
+            } catch(Exception e) {
+                e.printStackTrace();
+            }
+        });
 
         setPrefWidth(250);
         setPadding(new Insets(10));
@@ -82,7 +101,7 @@ public class Sidebar extends VBox {
         sendButton.setMaxWidth(Double.MAX_VALUE);
         sendButton.setOnAction(e -> sendMessage());
 
-        getChildren().addAll(usernameLabel, title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
+        getChildren().addAll(playerButton,usernameLabel, title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
     }
 
     private void onModeChanged() {
@@ -233,6 +252,23 @@ public class Sidebar extends VBox {
         } catch (Exception ex) {
             addMessage("[Error] " + ex.getMessage());
         }
+    }
+
+    private void openPlayerWindow(String[] players) {
+        Stage popup = new Stage();
+        popup.setTitle("Connected players");
+        popup.initModality(Modality.APPLICATION_MODAL);
+
+        VBox content = new VBox();
+        content.setPadding(new Insets(12));
+
+        for(String player : players) {
+            Label playerLabel = new Label(player);
+            content.getChildren().add(playerLabel);
+        }
+
+        popup.setScene(new Scene(content, 200, 300));
+        popup.show();
     }
 
     /**

@@ -72,7 +72,7 @@ public class ServerApi implements IServerApi{
         String payload = serverContext.getLobbies().values().stream()
                 .sorted((a, b) -> Integer.compare(a.getId(), b.getId()))
                 .map(Lobby::getLobbyListContext)
-                .collect(Collectors.joining("&")); // no trailing &
+                .collect(Collectors.joining("&"));
 
         clientHandler.getChannelManager().send(
                 Protocol.SYS_LOBBY_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload
@@ -115,6 +115,10 @@ public class ServerApi implements IServerApi{
         for(ClientHandler client : serverContext.getClients().values()) {
             client.getChannelManager().send(Protocol.MOVE_UPDATE, Protocol.CH_MOVEMENT, Protocol.ID_SERVER, payload);
         }
+    }
+
+    public void sendPlayerList(ClientHandler clientHandler, String payload) throws Exception {
+        clientHandler.getChannelManager().send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
     /** Attempts to claim a username. Returns true if the username was available and successfully claimed. */

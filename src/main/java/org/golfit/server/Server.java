@@ -177,6 +177,7 @@ public class Server implements ServerContext{
             case Protocol.SYS_LOBBY_JOIN -> systemHandler.onLobbyJoin(clientHandler, message);
             case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeave(clientHandler, message);
             case Protocol.MOVE_INPUT -> movementHandler.onMoveInput(clientHandler, message);
+            case Protocol.SYS_PLAYERS_LIST -> systemHandler.onPlayerList(clientHandler, message);
         }
     }
 

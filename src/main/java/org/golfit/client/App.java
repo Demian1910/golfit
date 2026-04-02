@@ -19,13 +19,6 @@ public class App extends Application {
     @Override
     public void start(Stage stage) {
         List<String> params = getParameters().getRaw();
-
-        //TODO: We dont need this block, as its already handled in Main.java
-//        if (params.size() < 3) {
-//            System.err.println("Usage: client <host> <port> <username>");
-//            Platform.exit();
-//            return;
-//        }
         String host = params.get(0);
         int port = Integer.parseInt(params.get(1));
         String username = params.get(2);
@@ -54,10 +47,6 @@ public class App extends Application {
             gameArea.getChildren().addAll(game.getRoot(), gameView.getRoot());
 
             client.getMovementHandler().setGamePane(gameView.getRoot());
-            
-            // Connect to server only AFTER pane is ready to avoid missing initial spawn packets
-            client.getClientApi().connect(username);
-            client.pingService.start();
 
             Sidebar sidebar = new Sidebar(client.getClientApi());
 
@@ -65,6 +54,10 @@ public class App extends Application {
             HBox.setHgrow(gameArea, Priority.ALWAYS);
 
             primaryStage.setScene(new Scene(root, 1100, 600));
+
+            // Connect AFTER scene/sidebar are fully set up so all EventBus listeners are registered
+            client.getClientApi().connect(username);
+            client.pingService.start();
 
         } catch (Exception e) {
             e.printStackTrace();

@@ -181,6 +181,7 @@ public class Client {
             case Protocol.SYS_LOBBY_INFO -> systemHandler.onLobbyInfo(message);
             case Protocol.SYS_LOBBY_LEFT -> systemHandler.onLobbyLeft(message);
             case Protocol.MOVE_UPDATE -> movementHandler.onMoveUpdate(message);
+            case Protocol.SYS_PLAYERS_LIST -> systemHandler.onPlayerList(message);
         }
     }
 }

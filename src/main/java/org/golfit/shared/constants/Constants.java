@@ -45,6 +45,9 @@ public class Constants {
     public static final String LOBBY_LIST =  "LOBBY_LIST";
     public static final String LOBBY_JOINED = "LOBBY_JOINED";
     public static final String LOBBY_LEFT = "LOBBY_LEFT";
+    public static final String LOBBY_INFO =  "LOBBY_INFO";
+    public static final String PLAYERS_LIST =  "PLAYERS_LIST";
+
 
 
     // Frictions
