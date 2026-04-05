@@ -11,7 +11,7 @@ public class Constants {
     public static final int MAX_RETRIES = 3;
 
     /** Visual radius of the golf ball. Unit: grid */
-    public static final double BALL_RADIUS = 1;
+    public static final double BALL_RADIUS = 0.4;
 
     /** Geometry
      */
@@ -51,10 +51,10 @@ public class Constants {
 
 
     // Frictions
-    public static final double FRICTION_GRASS = 0.95; // Standard
-    public static final double FRICTION_SAND  = 0.65; // Bremst extrem
-    public static final double FRICTION_ICE   = 0.995; // Rutscht ewig
-    public static final double FRICTION_WATER = 0.00; // Sofort-Stop (oder Reset)
+    public static final double FRICTION_GRASS = 0.7;
+    public static final double FRICTION_SAND  = 0.2;
+    public static final double FRICTION_ICE   = 0.95;
+    public static final double FRICTION_WATER = 0.00;
     public static final double FRICTION_BOUNCE = 0.6;
     /**
      * Both velocity components must drop below this to stop the ball completely.
