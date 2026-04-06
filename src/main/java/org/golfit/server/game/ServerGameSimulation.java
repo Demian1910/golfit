@@ -116,7 +116,7 @@ public class ServerGameSimulation {
                     }
 
                     // 2. Physics Update
-                    List<MapData.ServerShape> nearby = getNearbyShapes(ball.getPx(), ball.getPy(), 3.0);
+                    List<MapData.ServerShape> nearby = getNearbyShapes(ball.getPx(), ball.getPy(), 1.5);
                     ball.update(deltaTime, nearby);
 
                     if (ball.isMoving()) {
