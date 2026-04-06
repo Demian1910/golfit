@@ -195,10 +195,6 @@ public class ServerBall {
     public void changeFriction(double currentFriction) {
         this.friction = currentFriction;
     }
-    public double getPx() { return px; }
-    public double getPy() { return py; }
-    public boolean isMoving() { return vx != 0 || vy != 0; }
-    public void changeFriction(double currentFriction) { this.friction = currentFriction; }
     public int getStrokeCount() { return strokeCount; }
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }

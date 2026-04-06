@@ -159,9 +159,6 @@ public class AddObstacle {
 
             // Position crown (exactly the same 'w' and 'h' values)
             canopy.getPoints().setAll(
-                    (col - 1.0) * w, row * h,
-                    (col + 2.0) * w, row * h,
-                    (col + 0.5) * w, (row - 2) * h
                     (col - 1.0) * w, (double)row * h,          // Bottom left
                     (col + 2.0) * w, (double)row * h,          // Bottom right
                     (col + 0.5) * w, (double)(row - 2) * h     // Top center tip
