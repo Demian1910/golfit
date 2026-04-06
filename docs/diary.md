@@ -156,4 +156,12 @@ components live in the UI not what actually they do.
 
 ## Entry #14 6.4
 
-Constantin fixed the implementation of the course. Previously there was a conflict between the sidebar and course, where the sidebar would "eat" the space of the course. Now the course is a fixed 1100 x 600, resizing will need to be adjusted.
+Constantin: fixed the implementation of the course. Previously there was a conflict between the sidebar and course, where the sidebar would "eat" the space of the course. Now the course is a fixed 1100 x 600, resizing will need to be adjusted.
+
+Demian: 
+- Implemented SplashView as a not in-game state displayed
+- Used EventBus to automatically switch UI screens when a match starts or ends.
+- Added server-authoritative lobby start logic, ensuring all clients transition together when any player starts a match.
+- Implemented server-side stroke counting and end-game detection.
+- Added persistent result tracking in 'results.csv' with winner detection and stroke summaries.
+- Completed the translation of all remaining German comments and Javadocs to English for not breaking coding conventions.
