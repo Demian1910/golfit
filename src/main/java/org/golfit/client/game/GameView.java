@@ -29,11 +29,11 @@ public class GameView {
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
             try {
                 if (org.golfit.Main.currentClient != null) {
-                    // 1. Differenz berechnen
+                    // 1. Calculate difference
                     double diffX = startX - e.getX();
                     double diffY = startY - e.getY();
 
-                    // 2. Umrechnen von Pixel in Grid-Einheiten
+                    // 2. Convert from pixels to grid units
                     // We divide by the current width/height of the pane
                     double scaleX = root.getWidth() / 80.0;
                     double scaleY = root.getHeight() / 45.0;

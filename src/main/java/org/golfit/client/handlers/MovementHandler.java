@@ -21,6 +21,7 @@ public class MovementHandler {
 
     public void setGamePane(Pane pane) {
         this.gamePane = pane;
+        this.players.clear();
     }
 
     public void onMoveUpdate(MessageParser.Message message) {
@@ -36,12 +37,15 @@ public class MovementHandler {
         double scaleX = currentWidth / 80.0;  // COLS = 80
         double scaleY = currentHeight / 45.0; // ROWS = 45
 
-        String[] playerUpdates = payload.split(";");
+        java.util.Set<Integer> receivedIds = new java.util.HashSet<>();
+        String[] playerUpdates = payload.isEmpty() ? new String[0] : payload.split(";");
+        
         for (String update : playerUpdates) {
             String[] parts = update.split(":");
             if (parts.length == 2) {
                 try {
                     int playerId = Integer.parseInt(parts[0]);
+                    receivedIds.add(playerId);
                     String[] coords = parts[1].split(",");
 
                     // GRID-Coordinates of Server (e.g. 40.5)
@@ -70,5 +74,19 @@ public class MovementHandler {
                 }
             }
         }
+
+        // Cleanup: Remove balls that are no longer in the server payload (e.g., they went into the hole)
+        Platform.runLater(() -> {
+            players.entrySet().removeIf(entry -> {
+                if (!receivedIds.contains(entry.getKey())) {
+                    // Remove both the circle and the aim line from the UI
+                    gamePane.getChildren().removeAll(
+                        entry.getValue().getCircle()
+                    );
+                    return true; // remove from map
+                }
+                return false;
+            });
+        });
     }
 }

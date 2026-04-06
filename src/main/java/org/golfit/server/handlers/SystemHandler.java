@@ -2,20 +2,29 @@ package org.golfit.server.handlers;
 
 import org.golfit.server.ClientHandler.ClientHandler;
 import org.golfit.server.ServerContext;
+import org.golfit.server.game.ServerGameSimulation;
 import org.golfit.server.serverApi.ServerApi;
 import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 
-import java.util.LinkedHashSet;
-import java.util.Map;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
 import java.util.stream.Collectors;
 
-/** Handles all system-level protocol messages on the server side (connect, disconnect, chat, lobbies, movement). */
+/**
+ * Handles all system-level protocol messages on the server side (connect,
+ * disconnect, chat, lobbies, movement).
+ */
 public class SystemHandler {
 
     private final ServerApi serverApi;
     private final ServerContext serverContext;
+    private ServerGameSimulation gameSimulation;
 
     public SystemHandler(ServerApi serverApi, ServerContext serverContext) {
         this.serverApi = serverApi;
@@ -78,7 +87,6 @@ public class SystemHandler {
             }
         }
     }
-
 
     public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String[] parts = message.payload.split(":", 2);
@@ -192,6 +200,147 @@ public class SystemHandler {
     public void onPlayerList(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String payload = serverContext.getClients().values().stream().map(ClientHandler::getUsername).collect(Collectors.joining(":"));
         serverApi.sendPlayerList(clientHandler, payload);
+    }
 
+    /**
+     * Handles a request to start the game for a lobby.
+     */
+    public void onLobbyStart(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        if (message.payload == null || message.payload.isEmpty())
+            return;
+        int lobbyId;
+        try {
+            lobbyId = Integer.parseInt(message.payload.trim());
+        } catch (NumberFormatException e) {
+            System.err.println("Invalid lobby ID in SYS_LOBBY_START: " + message.payload);
+            return;
+        }
+        Lobby lobby = serverContext.getLobbies().get(lobbyId);
+        if (lobby == null) {
+            System.err.println("Lobby not found for start request: " + lobbyId);
+            return;
+        }
+        if (lobby.getClients().size() < 1) {
+            System.out.println("Start rejected: lobby " + lobbyId + " is empty.");
+            return;
+        }
+        lobby.setStatus(Lobby.LobbyStatus.ongoing);
+        System.out.println("Game starting in lobby " + lobbyId);
+
+        // Register each player to this lobby in the simulation
+        if (gameSimulation != null) {
+            for (ClientHandler client : lobby.getClients()) {
+                gameSimulation.registerPlayerLobby(client.getId(), lobbyId);
+            }
+        }
+
+        serverApi.sendGameStart(lobby);
+
+        // Broadcast updated lobby list so others see status "ongoing"
+        serverContext.getClients().values().forEach(client -> {
+            try {
+                serverApi.sendLobbyList(client);
+            } catch (Exception ignored) {
+            }
+        });
+    }
+
+    /**
+     * Sets the game simulation reference so we can register players and set callbacks.
+     */
+    public void setGameSimulation(ServerGameSimulation sim) {
+        this.gameSimulation = sim;
+    }
+
+    /**
+     * Finds which lobby a ClientHandler belongs to. Returns null if not in any lobby.
+     */
+    public Lobby getLobbyForPlayer(ClientHandler clientHandler) {
+        for (Lobby lobby : serverContext.getLobbies().values()) {
+            if (lobby.getClients().contains(clientHandler)) return lobby;
+        }
+        return null;
+    }
+
+    /**
+     * Builds a stroke-update payload string for all clients in a lobby.
+     * Format: "username1:strokes,username2:strokes,..."
+     */
+    public String buildStrokePayload(Lobby lobby) {
+        if (gameSimulation == null) return "";
+        StringBuilder sb = new StringBuilder();
+        for (ClientHandler client : lobby.getClients()) {
+            if (sb.length() > 0) sb.append(",");
+            sb.append(client.getUsername()).append(":").append(gameSimulation.getStrokeCount(client.getId()));
+        }
+        return sb.toString();
+    }
+
+    /**
+     * Called by the game simulation when all players in a lobby have finished.
+     * Computes the winner, prints it to terminal, saves to results.csv, broadcasts SYS_GAME_END,
+     * then removes all players from the lobby and deletes the lobby.
+     */
+    public void handleGameEnd(int lobbyId, Map<Integer, Integer> strokeResults) {
+        Lobby lobby = serverContext.getLobbies().get(lobbyId);
+        if (lobby == null) return;
+
+        // Build username → strokes map (resolved from client IDs)
+        Map<String, Integer> namedResults = new LinkedHashMap<>();
+        for (ClientHandler client : new ArrayList<>(lobby.getClients())) {
+            int strokes = strokeResults.getOrDefault(client.getId(), 0);
+            namedResults.put(client.getUsername(), strokes);
+        }
+
+        // Find winner (fewest strokes; 0 strokes means they never hit — treat as worst)
+        String winner = namedResults.entrySet().stream()
+                .filter(e -> e.getValue() > 0)
+                .min(Map.Entry.comparingByValue())
+                .map(Map.Entry::getKey)
+                .orElse(namedResults.keySet().stream().findFirst().orElse("Nobody"));
+
+        // Build result strings
+        String resultsList = namedResults.entrySet().stream()
+                .map(e -> e.getKey() + ":" + e.getValue())
+                .collect(Collectors.joining(","));
+        String payload = "winner=" + winner + ";" + resultsList;
+
+        // Print to terminal
+        System.out.println("=== GAME OVER [Lobby " + lobbyId + "] ===");
+        System.out.println("Winner: " + winner);
+        namedResults.forEach((u, s) -> System.out.println("  " + u + ": " + s + " strokes"));
+        System.out.println("========================================");
+
+        // Persist to results.csv
+        saveResults(lobbyId, winner, namedResults);
+
+        // Broadcast game-end to all lobby clients
+        try {
+            serverApi.sendGameEnd(lobby, payload);
+        } catch (Exception e) {
+            System.err.println("Error sending game end: " + e.getMessage());
+        }
+
+        // Reset lobby to open state instead of removing players
+        lobby.setStatus(Lobby.LobbyStatus.open);
+
+        // Broadcast updated lobby list to all remaining clients
+        serverContext.getClients().values().forEach(client -> {
+            try { serverApi.sendLobbyList(client); } catch (Exception ignored) {}
+        });
+    }
+
+    /**
+     * Appends a game result to results.csv.
+     */
+    private void saveResults(int lobbyId, String winner, Map<String, Integer> results) {
+        try (PrintWriter pw = new PrintWriter(new FileWriter("results.csv", true))) {
+            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
+            String row = timestamp + "," + lobbyId + "," + winner + "," +
+                results.entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).collect(Collectors.joining("|"));
+            pw.println(row);
+        } catch (IOException e) {
+            System.err.println("Failed to save results: " + e.getMessage());
+        }
     }
 }

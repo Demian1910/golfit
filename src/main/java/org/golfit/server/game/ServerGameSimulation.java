@@ -16,6 +16,7 @@ import static org.golfit.shared.constants.Constants.*;
 /**
  * Manages the server-side physics simulation for all active players.
  * Handles movement ticks, terrain-based friction, and water hazard resets.
+ * black hole detection, stroke counting, and game-end detection.
  */
 public class ServerGameSimulation {
     private static final Logger logger = LoggerFactory.getLogger(ServerGameSimulation.class);
@@ -27,9 +28,33 @@ public class ServerGameSimulation {
     private static final int TICK_RATE_MS = 40;
     private boolean forceUpdate = false;
 
+    // ---- Game state tracking ----
+    /** Maps playerId → lobbyId (registered when a game starts). */
+    private final Map<Integer, Integer> playerToLobby = new ConcurrentHashMap<>();
+    /** Set of playerIds who have finished (ball in hole). */
+    private final Set<Integer> finishedPlayers = ConcurrentHashMap.newKeySet();
+
+    /** Callback fired when a player's ball enters the hole. */
+    @FunctionalInterface
+    public interface StrokeListener {
+        void onStroke(int playerId);
+    }
+
+    /** Callback fired when all players in a lobby have finished. */
+    @FunctionalInterface
+    public interface GameEndListener {
+        void onGameEnd(int lobbyId, Map<Integer, Integer> strokeResults);
+    }
+
+    private StrokeListener strokeListener;
+    private GameEndListener gameEndListener;
+
     public ServerGameSimulation(ServerApi serverApi) {
         this.serverApi = serverApi;
     }
+
+    public void setStrokeListener(StrokeListener listener) { this.strokeListener = listener; }
+    public void setGameEndListener(GameEndListener listener) { this.gameEndListener = listener; }
 
     /**
      * Starts the simulation ticker at the fixed rate.
@@ -60,23 +85,49 @@ public class ServerGameSimulation {
     }
 
     /**
+     * Registers a player as belonging to a specific lobby game.
+     * Called when a lobby game starts so we can track game-end per lobby.
+     */
+    public void registerPlayerLobby(int playerId, int lobbyId) {
+        playerToLobby.put(playerId, lobbyId);
+        finishedPlayers.remove(playerId); // reset in case of replay
+        ServerBall ball = balls.get(playerId);
+        if (ball != null) {
+            ball.reset();
+        }
+        forceUpdate = true;
+    }
+
+    /**
      * Removes a player from the simulation.
      */
     public void removePlayer(int playerId) {
         balls.remove(playerId);
+        playerToLobby.remove(playerId);
+        finishedPlayers.remove(playerId);
         forceUpdate = true;
     }
 
     /**
      * Applies a stroke force to a specific player's ball.
+     * Ignores the stroke if the ball has already finished.
      */
     public void strokeBall(int playerId, double forceX, double forceY) {
         ServerBall ball = balls.get(playerId);
-        if (ball != null) {
+        if (ball != null && !ball.isFinished()) {
             ball.stroke(forceX, forceY);
-        } else {
+            if (strokeListener != null) {
+                strokeListener.onStroke(playerId);
+            }
+        } else if (ball == null) {
             logger.warn("Received stroke for unknown player ID: {}", playerId);
         }
+    }
+
+    /** Returns the current stroke count for a player, or 0 if not found. */
+    public int getStrokeCount(int playerId) {
+        ServerBall ball = balls.get(playerId);
+        return ball != null ? ball.getStrokeCount() : 0;
     }
 
     /**
@@ -85,14 +136,32 @@ public class ServerGameSimulation {
     private void tick() {
         try {
             double deltaTime = TICK_RATE_MS / 1000.0;
-            boolean anyBallNeedsUpdate = false;
+            boolean anyBallNeedsUpdate = forceUpdate;
             StringBuilder payloadBuilder = new StringBuilder();
 
             for (Map.Entry<Integer, ServerBall> entry : balls.entrySet()) {
                 int playerId = entry.getKey();
                 ServerBall ball = entry.getValue();
 
-                // 1. Terrain and Logic Processing
+                // Skip finished balls — they disappear from the payload
+                if (ball.isFinished()) {
+                    anyBallNeedsUpdate = true; // ensure one final broadcast to remove them
+                    continue;
+                }
+
+                // 1. Check if ball is within the golf hole capture radius
+                double dx = ball.getPx() - HOLE_CENTER_X;
+                double dy = ball.getPy() - HOLE_CENTER_Y;
+                if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
+                    ball.setFinished(true);
+                    finishedPlayers.add(playerId);
+                    anyBallNeedsUpdate = true;
+                    logger.info("Player {} holed out in {} strokes!", playerId, ball.getStrokeCount());
+                    checkGameEnd(playerId);
+                    continue;
+                }
+
+                // 2. Terrain and Logic Processing
                 if (ball.isMoving() || forceUpdate) {
                     int col = (int) ball.getPx();
                     int row = (int) ball.getPy();
@@ -102,10 +171,9 @@ public class ServerGameSimulation {
 
                         if (terrainType == 4) { // Water Hazard
                             ball.resetToLastPosition();
-                            this.forceUpdate = true; // Ensure reset is visible to client
+                            this.forceUpdate = true;
                             logger.info("Player {} hit water and was reset.", playerId);
                         } else {
-                            // Update friction based on surface
                             double friction = switch (terrainType) {
                                 case 2 -> FRICTION_SAND;
                                 case 3 -> FRICTION_ICE;
@@ -115,7 +183,7 @@ public class ServerGameSimulation {
                         }
                     }
 
-                    // 2. Physics Update
+                    // 3. Physics Update
                     List<MapData.ServerShape> nearby = getNearbyShapes(ball.getPx(), ball.getPy(), 3.0);
                     ball.update(deltaTime, nearby);
 
@@ -124,15 +192,20 @@ public class ServerGameSimulation {
                     }
                 }
 
-                // 3. Generate Update Payload (ID:X,Y;)
+                // 4. Generate Update Payload (ID:X,Y;)
                 payloadBuilder.append(playerId).append(":")
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPx())).append(",")
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPy())).append(";");
             }
 
             // Broadcast only if there is movement, a forced update, or player changes
-            if (payloadBuilder.length() > 0 && (anyBallNeedsUpdate || forceUpdate)) {
-                serverApi.broadcastMovement(payloadBuilder.toString());
+            if (anyBallNeedsUpdate || forceUpdate) {
+                if (payloadBuilder.length() > 0) {
+                    serverApi.broadcastMovement(payloadBuilder.toString());
+                } else if (forceUpdate) {
+                    // All balls are finished — broadcast empty payload to remove them from clients
+                    serverApi.broadcastMovement("");
+                }
                 forceUpdate = false;
             }
 
@@ -142,11 +215,39 @@ public class ServerGameSimulation {
     }
 
     /**
+     * Called when a player finishes. Checks if all players in the same lobby are done.
+     */
+    private void checkGameEnd(int finishedPlayerId) {
+        if (gameEndListener == null) return;
+
+        Integer lobbyId = playerToLobby.get(finishedPlayerId);
+        if (lobbyId == null) return;
+
+        // Check if every player in this lobby has finished
+        boolean allFinished = playerToLobby.entrySet().stream()
+                .filter(e -> e.getValue().equals(lobbyId))
+                .allMatch(e -> finishedPlayers.contains(e.getKey()));
+
+        if (allFinished) {
+            // Build results: playerId → strokes
+            Map<Integer, Integer> results = new LinkedHashMap<>();
+            playerToLobby.forEach((pid, pLobbyId) -> {
+                if (pLobbyId.equals(lobbyId)) {
+                    ServerBall ball = balls.get(pid);
+                    if (ball != null) results.put(pid, ball.getStrokeCount());
+                }
+            });
+
+            gameEndListener.onGameEnd(lobbyId, results);
+
+            // Cleanup lobby's tracking data
+            playerToLobby.entrySet().removeIf(e -> e.getValue().equals(lobbyId));
+            results.keySet().forEach(finishedPlayers::remove);
+        }
+    }
+
+    /**
      * Retrieves static obstacles near the specified coordinates to optimize collision detection.
-     * * @param worldX Current X grid position.
-     * @param worldY Current Y grid position.
-     * @param searchRadius Distance in grid units to check for obstacles.
-     * @return List of nearby shapes.
      */
     public static List<MapData.ServerShape> getNearbyShapes(double worldX, double worldY, double searchRadius) {
         List<MapData.ServerShape> nearbyShapes = new ArrayList<>();

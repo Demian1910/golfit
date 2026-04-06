@@ -22,6 +22,10 @@ public class Protocol {
     public static final String SYS_LOBBY_LIST     = "SYS_LOBBY_LIST";
     public static final String SYS_LOBBY_INFO     =  "SYS_LOBBY_INFO";
     public static final String SYS_PLAYERS_LIST   = "SYS_PLAYERS_LIST";
+    public static final String SYS_LOBBY_START    = "SYS_LOBBY_START";  // client → server: request game start
+    public static final String SYS_GAME_START     = "SYS_GAME_START";   // server → client: game is starting
+    public static final String SYS_STROKE_UPDATE  = "SYS_STROKE_UPDATE"; // server → lobby: stroke counts
+    public static final String SYS_GAME_END       = "SYS_GAME_END";      // server → lobby: game over + results
 
     // chat
     public static final String SYS_CHAT_BROADCAST = "SYS_CHAT_BROADCAST";

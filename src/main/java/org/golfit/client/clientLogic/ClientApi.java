@@ -116,6 +116,17 @@ public class ClientApi implements IClientApi {
     }
 
     /**
+     * Sends a game-start request to the server for the current lobby.
+     * The server will validate that the lobby has 4 players before broadcasting SYS_GAME_START.
+     *
+     * @throws Exception if sending fails
+     */
+    public void startGame() throws Exception {
+        channelManager.send(Protocol.SYS_LOBBY_START, Protocol.CH_SYSTEM, getId(), String.valueOf(getLobbyId()));
+    }
+
+
+    /**
      * Sends movement data to the server.
      *
      * @param movementData The movement data to be sent

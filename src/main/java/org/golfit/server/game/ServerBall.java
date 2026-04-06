@@ -20,6 +20,11 @@ public class ServerBall {
     private double lastStaticX;
     private double lastStaticY;
 
+    /** Number of strokes taken by this ball's player. */
+    private int strokeCount = 0;
+    /** True once the ball has entered the hole and the player has finished. */
+    private boolean finished = false;
+
     private final double STOPPING_VELOCITY = Constants.STOPPING_VELOCITY;
     private double friction = FRICTION_GRASS;
 
@@ -49,12 +54,14 @@ public class ServerBall {
      * @param initialVy Initial velocity component on the Y-axis.
      */
     public void stroke(double initialVx, double initialVy) {
+        if (finished) return; // Cannot stroke a finished ball
         // Save position BEFORE the stroke for reset purposes (e.g., water hazards)
         this.lastStaticX = this.px;
         this.lastStaticY = this.py;
 
         this.vx = initialVx;
         this.vy = initialVy;
+        strokeCount++;
 
         // Hard limit to maintain physical stability and prevent wall-glitching
         double maxGridSpeed = 60.0;
@@ -213,4 +220,18 @@ public class ServerBall {
     public double getPy() { return py; }
     public boolean isMoving() { return vx != 0 || vy != 0; }
     public void changeFriction(double currentFriction) { this.friction = currentFriction; }
+    public int getStrokeCount() { return strokeCount; }
+    public boolean isFinished() { return finished; }
+    public void setFinished(boolean finished) { this.finished = finished; }
+
+    public void reset() {
+        this.px = 9.8;
+        this.py = 42.4;
+        this.lastStaticX = this.px;
+        this.lastStaticY = this.py;
+        this.vx = 0;
+        this.vy = 0;
+        this.strokeCount = 0;
+        this.finished = false;
+    }
 }

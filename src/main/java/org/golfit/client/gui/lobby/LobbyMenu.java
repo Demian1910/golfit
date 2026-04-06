@@ -12,15 +12,23 @@ import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.shared.constants.Constants;
 
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
 
 public class LobbyMenu extends VBox {
     ClientApi clientApi;
     VBox lobbyVBox = new VBox(5);
     private VBox playerList;
     private Button leaveLobbyBtn;
+    private Button startBtn;
 
     private final VBox lobbyListView;
     private final VBox inLobbyView;
+
+    private final Map<String, Integer> strokesMap = new HashMap<>();
+    private final List<String> currentPlayers = new ArrayList<>();
 
     public LobbyMenu(ClientApi clientApi) {
         this.clientApi = clientApi;
@@ -42,9 +50,11 @@ public class LobbyMenu extends VBox {
             javafx.application.Platform.runLater(() -> {
                 lobbyVBox.getChildren().clear();
                 for (String lobbyString : lobbyList) {
-                    if (lobbyString == null || lobbyString.isBlank()) continue;
+                    if (lobbyString == null || lobbyString.isBlank())
+                        continue;
                     String[] lobby = lobbyString.split(":");
-                    if (lobby.length < 4) continue;
+                    if (lobby.length < 4)
+                        continue;
                     createLobbyRow(lobby);
                 }
             });
@@ -53,8 +63,48 @@ public class LobbyMenu extends VBox {
             String[] players = (String[]) data;
             updatePlayers(players);
         });
-        EventBus.get().on(Constants.LOBBY_JOINED, data -> showInLobbyView());
-        EventBus.get().on(Constants.LOBBY_LEFT,   data -> showLobbyListView());
+        EventBus.get().on(Constants.LOBBY_JOINED, data -> {
+             strokesMap.clear();
+             showInLobbyView();
+        });
+        EventBus.get().on(Constants.LOBBY_LEFT, data -> {
+             strokesMap.clear();
+             showLobbyListView();
+        });
+
+        EventBus.get().on(Constants.GAME_START, data -> {
+            Platform.runLater(() -> {
+                startBtn.setVisible(false);
+                startBtn.setManaged(false);
+                leaveLobbyBtn.setVisible(false);
+                leaveLobbyBtn.setManaged(false);
+            });
+        });
+
+        EventBus.get().on(Constants.STROKE_UPDATE, data -> {
+            String payload = (String) data;
+            if (payload != null && !payload.isEmpty()) {
+                String[] parts = payload.split(",");
+                for (String part : parts) {
+                    String[] kv = part.split(":");
+                    if (kv.length == 2) {
+                        try { strokesMap.put(kv[0], Integer.parseInt(kv[1])); } catch (NumberFormatException ignored) {}
+                    }
+                }
+                updatePlayers(currentPlayers.toArray(new String[0]));
+            }
+        });
+
+        EventBus.get().on(Constants.GAME_END, data -> {
+            Platform.runLater(() -> {
+                startBtn.setVisible(true);
+                startBtn.setManaged(true);
+                leaveLobbyBtn.setVisible(true);
+                leaveLobbyBtn.setManaged(true);
+                strokesMap.clear();
+                updatePlayers(currentPlayers.toArray(new String[0]));
+            });
+        });
     }
 
     public void setInLobby(boolean inLobby) {
@@ -69,7 +119,7 @@ public class LobbyMenu extends VBox {
         row.setPadding(new Insets(4));
         row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);
 
-        Label nameLabel   = new Label(lobby[1] + "'s lobby");
+        Label nameLabel = new Label(lobby[1] + "'s lobby");
         nameLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
         Label playerCount = new Label(lobby[2] + "/4");
         playerCount.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
@@ -95,7 +145,8 @@ public class LobbyMenu extends VBox {
         joinBtn.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
 
         joinBtn.setOnAction(e -> {
-            if (clientApi.getLobbyId() > 0) return;
+            if (clientApi.getLobbyId() > 0)
+                return;
             try {
                 clientApi.joinLobby(lobby[0]);
             } catch (Exception ex) {
@@ -115,9 +166,13 @@ public class LobbyMenu extends VBox {
         Button createLobbyBtn = new Button("Create Lobby");
         createLobbyBtn.setMaxWidth(Double.MAX_VALUE);
         createLobbyBtn.setOnAction(e -> {
-            if (clientApi.getLobbyId() > 0) return;
-            try { clientApi.createLobby(); }
-            catch (Exception ex) { throw new RuntimeException(ex); }
+            if (clientApi.getLobbyId() > 0)
+                return;
+            try {
+                clientApi.createLobby();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
         HBox buttons = new HBox(6, createLobbyBtn);
@@ -137,19 +192,33 @@ public class LobbyMenu extends VBox {
         Label title = new Label("Current Lobby");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
 
-
         Label playersLabel = new Label("Players:");
         playersLabel.setStyle("-fx-text-fill: white;");
         playerList = new VBox(4);
 
+        startBtn = new Button("▶ START");
+        startBtn.setMaxWidth(Double.MAX_VALUE);
+        startBtn.setDisable(true);
+        startBtn.setStyle("-fx-opacity: 0.5;");
+        startBtn.setOnAction(e -> {
+            try {
+                clientApi.startGame();
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
+        });
+
         leaveLobbyBtn = new Button("Leave Lobby");
         leaveLobbyBtn.setMaxWidth(Double.MAX_VALUE);
         leaveLobbyBtn.setOnAction(e -> {
-            try { clientApi.leaveLobby(String.valueOf(clientApi.getLobbyId())); }
-            catch (Exception ex) { throw new RuntimeException(ex); }
+            try {
+                clientApi.leaveLobby(String.valueOf(clientApi.getLobbyId()));
+            } catch (Exception ex) {
+                throw new RuntimeException(ex);
+            }
         });
 
-        VBox view = new VBox(8, title, playersLabel, playerList, leaveLobbyBtn);
+        VBox view = new VBox(8, title, playersLabel, playerList, startBtn, leaveLobbyBtn);
         VBox.setVgrow(view, Priority.ALWAYS);
         return view;
     }
@@ -174,13 +243,34 @@ public class LobbyMenu extends VBox {
 
     public void updatePlayers(String[] players) {
         javafx.application.Platform.runLater(() -> {
+            currentPlayers.clear();
+            for (String p : players) {
+                if (p != null && !p.isBlank()) currentPlayers.add(p);
+            }
+
             playerList.getChildren().clear();
-            for (String player : players) {
-                if (player == null || player.isBlank()) continue;
+            for (String player : currentPlayers) {
+                HBox pRow = new HBox(8);
                 Label playerLabel = new Label("👤 " + player);
                 playerLabel.setStyle("-fx-text-fill: white;");
-                playerList.getChildren().add(playerLabel);
+
+                javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
+                HBox.setHgrow(spacer, Priority.ALWAYS);
+
+                int strokes = strokesMap.getOrDefault(player, 0);
+                Label strokeLabel = new Label(strokes + " strokes");
+                strokeLabel.setStyle("-fx-text-fill: yellow;");
+                
+                // Only show stroke label if game is active (buttons hidden)
+                strokeLabel.setVisible(!startBtn.isVisible());
+
+                pRow.getChildren().addAll(playerLabel, spacer, strokeLabel);
+                playerList.getChildren().add(pRow);
             }
+            // Enable START only when exactly 4 players are in the lobby
+            boolean canStart = true; // playerList.getChildren().size() == 4;
+            startBtn.setDisable(!canStart);
+            startBtn.setStyle(canStart ? "-fx-base: #27ae60;" : "-fx-opacity: 0.5;");
         });
     }
 }

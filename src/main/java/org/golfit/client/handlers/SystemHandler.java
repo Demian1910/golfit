@@ -122,4 +122,22 @@ public class SystemHandler {
     public void onMoveUpdate(MessageParser.Message message) {
         ConsoleManager.println("Move update");
     }
+
+
+    /** Handles a game-start broadcast from the server — fires the GAME_START EventBus event. */
+    public void onGameStart(MessageParser.Message message) {
+        System.out.println("[DEBUG] [SYSTEM HANDLER] Received SYS_GAME_START! Payload: " + message.payload);
+        EventBus.get().emit(Constants.GAME_START, message.payload);
+    }
+
+    /** Handles a stroke-update broadcast — fires STROKE_UPDATE with "user:strokes,..." payload. */
+    public void onStrokeUpdate(MessageParser.Message message) {
+        EventBus.get().emit(Constants.STROKE_UPDATE, message.payload);
+    }
+
+    /** Handles a game-end broadcast — fires GAME_END with "winner=X;user1:s,..." payload. */
+    public void onGameEnd(MessageParser.Message message) {
+        System.out.println("[GAME END] " + message.payload);
+        EventBus.get().emit(Constants.GAME_END, message.payload);
+    }
 }

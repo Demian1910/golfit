@@ -182,6 +182,9 @@ public class Client {
             case Protocol.SYS_LOBBY_LEFT -> systemHandler.onLobbyLeft(message);
             case Protocol.MOVE_UPDATE -> movementHandler.onMoveUpdate(message);
             case Protocol.SYS_PLAYERS_LIST -> systemHandler.onPlayerList(message);
+            case Protocol.SYS_GAME_START   -> systemHandler.onGameStart(message);
+            case Protocol.SYS_STROKE_UPDATE -> systemHandler.onStrokeUpdate(message);
+            case Protocol.SYS_GAME_END     -> systemHandler.onGameEnd(message);
         }
     }
 }

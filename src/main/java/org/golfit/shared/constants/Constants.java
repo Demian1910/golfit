@@ -47,19 +47,27 @@ public class Constants {
     public static final String LOBBY_LEFT = "LOBBY_LEFT";
     public static final String LOBBY_INFO =  "LOBBY_INFO";
     public static final String PLAYERS_LIST =  "PLAYERS_LIST";
+    public static final String GAME_START    =  "GAME_START";
+    public static final String STROKE_UPDATE =  "STROKE_UPDATE"; // EventBus event for stroke count updates
+    public static final String GAME_END      =  "GAME_END";      // EventBus event for game-over results
+
+    /** Golf hole position in grid coordinates (matches Course.java addGolfHole(65, 9) with width=3, height=1) */
+    public static final double HOLE_CENTER_X    = 66.5;
+    public static final double HOLE_CENTER_Y    = 9.5;
+    public static final double HOLE_CAPTURE_RADIUS = 1.3;
 
 
 
     // Frictions
-    public static final double FRICTION_GRASS = 0.7;
-    public static final double FRICTION_SAND  = 0.2;
-    public static final double FRICTION_ICE   = 0.95;
+    public static final double FRICTION_GRASS = 0.3;
+    public static final double FRICTION_SAND  = 0.1;
+    public static final double FRICTION_ICE   = 0.6;
     public static final double FRICTION_WATER = 0.00;
     public static final double FRICTION_BOUNCE = 0.6;
     /**
      * Both velocity components must drop below this to stop the ball completely.
      * Unit: grid/s
      */
-    public static final double STOPPING_VELOCITY = 2.5;
+    public static final double STOPPING_VELOCITY = 1.5;
 
 }

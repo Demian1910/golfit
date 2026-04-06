@@ -26,7 +26,7 @@ public class BallRender {
     }
 
     /**
-     * Berechnet, wie viele Pixel 0.5 Grid-Einheiten entsprechen.
+     * Calculates how many pixels correspond to 0.5 grid units.
      */
     private double calculatePixelRadius() {
         if (root == null || root.getWidth() <= 0) {
@@ -55,5 +55,9 @@ public class BallRender {
         if (this.circle != null) {
             this.circle.setFill(newColor);
         }
+    }
+
+    public Circle getCircle() {
+        return circle;
     }
 }

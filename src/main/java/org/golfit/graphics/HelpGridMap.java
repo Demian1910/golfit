@@ -40,7 +40,7 @@ public class HelpGridMap {
         double cellW = w / (double)COLS;
         double cellH = h / (double)ROWS;
 
-        // Grids leeren
+        // Clear grids
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 grid[r][c] = EMPTY;
@@ -98,7 +98,7 @@ public class HelpGridMap {
     }
 
     public void verifyIdMapping() {
-        // 1. Alte Elemente entfernen
+        // 1. Remove old elements
         container.getChildren().removeIf(node -> "ID_VERIFY".equals(node.getUserData()));
 
         double w = container.getWidth();
@@ -110,7 +110,7 @@ public class HelpGridMap {
                 int id = idGrid[r][c];
 
                 if (id != -1) {
-                    // 2. Pixel-Grenzen exakt berechnen (kein schleichender Versatz)
+                    // 2. Calculate pixel boundaries exactly (no creeping offset)
                     double x1 = Math.round(c * w / (double)COLS);
                     double x2 = Math.round((c + 1) * w / (double)COLS);
                     double y1 = Math.round(r * h / (double)ROWS);
@@ -132,7 +132,7 @@ public class HelpGridMap {
                     debugTile.setMouseTransparent(true);
                     container.getChildren().add(debugTile);
 
-                    // 3. Text-ID positionieren
+                    // 3. Position Text ID
                     Text t = new Text(String.valueOf(id));
                     // Position within the rounded cell
                     t.setX(x1 + (x2 - x1) * 0.1);

@@ -60,6 +60,28 @@ public class Server implements ServerContext{
      */
     public Server(int port) {
         this.port = port;
+
+        // Wire simulation → handler callbacks
+        systemHandler.setGameSimulation(gameSimulation);
+
+        // On every stroke: broadcast updated stroke counts to the player's lobby
+        gameSimulation.setStrokeListener(playerId -> {
+            ClientHandler ch = clients.values().stream()
+                    .filter(c -> c.getId() == playerId)
+                    .findFirst().orElse(null);
+            if (ch == null) return;
+            Lobby lobby = systemHandler.getLobbyForPlayer(ch);
+            if (lobby == null) return;
+            String payload = systemHandler.buildStrokePayload(lobby);
+            try {
+                serverApi.sendStrokeUpdate(lobby, payload);
+            } catch (Exception e) {
+                System.err.println("Error sending stroke update: " + e.getMessage());
+            }
+        });
+
+        // On game end: delegate to handleGameEnd
+        gameSimulation.setGameEndListener(systemHandler::handleGameEnd);
     }
 
     /**
@@ -178,6 +200,7 @@ public class Server implements ServerContext{
             case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeave(clientHandler, message);
             case Protocol.MOVE_INPUT -> movementHandler.onMoveInput(clientHandler, message);
             case Protocol.SYS_PLAYERS_LIST -> systemHandler.onPlayerList(clientHandler, message);
+            case Protocol.SYS_LOBBY_START  -> systemHandler.onLobbyStart(clientHandler, message);
         }
     }
 

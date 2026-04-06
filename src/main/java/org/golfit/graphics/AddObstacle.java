@@ -157,7 +157,7 @@ public class AddObstacle {
             double h = unitH.get();
             List<Double> newPoints = new ArrayList<>();
             for (int i = 0; i < coords.length; i += 2) {
-                newPoints.add(coords[i] * w);     // X-Koordinate * aktuelle Zellenbreite
+                newPoints.add(coords[i] * w);     // X-coordinate * current cell width
                 newPoints.add(coords[i+1] * h);   // Y-coordinate * current cell height
             }
             poly.getPoints().setAll(newPoints);
@@ -172,7 +172,7 @@ public class AddObstacle {
         container.getChildren().add(poly);
         obstacles.add(poly);
 
-        // Initialer Aufruf
+        // Initial call
         javafx.application.Platform.runLater(update);
     }
 
@@ -185,7 +185,7 @@ public class AddObstacle {
         trunk.setFill(Color.rgb(124, 63, 0));
         trunk.setUserData(WALL);
 
-        // 2. Krone (Canopy)
+        // 2. Canopy
         Polygon canopy = new Polygon();
         canopy.setFill(Color.rgb(34, 139, 34));
         canopy.setUserData(WALL);
@@ -199,17 +199,17 @@ public class AddObstacle {
             double w = unitW.get();
             double h = unitH.get();
 
-            // Stamm positionieren (Manuelle Berechnung statt Binding)
+            // Position trunk (Manual calculation instead of binding)
             trunk.setX(col * w);
             trunk.setY(row * h);
-            trunk.setWidth(w);   // 1 Zelle breit
-            trunk.setHeight(h);  // 1 Zelle hoch
+            trunk.setWidth(w);   // 1 cell wide
+            trunk.setHeight(h);  // 1 cell high
 
             // Position crown (exactly the same 'w' and 'h' values)
             canopy.getPoints().setAll(
-                    (col - 1.0) * w, (double)row * h,          // Links unten
-                    (col + 2.0) * w, (double)row * h,          // Rechts unten
-                    (col + 0.5) * w, (double)(row - 2) * h     // Spitze oben Mitte
+                    (col - 1.0) * w, (double)row * h,          // Bottom left
+                    (col + 2.0) * w, (double)row * h,          // Bottom right
+                    (col + 0.5) * w, (double)(row - 2) * h     // Top center tip
             );
         };
 

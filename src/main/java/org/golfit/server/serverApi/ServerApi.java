@@ -121,6 +121,33 @@ public class ServerApi implements IServerApi{
         clientHandler.getChannelManager().send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
+    /** Broadcasts SYS_GAME_START to every client in the given lobby. */
+    public void sendGameStart(Lobby lobby) throws Exception {
+        for (ClientHandler client : lobby.getClients()) {
+            client.getChannelManager().send(
+                Protocol.SYS_GAME_START, Protocol.CH_SYSTEM, Protocol.ID_SERVER, String.valueOf(lobby.getId()));
+        }
+    }
+
+    /** Broadcasts SYS_STROKE_UPDATE to every client in the given lobby.
+     *  Payload format: "username1:strokes,username2:strokes,..." */
+    public void sendStrokeUpdate(Lobby lobby, String payload) throws Exception {
+        for (ClientHandler client : lobby.getClients()) {
+            client.getChannelManager().send(
+                Protocol.SYS_STROKE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+        }
+    }
+
+    /** Broadcasts SYS_GAME_END to every client in the given lobby.
+     *  Payload format: "winner=username;username1:2,username2:5" */
+    public void sendGameEnd(Lobby lobby, String payload) throws Exception {
+        for (ClientHandler client : lobby.getClients()) {
+            client.getChannelManager().send(
+                Protocol.SYS_GAME_END, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+        }
+    }
+
+
     /** Attempts to claim a username. Returns true if the username was available and successfully claimed. */
     public boolean claimUsername(String username) {
         return serverContext.getUsernameSet().add(username);
