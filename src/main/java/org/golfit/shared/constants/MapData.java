@@ -215,7 +215,7 @@ public class MapData {
         public double[] points;
         public int id;
 
-        // Konstruktor für Rechtecke & Ellipsen
+        // Constructor for rectangles & ellipses
         public ServerShape(int id, int terrain, int form, double x, double y, double w, double h) {
             this.id = id;
             this.terrainType = terrain;
@@ -226,7 +226,7 @@ public class MapData {
             this.h = h;
         }
 
-        // Konstruktor für Polygone
+        // Constructor for polygons
         public ServerShape(int id, int terrain, int form, double[] points) {
             this.id = id;
             this.terrainType = terrain;

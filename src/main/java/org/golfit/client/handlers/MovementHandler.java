@@ -44,23 +44,23 @@ public class MovementHandler {
                     int playerId = Integer.parseInt(parts[0]);
                     String[] coords = parts[1].split(",");
 
-                    // Das sind die GRID-Koordinaten vom Server (z.B. 40.5)
+                    // GRID-Coordinates of Server (e.g. 40.5)
                     double gridX = Double.parseDouble(coords[0]);
                     double gridY = Double.parseDouble(coords[1]);
 
-                    // UMRECHNUNG: Grid -> Pixel
+                    // CONVERSION: Grid -> Pixel
                     double pixelX = gridX * scaleX;
                     double pixelY = gridY * scaleY;
 
                     Platform.runLater(() -> {
                         BallRender render = players.get(playerId);
                         if (render == null) {
-                            // Falls der Ball neu ist, mit Pixel-Werten erstellen
+                            // If the ball is new, calculate Pixel-Value
                             Ball initialBall = new Ball(pixelX, pixelY);
                             render = new BallRender(gamePane, initialBall);
                             players.put(playerId, render);
                         } else {
-                            // Bestehenden Ball auf die neuen Pixel-Koordinaten schieben
+                            // Move the existing ball to the new pixel coordinates
                             Ball tempBall = new Ball(pixelX, pixelY);
                             render.updatePosition(tempBall);
                         }

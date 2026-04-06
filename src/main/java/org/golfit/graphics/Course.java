@@ -49,7 +49,7 @@ public class Course {
         addObstacle.addPolygon(scene,
                 1, 15,
                 1, 12,
-                5, 12 // X-Endpunkt verschoben für mehr Dicke
+                5, 12 // X-endpoint shifted for more thickness
         );
 
         // Path 2 room 2 (Breite +1)

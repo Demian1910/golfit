@@ -55,7 +55,7 @@ public class HelpGridMap {
 
             Bounds b = s.getBoundsInParent();
 
-            // Wir bestimmen den Bereich im Grid basierend auf den Pixel-Bounds
+            // We determine the grid area based on the pixel bounds
             int startCol = (int) Math.floor((b.getMinX() + 0.1) / cellW);
             int endCol   = (int) Math.floor((b.getMaxX() - 0.1) / cellW);
             int startRow = (int) Math.floor((b.getMinY() + 0.1) / cellH);
@@ -63,7 +63,7 @@ public class HelpGridMap {
 
             for (int r = startRow; r <= endRow; r++) {
                 for (int c = startCol; c <= endCol; c++) {
-                    // Punkt-Test in der exakten Mitte der Grid-Zelle
+                    // Point test in the exact center of the grid cell
                     double px = (c + 0.5) * cellW;
                     double py = (r + 0.5) * cellH;
 
@@ -116,15 +116,15 @@ public class HelpGridMap {
                     double y1 = Math.round(r * h / (double)ROWS);
                     double y2 = Math.round((r + 1) * h / (double)ROWS);
 
-                    // Das Rechteck füllt jetzt exakt den Raum zwischen den Pixel-Kanten
+                    // The rectangle now exactly fills the space between the pixel edges
                     Rectangle debugTile = new Rectangle(x1, y1, x2 - x1, y2 - y1);
 
-                    // Stroke nach innen, damit die 0.5px Breite nicht nach außen addiert wird
+                    // Inner stroke, so the 0.5px width is not added outwards
                     debugTile.setStrokeType(javafx.scene.shape.StrokeType.INSIDE);
                     debugTile.setStroke(Color.web("white", 0.3));
                     debugTile.setStrokeWidth(0.5);
 
-                    // Farbe basierend auf ID
+                    // Color based on ID
                     int colorHash = Integer.hashCode(id) * 0x45d9f3b;
                     debugTile.setFill(Color.hsb((colorHash % 360 + 360) % 360, 0.5, 0.9, 0.4));
 
@@ -134,7 +134,7 @@ public class HelpGridMap {
 
                     // 3. Text-ID positionieren
                     Text t = new Text(String.valueOf(id));
-                    // Position innerhalb der gerundeten Zelle
+                    // Position within the rounded cell
                     t.setX(x1 + (x2 - x1) * 0.1);
                     t.setY(y1 + (y2 - y1) * 0.8);
 

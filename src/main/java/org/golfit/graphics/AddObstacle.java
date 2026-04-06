@@ -147,23 +147,23 @@ public class AddObstacle {
     public void addPolygon(Pane scene, double... coords) {
         Polygon poly = new Polygon();
 
-        // Wir nutzen DoubleBindings für die aktuelle Zellengröße
+        // We use DoubleBindings for the current cell size
         DoubleBinding unitW = container.widthProperty().divide((double)COLS);
         DoubleBinding unitH = container.heightProperty().divide((double)ROWS);
 
-        // Diese Funktion berechnet die Punkte basierend auf den aktuellen Maßen neu
+        // This function recalculates the points based on the current dimensions
         Runnable update = () -> {
             double w = unitW.get();
             double h = unitH.get();
             List<Double> newPoints = new ArrayList<>();
             for (int i = 0; i < coords.length; i += 2) {
                 newPoints.add(coords[i] * w);     // X-Koordinate * aktuelle Zellenbreite
-                newPoints.add(coords[i+1] * h);   // Y-Koordinate * aktuelle Zellenhöhe
+                newPoints.add(coords[i+1] * h);   // Y-coordinate * current cell height
             }
             poly.getPoints().setAll(newPoints);
         };
 
-        // WICHTIG: Die Listener müssen an den Container gebunden sein
+        // IMPORTANT: The listeners must be bound to the container
         container.widthProperty().addListener((obs, ov, nv) -> update.run());
         container.heightProperty().addListener((obs, ov, nv) -> update.run());
 
@@ -180,7 +180,7 @@ public class AddObstacle {
      * Creates a tree at the specified grid position
      */
     public void addTree(Pane scene, int col, int row) {
-        // 1. Stamm (Trunk) - Wir erstellen ein nacktes Rectangle ohne bindGrid!
+        // 1. Trunk - we create a plain Rectangle without bindGrid!
         Rectangle trunk = new Rectangle();
         trunk.setFill(Color.rgb(124, 63, 0));
         trunk.setUserData(WALL);
@@ -190,11 +190,11 @@ public class AddObstacle {
         canopy.setFill(Color.rgb(34, 139, 34));
         canopy.setUserData(WALL);
 
-        // Wir nutzen den Container für die Berechnung
+        // We use the container for the calculation
         DoubleBinding unitW = container.widthProperty().divide((double)COLS);
         DoubleBinding unitH = container.heightProperty().divide((double)ROWS);
 
-        // EIN gemeinsames Update für beide Teile
+        // ONE common update for both parts
         Runnable updateTree = () -> {
             double w = unitW.get();
             double h = unitH.get();
@@ -205,7 +205,7 @@ public class AddObstacle {
             trunk.setWidth(w);   // 1 Zelle breit
             trunk.setHeight(h);  // 1 Zelle hoch
 
-            // Krone positionieren (Exakt die gleichen 'w' und 'h' Werte)
+            // Position crown (exactly the same 'w' and 'h' values)
             canopy.getPoints().setAll(
                     (col - 1.0) * w, (double)row * h,          // Links unten
                     (col + 2.0) * w, (double)row * h,          // Rechts unten
@@ -213,7 +213,7 @@ public class AddObstacle {
             );
         };
 
-        // Listener auf den Container setzen
+        // Set listeners on the container
         container.widthProperty().addListener((obs, oldVal, newVal) -> updateTree.run());
         container.heightProperty().addListener((obs, oldVal, newVal) -> updateTree.run());
 
@@ -221,7 +221,7 @@ public class AddObstacle {
         obstacles.add(trunk);
         obstacles.add(canopy);
 
-        // Sofort ausführen
+        // Execute immediately
         javafx.application.Platform.runLater(updateTree);
     }
     /**

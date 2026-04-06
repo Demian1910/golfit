@@ -34,20 +34,20 @@ public class GameView {
                     double diffY = startY - e.getY();
 
                     // 2. Umrechnen von Pixel in Grid-Einheiten
-                    // Wir teilen durch die aktuelle Breite/Höhe der Pane
+                    // We divide by the current width/height of the pane
                     double scaleX = root.getWidth() / 80.0;
                     double scaleY = root.getHeight() / 45.0;
 
                     double gridFx = diffX / scaleX;
                     double gridFy = diffY / scaleY;
 
-                    // 3. Kraft-Multiplikator für das Gefühl (Tweak hier!)
-                    // Ein Wert von 1.5 bis 2.5 fühlt sich meist gut an
+                    // 3. Force multiplier for the feel (Tweak here!)
+                    // A value between 1.5 and 2.5 usually feels good
                     double powerMultiplier = 2.0;
                     gridFx *= powerMultiplier;
                     gridFy *= powerMultiplier;
 
-                    // 4. Maximales Limit (Damit der Ball nicht aus der Map glitcht)
+                    // 4. Maximum limit (so the ball doesn't glitch out of the map)
                     double maxForce = 45.0;
                     double currentForce = Math.sqrt(gridFx * gridFx + gridFy * gridFy);
 
@@ -56,7 +56,7 @@ public class GameView {
                         gridFy = (gridFy / currentForce) * maxForce;
                     }
 
-                    // Nur senden, wenn es kein versehentlicher Klick war
+                    // Only send if it wasn't an accidental click
                     if (currentForce > 0.5) {
                         org.golfit.Main.currentClient.clientApi.sendMovement(gridFx, gridFy);
                     }
