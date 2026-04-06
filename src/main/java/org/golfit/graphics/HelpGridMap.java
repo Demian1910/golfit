@@ -13,6 +13,7 @@ import javafx.scene.shape.Rectangle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
 import org.golfit.shared.constants.MapData;
+
 import java.util.List;
 
 public class HelpGridMap {
@@ -37,10 +38,10 @@ public class HelpGridMap {
         double h = container.getHeight();
         if (w <= 0 || h <= 0) return;
 
-        double cellW = w / (double)COLS;
-        double cellH = h / (double)ROWS;
+        double cellW = w / (double) COLS;
+        double cellH = h / (double) ROWS;
 
-        // Clear grids
+        // Grids leeren
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
                 grid[r][c] = EMPTY;
@@ -57,9 +58,9 @@ public class HelpGridMap {
 
             // We determine the grid area based on the pixel bounds
             int startCol = (int) Math.floor((b.getMinX() + 0.1) / cellW);
-            int endCol   = (int) Math.floor((b.getMaxX() - 0.1) / cellW);
+            int endCol = (int) Math.floor((b.getMaxX() - 0.1) / cellW);
             int startRow = (int) Math.floor((b.getMinY() + 0.1) / cellH);
-            int endRow   = (int) Math.floor((b.getMaxY() - 0.1) / cellH);
+            int endRow = (int) Math.floor((b.getMaxY() - 0.1) / cellH);
 
             for (int r = startRow; r <= endRow; r++) {
                 for (int c = startCol; c <= endCol; c++) {
@@ -75,11 +76,12 @@ public class HelpGridMap {
             }
         }
     }
+
     public void debugViewGrid() {
         container.getChildren().removeIf(node -> "DEBUG_GRID".equals(node.getUserData()));
 
-        double cellW = container.getWidth() / (double)COLS;
-        double cellH = container.getHeight() / (double)ROWS;
+        double cellW = container.getWidth() / (double) COLS;
+        double cellH = container.getHeight() / (double) ROWS;
 
         for (int r = 0; r < ROWS; r++) {
             for (int c = 0; c < COLS; c++) {
@@ -148,9 +150,10 @@ public class HelpGridMap {
             }
         }
     }
+
     public void printServerData() {
-        double cellW = container.getWidth() / (double)COLS;
-        double cellH = container.getHeight() / (double)ROWS;
+        double cellW = container.getWidth() / (double) COLS;
+        double cellH = container.getHeight() / (double) ROWS;
 
         System.out.println("public static final List<ServerShape> LEVEL_1_OBSTACLES = List.of(");
         for (int i = 0; i < obstacles.size(); i++) {
@@ -163,7 +166,7 @@ public class HelpGridMap {
                         i, terrain, r.getX() / cellW, r.getY() / cellH, r.getWidth() / cellW, r.getHeight() / cellH);
             } else if (s instanceof Ellipse e) {
                 line = String.format("    new ServerShape(%d, %d, ServerShape.ELLIPSE, %.4f, %.4f, %.4f, %.4f)",
-                        i, terrain, (e.getCenterX()-e.getRadiusX())/cellW, (e.getCenterY()-e.getRadiusY())/cellH, (e.getRadiusX()*2)/cellW, (e.getRadiusY()*2)/cellH);
+                        i, terrain, (e.getCenterX() - e.getRadiusX()) / cellW, (e.getCenterY() - e.getRadiusY()) / cellH, (e.getRadiusX() * 2) / cellW, (e.getRadiusY() * 2) / cellH);
             } else if (s instanceof Polygon p) {
                 StringBuilder pts = new StringBuilder("new double[]{");
                 for (int j = 0; j < p.getPoints().size(); j++) {

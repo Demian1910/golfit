@@ -55,7 +55,7 @@ public class App extends Application {
             HBox root = new HBox(centerArea, sidebar);
             HBox.setHgrow(centerArea, Priority.ALWAYS);
 
-            primaryStage.setScene(new Scene(root, 1100, 600));
+            primaryStage.setScene(new Scene(root, 1350, 600));
 
             // Connect AFTER scene/sidebar are fully set up so all EventBus listeners are registered
             client.getClientApi().connect(username);

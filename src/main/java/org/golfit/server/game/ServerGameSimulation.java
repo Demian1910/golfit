@@ -248,6 +248,10 @@ public class ServerGameSimulation {
 
     /**
      * Retrieves static obstacles near the specified coordinates to optimize collision detection.
+     * * @param worldX Current X grid position.
+     * @param worldY Current Y grid position.
+     * @param searchRadius Distance in grid units to check for obstacles.
+     * @return List of nearby shapes.
      */
     public static List<MapData.ServerShape> getNearbyShapes(double worldX, double worldY, double searchRadius) {
         List<MapData.ServerShape> nearbyShapes = new ArrayList<>();

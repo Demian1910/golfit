@@ -153,3 +153,7 @@ up i would say that lobby functions and chat gui logic should be at least 95% fi
 going to be moved in a way that for example we make a start screen then an active lobbies screen etc. which in that 
 case the change will just be like i said moving them to their own individual places which would just change where the 
 components live in the UI not what actually they do.
+
+## Entry #14 6.4
+
+Constantin fixed the implementation of the course. Previously there was a conflict between the sidebar and course, where the sidebar would "eat" the space of the course. Now the course is a fixed 1100 x 600, resizing will need to be adjusted.

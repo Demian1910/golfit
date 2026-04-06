@@ -2,7 +2,8 @@ package org.golfit.graphics;
 
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
-import javafx.scene.shape.*;
+import javafx.scene.shape.Shape;
+
 import java.util.List;
 
 public class Course {
@@ -11,159 +12,126 @@ public class Course {
     private static final int ROWS = 45;
     private Pane container;
     private Color backgroundColor = Color.rgb(121, 213, 33);
+    private AddObstacle addObstacle;
 
-    public int[][] grid = new int[COLS][ROWS];
-    public List<Shape> obstacles;
-    AddObstacle addObstacle;
-
-    public Course(Pane scene) {
+    public Course() {
         container = new Pane();
-        addObstacle = new AddObstacle(scene, container);
 
-        // Background (+1 width)
-        addObstacle.addRect(scene, 0, 0, COLS + 1, ROWS, backgroundColor);
+        // LOCK the internal world size to 1100x600
+        container.setPrefSize(1100, 600);
+        container.setMinSize(1100, 600);
+        container.setMaxSize(1100, 600);
 
+        addObstacle = new AddObstacle(container);
 
+        // --- BACKGROUND ---
+        // Covers the full 1100px width (COLS = 80)
+        addObstacle.addRect(0, 0, COLS, ROWS, backgroundColor);
 
-        // Path 2 start (width +1)
-        addObstacle.addWall(scene, 2, 22, 3 + 1, 2);
-        addObstacle.addWall(scene, 13, 22, 3 + 1, 2);
-        addObstacle.addSand(scene, 8, 22, 2 + 1, 2);
+        // --- PATH 2 START ---
+        addObstacle.addWall(1, 22, 3, 2);
+        addObstacle.addWall(13, 22, 3, 2);
+        addObstacle.addSand(7, 22, 4, 2);
 
-        // Path 2 top left room (width +1)
-        addObstacle.addIce(scene, 2, 15, 3 + 1, 7);
-        addObstacle.addIce(scene, 13, 15, 8 + 1, 7);
-        addObstacle.addWall(scene, 2, 10, 7 + 1, 3);
-        addObstacle.addIce(scene, 9, 1, 12 + 1, 12);
+        // --- PATH 2 TOP LEFT ROOM ---
+        addObstacle.addIce(1, 15, 3, 7);
+        addObstacle.addIce(13, 15, 8, 7);
+        addObstacle.addWall(1, 10, 8, 3);
+        addObstacle.addIce(9, 1, 12, 12);
 
         // Trees top left
-        addObstacle.addTree(scene, 7, 18);
-        addObstacle.addTree(scene, 11, 18);
-        addObstacle.addTree(scene, 3, 4);
-        addObstacle.addTree(scene, 7, 4);
-        addObstacle.addTree(scene, 3, 8);
-        addObstacle.addTree(scene, 7, 8);
+        addObstacle.addTree(7, 18);
+        addObstacle.addTree(11, 18);
+        addObstacle.addTree(3, 4);
+        addObstacle.addTree(7, 4);
+        addObstacle.addTree(3, 8);
+        addObstacle.addTree(7, 8);
 
-        // Path 2 barrier wall (width +1)
-        addObstacle.addWall(scene, 22, 6, 4, 20);
-        addObstacle.addPolygon(scene,
-                1, 15,
-                1, 12,
-                5, 12 // X-endpoint shifted for more thickness
-        );
+        // --- PATH 2 BARRIER & POLYGONS ---
+        addObstacle.addWall(21, 5, 4, 20);
+        addObstacle.addPolygon(1, 15, 1, 12, 5, 12);
 
-        // Path 2 room 2 (width +1)
-        addObstacle.addWater(scene, 29, 5, 10 , 10);
-        addObstacle.addSand(scene, 29, 1, 10 , 4);
-        addObstacle.addIce(scene, 29, 15, 10 , 4);
-        addObstacle.addPolygon(scene,
-                25, 16,
-                25, 20,
-                28 + 1, 20 // width +1
-        );
+        // --- PATH 2 ROOM 2 ---
+        addObstacle.addWater(29, 5, 10, 10);
+        addObstacle.addSand(29, 1, 10, 4);
+        addObstacle.addIce(29, 15, 10, 4);
+        addObstacle.addPolygon(25, 16, 25, 19, 28, 19);
 
-        // Golf area (width +1)
-        addObstacle.addIce(scene, 57, 1, 12 + 1, 6);
-        addObstacle.addWater(scene, 72, 4, 4 + 1, 3);
-        addObstacle.addGolfHole(scene, 65, 9);
-        addObstacle.addPolygon(scene,
-                75, 1,
-                77 + 1, 1,
-                77 + 1, 3
-        );
+        // --- GOLF AREA ---
+        addObstacle.addIce(57, 1, 12, 6);
+        addObstacle.addWater(72, 4, 4, 3);
+        addObstacle.addGolfHole(64, 8);
+        addObstacle.addPolygon(76, 1, 79, 1, 79, 3);
 
+        // Golf wall
+        addObstacle.addWall(COLS - 14, ROWS - 34, 4, 18);
+        addObstacle.addWall(COLS - 21, ROWS - 34, 7, 2);
+        addObstacle.addWall(COLS - 21, ROWS - 38, 3, 6);
 
-        // Golf wall (width +1)
-        addObstacle.addWall(scene, COLS - 14, ROWS - 34, 2 + 2, 18);
-        addObstacle.addWall(scene, COLS - 21, ROWS - 34, 5 + 2, 2);
-        addObstacle.addWall(scene, COLS - 21, ROWS - 38, 2 + 1, 6);
+        // --- PATH 1 ---
+        addObstacle.addIce(31, ROWS - 21, 11, 20);
+        addObstacle.addSand(1, ROWS - 4, 17, 3);
+        addObstacle.addSand(17, ROWS - 7, 21, 6);
+        addObstacle.addWall(42, ROWS - 11, 4, 10);
 
-        // Path 1 (width +1)
-        addObstacle.addIce(scene, 31, ROWS - 21, 10 + 1, 20);
-        addObstacle.addSand(scene, 2, ROWS - 4, 15 + 1, 3);
-        addObstacle.addSand(scene, 17, ROWS - 7, 20 + 1, 6);
-        addObstacle.addWall(scene, 42, ROWS - 11, 3 + 1, 10);
+        // Path 1 ice-sand stripes
+        for (int i = 0; i < 8; i++) {
+            int yPos = ROWS - 20 - (i * 2);
+            if (i % 2 == 0) addObstacle.addIce(COLS - 10, yPos, 9, 2);
+            else addObstacle.addSand(COLS - 10, yPos, 9, 2);
+        }
 
-        // Path 1 ice-sand stripe (width +1)
-        addObstacle.addIce(scene, COLS -10, ROWS - 20, 9 , 2);
-        addObstacle.addSand(scene, COLS - 10, ROWS - 22, 9, 2);
-        addObstacle.addIce(scene, COLS - 10, ROWS - 24, 9, 2);
-        addObstacle.addSand(scene, COLS - 10, ROWS - 26, 9, 2);
-        addObstacle.addIce(scene, COLS - 10, ROWS - 28, 9, 2);
-        addObstacle.addSand(scene, COLS - 10, ROWS - 30, 9, 2);
-        addObstacle.addIce(scene, COLS - 10, ROWS - 32, 9, 2);
-        addObstacle.addSand(scene, COLS - 10, ROWS - 34, 9, 2);
+        // Path 1 lever-walls
+        addObstacle.addWall(11, ROWS - 9, 27, 2);
+        addObstacle.addWall(16, ROWS - 9, 3, 5);
+        addObstacle.addSwitch(13, ROWS - 6);
 
-        // Path 1 lever-wall (width +1)
-        addObstacle.addWall(scene, 11, ROWS - 9, 26 + 1, 2);
-        addObstacle.addWall(scene, 16, ROWS - 9, 2 + 1, 5);
-        addObstacle.addSwitch(scene, 13, ROWS - 6);
+        addObstacle.addWall(31, ROWS - 26, 11, 2);
+        addObstacle.addWall(31, ROWS - 26, 3, 5);
+        addObstacle.addSwitch(35, ROWS - 23);
 
-        // Path 1 lever-wall 2 (width +1)
-        addObstacle.addWall(scene, 31, ROWS - 26, 10 + 1, 2);
-        addObstacle.addWall(scene, 31, ROWS - 26, 2 + 1, 5);
-        addObstacle.addSwitch(scene, 35, ROWS - 23);
+        // --- PATH 1.1 ---
+        addObstacle.addTree(63, ROWS - 2);
+        addObstacle.addTree(67, ROWS - 2);
+        addObstacle.addIce(46, ROWS - 11, 15, 10);
+        addObstacle.addWater(46, ROWS - 9, 13, 8);
+        addObstacle.addPolygon(71, ROWS - 1, 71, ROWS - 4, 79, ROWS - 11, 79, ROWS - 1);
 
-        // Path 1.1 ice (width +1)
-        addObstacle.addTree(scene, 63, ROWS-2); //
-        addObstacle.addTree(scene, 67   , ROWS-2); //
-        addObstacle.addIce(scene, 46, ROWS - 11, 14 + 1, 10);
-        addObstacle.addWater(scene, 46, ROWS - 9, 12 + 1, 8);
-        addObstacle.addPolygon(scene,
-                57+13, ROWS - 1,
-                57+13, ROWS - 4,
-                64+13 + 1, ROWS - 11, // X-point +1
-                64+13 + 1, ROWS - 1  // X-point +1
-        );
+        // --- PATH 1.2 ---
+        addObstacle.addBall(42, ROWS - 14);
+        addObstacle.addBall(42, ROWS - 17);
+        addObstacle.addBall(42, ROWS - 20);
 
-        // Path 1.2
-        addObstacle.addBall(scene, 42, ROWS - 14);
-        addObstacle.addBall(scene, 42, ROWS - 17);
-        addObstacle.addBall(scene, 42, ROWS - 20);
-
-        // Path 1.2 Ende
-        addObstacle.addIce(scene, COLS - 20, ROWS - 26, 5 + 1, 10);
-        addObstacle.addWall(scene, COLS - 21, ROWS - 26, 2 + 1, 10);
-        addObstacle.addPolygon(scene,
-                COLS - 19, ROWS - 32,
-                COLS - 14, ROWS - 32, // X-point +1
-                COLS - 14, ROWS - 28  // X-point +1
-        );
+        // Path 1.2 End
+        addObstacle.addIce(COLS - 20, ROWS - 26, 6, 10);
+        addObstacle.addWall(COLS - 21, ROWS - 26, 3, 10);
+        addObstacle.addPolygon(COLS - 18, ROWS - 32, COLS - 13, ROWS - 32, COLS - 13, ROWS - 28);
 
         // Pool
-        addObstacle.addRect(scene, 16, ROWS - 26, 15 + 1, 17, Color.GREY);
-        addObstacle.addWater(scene, 17, ROWS - 25, 13 + 1, 15);
+        addObstacle.addRect(16, ROWS - 26, 16, 17, Color.GRAY);
+        addObstacle.addWater(17, ROWS - 25, 14, 15);
 
-        // trees
-        addObstacle.addTree(scene, 50, 8);  //
-        addObstacle.addTree(scene, 54, 12); //
-        addObstacle.addTree(scene, 48, 16); //
-        addObstacle.addTree(scene, 43, 10); //
-        addObstacle.addTree(scene, 45, 8); //
-        addObstacle.addTree(scene, 46, 11); //
-        addObstacle.addTree(scene, 54, 6); //
-        addObstacle.addTree(scene, 56, 15); //
-        addObstacle.addTree(scene, 44, 16); //
-        //2x3 trees
-        addObstacle.addTree(scene, 53, 22); //
-        addObstacle.addTree(scene, 53, 26); //
-        addObstacle.addTree(scene, 53, 30); //
-        addObstacle.addTree(scene, 50, 22); //
-        addObstacle.addTree(scene, 50, 26); //
-        addObstacle.addTree(scene, 50, 30); //
+        // Central Forest
+        int[][] trees = {{50, 8}, {54, 12}, {48, 16}, {43, 10}, {45, 8}, {46, 11}, {54, 6}, {56, 15}, {44, 16}};
+        for (int[] t : trees) addObstacle.addTree(t[0], t[1]);
 
+        // 2x3 Forest
+        for (int x : new int[]{50, 53}) {
+            for (int y : new int[]{22, 26, 30}) addObstacle.addTree(x, y);
+        }
 
-        // Map Borders (width +1 only)
-        addObstacle.addWall(scene, 0, 0, COLS, 1);          // top
-        addObstacle.addWall(scene, 0, ROWS - 1, COLS, 1);   // bottom
-        addObstacle.addWall(scene, 0, 0, 1 + 1, ROWS);                 // left (thickness 1 -> 2)
-        addObstacle.addWall(scene, COLS -1, 0, 2, ROWS);   // right (thickness 1 -> 2)
-        // Debug grid
-        addObstacle.showGrid(scene);
-
+        // --- MAP BORDERS ---
+        addObstacle.addWall(0, 0, COLS, 1);          // Top
+        addObstacle.addWall(0, ROWS - 1, COLS, 1);   // Bottom
+        addObstacle.addWall(0, 0, 1, ROWS);          // Left
+        addObstacle.addWall(79, 0, 1, ROWS);         // Right
     }
 
-    public int[][] getGrid() {return grid;}
-    public Pane getPane(){ return container;}
-    public List<Shape> getObstacles() {return addObstacle.getObstacleList();}
+    public Pane getPane() {
+        return container;
+    }
+
+    public List<Shape> getObstacles() {
+        return addObstacle.getObstacleList();
+    }
 }
