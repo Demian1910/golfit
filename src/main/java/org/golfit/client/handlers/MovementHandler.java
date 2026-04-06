@@ -21,6 +21,7 @@ public class MovementHandler {
 
     public void setGamePane(Pane pane) {
         this.gamePane = pane;
+        this.players.clear();
     }
 
     public void onMoveUpdate(MessageParser.Message message) {
