@@ -117,6 +117,15 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    /** Broadcasts movement updates only to clients in the specified lobby. */
+    public void broadcastMovementToLobby(int lobbyId, String payload) throws Exception {
+        Lobby lobby = serverContext.getLobbies().get(lobbyId);
+        if (lobby == null) return;
+        for (ClientHandler client : lobby.getClients()) {
+            client.getChannelManager().send(Protocol.MOVE_UPDATE, Protocol.CH_MOVEMENT, Protocol.ID_SERVER, payload);
+        }
+    }
+
     public void sendPlayerList(ClientHandler clientHandler, String payload) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }

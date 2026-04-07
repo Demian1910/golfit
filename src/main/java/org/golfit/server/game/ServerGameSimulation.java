@@ -136,16 +136,21 @@ public class ServerGameSimulation {
     private void tick() {
         try {
             double deltaTime = TICK_RATE_MS / 1000.0;
-            boolean anyBallNeedsUpdate = forceUpdate;
-            StringBuilder payloadBuilder = new StringBuilder();
+            Map<Integer, StringBuilder> lobbyPayloads = new HashMap<>();
+            Set<Integer> lobbiesRequiringUpdate = new HashSet<>();
 
             for (Map.Entry<Integer, ServerBall> entry : balls.entrySet()) {
                 int playerId = entry.getKey();
                 ServerBall ball = entry.getValue();
+                Integer lobbyId = playerToLobby.get(playerId);
+                if (lobbyId == null) continue;
+
+                StringBuilder payloadBuilder = lobbyPayloads.computeIfAbsent(lobbyId, k -> new StringBuilder());
+                boolean ballNeedsUpdate = forceUpdate;
 
                 // Skip finished balls — they disappear from the payload
                 if (ball.isFinished()) {
-                    anyBallNeedsUpdate = true; // ensure one final broadcast to remove them
+                    lobbiesRequiringUpdate.add(lobbyId); // ensure one final broadcast to remove them
                     continue;
                 }
 
@@ -155,7 +160,7 @@ public class ServerGameSimulation {
                 if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
                     ball.setFinished(true);
                     finishedPlayers.add(playerId);
-                    anyBallNeedsUpdate = true;
+                    lobbiesRequiringUpdate.add(lobbyId);
                     logger.info("Player {} holed out in {} strokes!", playerId, ball.getStrokeCount());
                     checkGameEnd(playerId);
                     continue;
@@ -171,7 +176,7 @@ public class ServerGameSimulation {
 
                         if (terrainType == 4) { // Water Hazard
                             ball.resetToLastPosition();
-                            this.forceUpdate = true;
+                            ballNeedsUpdate = true;
                             logger.info("Player {} hit water and was reset.", playerId);
                         } else {
                             double friction = switch (terrainType) {
@@ -188,8 +193,12 @@ public class ServerGameSimulation {
                     ball.update(deltaTime, nearby);
 
                     if (ball.isMoving()) {
-                        anyBallNeedsUpdate = true;
+                        ballNeedsUpdate = true;
                     }
+                }
+
+                if (ballNeedsUpdate) {
+                    lobbiesRequiringUpdate.add(lobbyId);
                 }
 
                 // 4. Generate Update Payload (ID:X,Y;)
@@ -198,16 +207,15 @@ public class ServerGameSimulation {
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPy())).append(";");
             }
 
-            // Broadcast only if there is movement, a forced update, or player changes
-            if (anyBallNeedsUpdate || forceUpdate) {
-                if (payloadBuilder.length() > 0) {
-                    serverApi.broadcastMovement(payloadBuilder.toString());
-                } else if (forceUpdate) {
-                    // All balls are finished — broadcast empty payload to remove them from clients
-                    serverApi.broadcastMovement("");
+            // Broadcast only to lobbies that have movement, forced update, or player changes
+            for (Map.Entry<Integer, StringBuilder> entry : lobbyPayloads.entrySet()) {
+                int lobbyId = entry.getKey();
+                String payload = entry.getValue().toString();
+                if (lobbiesRequiringUpdate.contains(lobbyId) || forceUpdate) {
+                    serverApi.broadcastMovementToLobby(lobbyId, payload);
                 }
-                forceUpdate = false;
             }
+            forceUpdate = false;
 
         } catch (Exception e) {
             logger.error("Error in physics tick", e);
