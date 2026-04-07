@@ -48,15 +48,21 @@ public static final int  FIELD_COUNT = 5;
 
 ### 3.2 Lobby Messages
 
-| Constant | Value | Direction | Channel | Description |
-|---|---|---|---|---|
-| `SYS_LOBBY_CREATE` | `"SYS_LOBBY_CREATE"` | Client → Server | `CH_SYSTEM` | Request to create a lobby |
-| `SYS_LOBBY_CREATED` | `"SYS_LOBBY_CREATED"` | Server → Client | `CH_SYSTEM` | Lobby creation confirmation, payload is lobby ID |
-| `SYS_LOBBY_JOIN` | `"SYS_LOBBY_JOIN"` | Client → Server | `CH_SYSTEM` | Request to join a lobby, payload is lobby name |
-| `SYS_LOBBY_JOINED` | `"SYS_LOBBY_JOINED"` | Server → Client | `CH_SYSTEM` | Lobby join confirmation, payload is lobby ID |
+| Constant | Value | Direction       | Channel | Description                                         |
+|---|---|-----------------|---|-----------------------------------------------------|
+| `SYS_LOBBY_CREATE` | `"SYS_LOBBY_CREATE"` | Client → Server | `CH_SYSTEM` | Request to create a lobby                           |
+| `SYS_LOBBY_CREATED` | `"SYS_LOBBY_CREATED"` | Server → Client | `CH_SYSTEM` | Lobby creation confirmation, payload is lobby ID    |
+| `SYS_LOBBY_JOIN` | `"SYS_LOBBY_JOIN"` | Client → Server | `CH_SYSTEM` | Request to join a lobby, payload is lobby name      |
+| `SYS_LOBBY_JOINED` | `"SYS_LOBBY_JOINED"` | Server → Client | `CH_SYSTEM` | Lobby join confirmation, payload is lobby ID        |
 | `SYS_LOBBY_LEAVE` | `"SYS_LOBBY_LEAVE"` | Client → Server | `CH_SYSTEM` | Request to leave current lobby, payload is lobby ID |
-| `SYS_LOBBY_LEFT` | `"SYS_LOBBY_LEFT"` | Server → Client | `CH_SYSTEM` | Lobby leave confirmation, payload is lobby ID |
-| `SYS_LOBBY_LIST` | `"SYS_LOBBY_LIST"` | Server → Client | `CH_SYSTEM` | List of available lobbies |
+| `SYS_LOBBY_LEFT` | `"SYS_LOBBY_LEFT"` | Server → Client | `CH_SYSTEM` | Lobby leave confirmation, payload is lobby ID       |
+| `SYS_LOBBY_LIST` | `"SYS_LOBBY_LIST"` | Server → Client | `CH_SYSTEM` | List of available lobbies                           |
+| `SYS_LOBBY_INFO` | `"SYS_LOBBY_INFO"` | Server → Client | `CH_SYSTEM` | List of players attached to a particular lobby      |
+| `SYS_PLAYERS_LIST` | `"SYS_PLAYERS_LIST"` | Server → Client | `CH_SYSTEM` | List of all players connected to the server         |
+| `SYS_LOBBY_START` | `"SYS_LOBBY_START"` | Client → Server | `CH_SYSTEM` | Request to game start                               |
+| `SYS_GAME_START` | `"SYS_GAME_START"` | Server → Client | `CH_SYSTEM` | Inform game is starting                             |
+| `SYS_STROKE_UPDATE` | `"SYS_STROKE_UPDATE"` | Server → Client | `CH_SYSTEM` | Inform on players stroke counts                     |
+| `SYS_GAME_END` | `"SYS_GAME_END"` | Server → Client | `CH_SYSTEM` | Game over and result                                |
 
 ### 3.3 Chat Messages
 
@@ -103,7 +109,13 @@ public static final int  FIELD_COUNT = 5;
 | `SYS_LOBBY_JOINED` | `<lobbyId>`                    | `42`          |
 | `SYS_LOBBY_LEAVE` | `<lobbyId>`                    | `42`          |
 | `SYS_LOBBY_LEFT` | `<lobbyId>`                    | `42`          |
-| `SYS_LOBBY_LIST` | `<id>:<id>:...`                | `1:2:3:`      |
+| `SYS_LOBBY_LIST` | `<id>:<host>:<size>:<status>&...`| `1:Anton:2:open&2:Berta:1:ongoing` |
+| `SYS_LOBBY_INFO` | `<lobbyId>:<usr1>,<usr2>,...`  | `42:Anton,Berta` |
+| `SYS_PLAYERS_LIST` | `<username1>:<username2>:...`  | `Anton:Berta` |
+| `SYS_LOBBY_START`| `<lobbyId>`                    | `42`          |
+| `SYS_GAME_START` | `<lobbyId>`                    | `42`          |
+| `SYS_STROKE_UPDATE`| `<usr1>:<strokes>,<usr2>:<strokes>`| `Anton:1,Berta:2` |
+| `SYS_GAME_END`   | `winner=<usr>;<usr1>:<strokes>...` | `winner=Anton;Anton:1,Berta:2` |
 | `SYS_CHAT_PRIVATE` | `<targetUsername>:<message>`   | `Anton:hello` |
 
 ## 7. Connection Lifecycle

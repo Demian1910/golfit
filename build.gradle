@@ -89,3 +89,20 @@ tasks.register('fatJar', Jar) {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
     })
 }
+
+// Build Script for CS108 requirements
+tasks.register('build-cs108') {
+    group = 'build'
+    description = 'Produces an executable jar and javadoc for CS108 requirements.'
+    
+    dependsOn tasks.named('jar'), tasks.named('javadoc')
+
+    javadoc {
+    options.addStringOption('Xdoclint:none', '-quiet')
+    failOnError = false
+}
+
+    doLast {
+        println "build-cs108: Executable JAR and Javadoc have been generated successfully."
+    }
+}

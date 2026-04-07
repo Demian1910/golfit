@@ -60,8 +60,8 @@ public class Constants {
 
     // Frictions
     public static final double FRICTION_GRASS = 0.3;
-    public static final double FRICTION_SAND  = 0.1;
-    public static final double FRICTION_ICE   = 0.6;
+    public static final double FRICTION_SAND  = 0.07;
+    public static final double FRICTION_ICE   = 0.7;
     public static final double FRICTION_WATER = 0.00;
     public static final double FRICTION_BOUNCE = 0.6;
     /**
