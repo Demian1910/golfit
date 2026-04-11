@@ -15,6 +15,11 @@ import org.golfit.shared.constants.Constants;
 
 import java.util.List;
 
+/**
+ * JavaFX application entry point for the GolfIt client.
+ * Sets up the primary stage with a splash screen, sidebar, and game view,
+ * and manages transitions between lobby and game states.
+ */
 public class App extends Application {
     private Client client;
     private Stage primaryStage;
@@ -22,6 +27,7 @@ public class App extends Application {
     /** The center content area — starts as SplashView, replaced by the game on GAME_START. */
     private StackPane centerArea;
 
+    /** Initializes the JavaFX stage, parses connection parameters, and launches the game. */
     @Override
     public void start(Stage stage) {
         List<String> params = getParameters().getRaw();
@@ -40,6 +46,10 @@ public class App extends Application {
         stage.requestFocus();
     }
 
+    /**
+     * Creates the client, connects to the server, builds the UI layout,
+     * and registers EventBus listeners for game state transitions.
+     */
     private void launchGame(String ip, int port, String username) {
         try {
             client = new Client(ip, port, username);
@@ -91,6 +101,7 @@ public class App extends Application {
         }
     }
 
+    /** Shuts down the client connection and exits the application. */
     @Override
     public void stop() throws Exception {
         if (client != null) {

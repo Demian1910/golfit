@@ -6,6 +6,7 @@ import javafx.scene.paint.Color;
 import org.golfit.shared.constants.Constants;
 import org.golfit.shared.constants.MapData;
 
+/** Renders a golf ball as a JavaFX {@link Circle} on the game pane, scaling to grid size. */
 public class BallRender {
     private Circle circle;
     // Der logische Radius im Grid (0.5 = halbe Zelle)
@@ -13,6 +14,12 @@ public class BallRender {
     public Color ballColor = Color.BLUE;
     private Pane root;
 
+    /**
+     * Creates and renders a ball on the given pane at the ball's position.
+     *
+     * @param root the parent pane to add the circle to
+     * @param ball the ball model with initial pixel coordinates
+     */
     public BallRender(Pane root, Ball ball) {
         this.root = root;
         // Initial radius is calculated based on the current pane size
@@ -38,6 +45,7 @@ public class BallRender {
         return scaleX * GRID_RADIUS;
     }
 
+    /** Updates the circle's position and radius to match the ball's current pixel coordinates. */
     public void updatePosition(Ball ball) {
         // If the window was resized, we adjust the radius
         this.circle.setRadius(calculatePixelRadius());
@@ -46,10 +54,12 @@ public class BallRender {
         this.circle.setCenterY(ball.getPy());
     }
 
+    /** Returns the current ball color. */
     public Color getColor() {
         return ballColor;
     }
 
+    /** Changes the ball's fill color. */
     public void changeColor(Color newColor) {
         ballColor = newColor;
         if (this.circle != null) {
@@ -57,6 +67,7 @@ public class BallRender {
         }
     }
 
+    /** Returns the underlying JavaFX circle node. */
     public Circle getCircle() {
         return circle;
     }

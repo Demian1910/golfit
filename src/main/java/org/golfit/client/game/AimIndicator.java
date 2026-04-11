@@ -1,5 +1,5 @@
 package org.golfit.client.game;
 
-//draw dynamic aim indicator for ball power and direction
+/** Draws a dynamic aim indicator showing ball power and direction (stub). */
 public class AimIndicator {
 }

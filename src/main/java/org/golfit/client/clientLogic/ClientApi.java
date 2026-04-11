@@ -105,12 +105,14 @@ public class ClientApi implements IClientApi {
         channelManager.send( Protocol.SYS_CHAT_PRIVATE,Protocol.CH_CHAT, getId(), data);
     }
 
+    /** Sends a chat message to the current lobby. */
     @Override
     public void sendLobbyChat(String data) throws Exception {
         String payload = getLobbyId() + ":" + data;
         channelManager.send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_CHAT, getId(), payload);
     }
 
+    /** Requests the list of all connected players from the server. */
     public void requestPlayersList() throws Exception {
         channelManager.send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, getId(), "");
     }
@@ -138,41 +140,51 @@ public class ClientApi implements IClientApi {
         channelManager.send(Protocol.MOVE_INPUT, Protocol.CH_MOVEMENT, Protocol.ID_SERVER, payload);
     }
 
+    /** Sets the server-assigned client ID. */
     public void setId(int id) {
         client.id = id;
     }
+    /** Returns the server-assigned client ID. */
     public int getId() {
         return client.id;
     }
 
+    /** Resets all channel sequence counters and pending ACKs (used on reconnect). */
     public void resetChannels(){
         channelManager.resetChannels();
     }
 
+    /** Returns the current username. */
     public String getUsername() {
         return client.username;
     }
 
+    /** Sets the current username. */
     public void setUsername(String username) {
         client.username = username;
     }
 
+    /** Sets the ID of the lobby the client is currently in. */
     public void setLobbyId(int lobbyId){
         client.lobbyId = lobbyId;
     }
 
+    /** Returns the set of player usernames in the current lobby. */
     public LinkedHashSet<String> getLobbyPlayers() {
         return client.lobbyPlayers;
     }
 
+    /** Returns the ID of the lobby the client is currently in, or 0 if not in a lobby. */
     public int getLobbyId(){
         return client.lobbyId;
     }
 
+    /** Returns the underlying channel manager. */
     public ChannelManager getChannelManager() {
         return channelManager;
     }
 
+    /** Sends a disconnect message to the server, stops the ping service, and closes the socket. */
     public void shutdown(){
         try {
             channelManager.send(Protocol.SYS_DISCONNECT, Protocol.CH_SYSTEM, getId(), "");

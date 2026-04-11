@@ -49,11 +49,18 @@ public class ServerGameSimulation {
     private StrokeListener strokeListener;
     private GameEndListener gameEndListener;
 
+    /**
+     * Creates a new game simulation.
+     *
+     * @param serverApi the server API used for broadcasting movement updates
+     */
     public ServerGameSimulation(ServerApi serverApi) {
         this.serverApi = serverApi;
     }
 
+    /** Sets the callback invoked after each stroke. */
     public void setStrokeListener(StrokeListener listener) { this.strokeListener = listener; }
+    /** Sets the callback invoked when all players in a lobby have finished. */
     public void setGameEndListener(GameEndListener listener) { this.gameEndListener = listener; }
 
     /**
@@ -256,7 +263,8 @@ public class ServerGameSimulation {
 
     /**
      * Retrieves static obstacles near the specified coordinates to optimize collision detection.
-     * * @param worldX Current X grid position.
+     *
+     * @param worldX Current X grid position.
      * @param worldY Current Y grid position.
      * @param searchRadius Distance in grid units to check for obstacles.
      * @return List of nearby shapes.

@@ -26,6 +26,12 @@ public class SystemHandler {
     private final ServerContext serverContext;
     private ServerGameSimulation gameSimulation;
 
+    /**
+     * Creates a new SystemHandler.
+     *
+     * @param serverApi      the server API for sending responses
+     * @param serverContext   provides access to shared server state
+     */
     public SystemHandler(ServerApi serverApi, ServerContext serverContext) {
         this.serverApi = serverApi;
         this.serverContext = serverContext;
@@ -88,6 +94,7 @@ public class SystemHandler {
         }
     }
 
+    /** Handles a lobby chat message by forwarding it to all members of the target lobby. */
     public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
@@ -197,6 +204,7 @@ public class SystemHandler {
         System.out.println("Client " + clientHandler.getUsername() + " sent move input");
     }
 
+    /** Handles a request for the list of all connected players. */
     public void onPlayerList(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String payload = serverContext.getClients().values().stream().map(ClientHandler::getUsername).collect(Collectors.joining(":"));
         serverApi.sendPlayerList(clientHandler, payload);

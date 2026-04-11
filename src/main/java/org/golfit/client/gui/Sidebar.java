@@ -104,6 +104,7 @@ public class Sidebar extends VBox {
         getChildren().addAll(playerButton,usernameLabel, title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
     }
 
+    /** Toggles the target username field visibility based on the selected chat mode. */
     private void onModeChanged() {
         boolean isPrivate = "Private".equals(chatMode.getValue());
         targetLabel.setVisible(isPrivate);
@@ -112,6 +113,7 @@ public class Sidebar extends VBox {
         targetField.setManaged(isPrivate);
     }
 
+    /** Sends the current message input via the selected chat mode (broadcast, private, or lobby). */
     private void sendMessage() {
         String text = messageInput.getText().trim();
         if (text.isEmpty()) return;
@@ -149,6 +151,7 @@ public class Sidebar extends VBox {
         }
     }
 
+    /** Processes a slash command entered in the chat input field. */
     private void handleCommand(String input) {
         String[] args = input.split(" ");
         String cmd = args[0].substring(1).toLowerCase();
@@ -254,6 +257,7 @@ public class Sidebar extends VBox {
         }
     }
 
+    /** Opens a modal popup window listing all connected players. */
     private void openPlayerWindow(String[] players) {
         Stage popup = new Stage();
         popup.setTitle("Connected players");
@@ -288,6 +292,12 @@ public class Sidebar extends VBox {
 
 
 
+    /**
+     * Adds a typed chat message to the display with the appropriate prefix.
+     *
+     * @param messageArray array of {@code [username, message]}
+     * @param type         the message type constant (broadcast, private, or lobby)
+     */
     public void addMessage(String[] messageArray, String type) {
         final String username = messageArray[0];
         final String message = messageArray[1];

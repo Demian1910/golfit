@@ -11,8 +11,15 @@ import org.golfit.client.clientLogic.Client;
  * Entry point for the GolfIt application. Starts either a server or client based on CLI arguments.
  */
 public class Main  {
+    /** The currently active client instance, accessible globally for GUI event wiring. */
     public static Client currentClient;
 
+    /**
+     * Parses CLI arguments and launches either a server or client.
+     *
+     * @param args {@code server <port>} or {@code client <host>:<port> [<username>]}
+     * @throws Exception if server or client startup fails
+     */
     public static void main(String[] args) throws Exception {
 
         if (args.length == 0) {
@@ -49,6 +56,7 @@ public class Main  {
         }
     }
 
+    /** Prints the expected command-line usage to stdout. */
     private static void printUsage() {
         System.out.println("Usage: (client <hostaddress>:<port> [<username>] | server <port>)");
     }

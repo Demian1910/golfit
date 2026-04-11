@@ -14,6 +14,11 @@ import java.util.stream.Collectors;
 public class ServerApi implements IServerApi{
     private final ServerContext serverContext;
 
+    /**
+     * Creates a new ServerApi backed by the given server context.
+     *
+     * @param serverContext provides access to clients, lobbies, and usernames
+     */
     public ServerApi(ServerContext serverContext) {
         this.serverContext = serverContext;
     }
@@ -83,6 +88,7 @@ public class ServerApi implements IServerApi{
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
+    /** Sends lobby info (player list) to the specified client. */
     public void sendLobbyInfo(ClientHandler clientHandler, String lobbyId) throws Exception {
         Lobby lobbyContext = serverContext.getLobbies().get(Integer.parseInt(lobbyId));
         if (lobbyContext == null) return;
@@ -104,6 +110,7 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    /** Sends a lobby chat message to the specified client. */
     @Override
     public void sendLobbyChat(ClientHandler clientHandler, String data) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
@@ -126,6 +133,7 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    /** Sends the full player list to the requesting client. */
     public void sendPlayerList(ClientHandler clientHandler, String payload) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
@@ -167,6 +175,7 @@ public class ServerApi implements IServerApi{
         serverContext.getUsernameSet().remove(username);
     }
 
+    /** Returns the map of all connected clients. */
     public Map<String, ClientHandler> getClients() {
         return serverContext.getClients();
     }
