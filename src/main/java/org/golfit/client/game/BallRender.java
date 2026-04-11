@@ -9,7 +9,6 @@ import org.golfit.shared.constants.MapData;
 /** Renders a golf ball as a JavaFX {@link Circle} on the game pane, scaling to grid size. */
 public class BallRender {
     private Circle circle;
-    // Der logische Radius im Grid (0.5 = halbe Zelle)
     private static final double GRID_RADIUS = Constants.BALL_RADIUS;
     public Color ballColor = Color.BLUE;
     private Pane root;
