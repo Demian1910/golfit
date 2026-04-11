@@ -4,6 +4,10 @@ import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 
 
+/**
+ * Manages the fixed-size 1100x600 game world and scales it to fit the available screen space.
+ * Contains the {@link Course} and applies a dynamic {@link Scale} transform based on the parent pane size.
+ */
 public class Game {
 
     private Pane root; // This is the fixed 1100x600 logical world
@@ -60,6 +64,7 @@ public class Game {
         }
     }
 
+    /** Returns the root pane containing the scaled game world. */
     public Pane getRoot() {
         return root;
     }

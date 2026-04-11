@@ -10,20 +10,38 @@ import javafx.application.Platform;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Handles movement update messages from the server on the client side.
+ * Converts server grid coordinates to pixel positions and manages ball rendering.
+ */
 public class MovementHandler {
     private final ClientApi clientApi;
+    /** Map of player IDs to their rendered ball instances. */
     public Map<Integer, BallRender> players = new HashMap<>();
     private Pane gamePane;
 
+    /**
+     * Creates a new client-side MovementHandler.
+     *
+     * @param clientApi the client API instance
+     */
     public MovementHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
 
+    /** Sets the game pane where balls are rendered. Clears any existing ball renders. */
     public void setGamePane(Pane pane) {
         this.gamePane = pane;
         this.players.clear();
     }
 
+    /**
+     * Handles a movement update from the server. Parses the payload containing
+     * player positions in {@code "id:x,y;id:x,y;..."} format, converts grid
+     * coordinates to pixel coordinates, and updates or creates ball renders.
+     *
+     * @param message the parsed movement update message
+     */
     public void onMoveUpdate(MessageParser.Message message) {
         if (gamePane == null) return;
 

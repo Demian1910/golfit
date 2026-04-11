@@ -187,6 +187,11 @@ public class ChannelManager {
         }
     }
 
+    /**
+     * Updates the local sender ID used for outgoing ACKs.
+     *
+     * @param id the new local ID (typically assigned by the server on connect)
+     */
     public void updateLocalId(int id) {
         this.localId = id;
     }

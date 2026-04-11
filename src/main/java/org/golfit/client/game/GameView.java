@@ -7,11 +7,16 @@ import javafx.scene.layout.BackgroundFill;
 import javafx.scene.paint.Color;
 import javafx.geometry.Insets;
 
+/**
+ * Transparent overlay pane that captures mouse drag input for aiming and shooting.
+ * Converts pixel drag distances to grid-unit force vectors and sends them to the server.
+ */
 public class GameView {
     private Pane root;
     private double startX;
     private double startY;
 
+    /** Creates the game view pane and sets up mouse drag controls for aiming. */
     public GameView() {
         this.root = new Pane();
 
@@ -20,6 +25,7 @@ public class GameView {
         setupMouseControls();
     }
 
+    /** Registers mouse press/release handlers that compute and send force vectors. */
     private void setupMouseControls() {
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
             startX = e.getX();
@@ -67,9 +73,7 @@ public class GameView {
         });
     }
 
-    /**
-     * return panel to insert in scene JavaFX.
-     */
+    /** Returns the root pane for insertion into the JavaFX scene graph. */
     public Pane getRoot() {
         return root;
     }

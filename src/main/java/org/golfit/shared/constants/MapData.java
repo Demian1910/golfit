@@ -2,6 +2,11 @@ package org.golfit.shared.constants;
 
 import java.util.List;
 
+/**
+ * Contains pre-computed map data for the server-side physics engine.
+ * Includes the terrain grid ({@code SERVER_MAP}), shape ID grid ({@code SHAPE_ID_MAP}),
+ * and the list of obstacle shapes ({@code LEVEL_1_OBSTACLES}) used for collision detection.
+ */
 public class MapData {
     public static final int COLS = 80;
     public static final int ROWS = 45;

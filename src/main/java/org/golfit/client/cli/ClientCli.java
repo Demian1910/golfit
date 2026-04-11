@@ -10,6 +10,11 @@ public class ClientCli {
 
 
 
+    /**
+     * Creates a new CLI processor.
+     *
+     * @param clientApi the client API for executing commands
+     */
     public ClientCli(ClientApi clientApi) {
         this.clientApi = clientApi;
     }

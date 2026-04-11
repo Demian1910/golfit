@@ -152,14 +152,17 @@ public class Client {
         inputThread.start();
     }
 
+    /** Returns the movement handler for wiring game pane events. */
     public MovementHandler getMovementHandler() {
         return movementHandler;
     }
 
+    /** Returns the system handler for protocol message processing. */
     public SystemHandler getSystemHandler() {
         return systemHandler;
     }
 
+    /** Returns the public client API. */
     public ClientApi getClientApi() {
         return clientApi;
     }
