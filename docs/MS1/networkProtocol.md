@@ -66,10 +66,11 @@ public static final int  FIELD_COUNT = 5;
 
 ### 3.3 Chat Messages
 
-| Constant | Value | Direction | Channel | Description |
-|---|---|---|---|---|
-| `SYS_CHAT` | `"SYS_CHAT"` | Both | `CH_CHAT` | Public chat message, server broadcasts to all clients with original sender ID |
-| `SYS_CHAT_PRIVATE` | `"SYS_CHAT_PRIVATE"` | Both | `CH_CHAT` / `CH_SYSTEM` | Private chat, payload format: `<targetUsername>:<message>` |
+| Constant            | Value                 | Direction | Channel | Description                                                                  |
+|---------------------|-----------------------|---|---|------------------------------------------------------------------------------|
+| `SYS_CHAT_BROADCAST` | `"SYS_CHAT_BROADCAST"` | Both | `CH_CHAT` | Public chat message, server broadcasts to all clients with original sender ID |
+| `SYS_CHAT_PRIVATE`  | `"SYS_CHAT_PRIVATE"`  | Both | `CH_CHAT` / `CH_SYSTEM` | Private chat, payload format: `<targetUsername>:<message>`                   |
+| `SYS_CHAT_LOBBY`    | `"SYS_CHAT_LOBBY"`    | Both | `CH_CHAT` / `CH_SYSTEM` | Lobby message, payload format: `<lobbyId>:<message>`                         |
 
 ### 3.4 Movement Messages
 
