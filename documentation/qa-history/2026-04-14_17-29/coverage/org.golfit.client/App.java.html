@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>App.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client</a> &gt; <span class="el_source">App.java</span></div><h1>App.java</h1><pre class="source lang-java linenums">package org.golfit.client;
+
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.layout.*;
+import javafx.stage.Stage;
+import org.golfit.client.clientLogic.Client;
+import org.golfit.client.game.GameView;
+import org.golfit.client.gui.Sidebar;
+import org.golfit.client.gui.SplashView;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.graphics.Game;
+import org.golfit.shared.constants.Constants;
+
+import java.util.List;
+
+/**
+ * JavaFX application entry point for the GolfIt client.
+ * Sets up the primary stage with a splash screen, sidebar, and game view,
+ * and manages transitions between lobby and game states.
+ */
+<span class="nc" id="L23">public class App extends Application {</span>
+    private Client client;
+    private Stage primaryStage;
+
+    /** The center content area — starts as SplashView, replaced by the game on GAME_START. */
+    private StackPane centerArea;
+
+    /** Initializes the JavaFX stage, parses connection parameters, and launches the game. */
+    @Override
+    public void start(Stage stage) {
+<span class="nc" id="L33">        List&lt;String&gt; params = getParameters().getRaw();</span>
+<span class="nc" id="L34">        String host = params.get(0);</span>
+<span class="nc" id="L35">        int port = Integer.parseInt(params.get(1));</span>
+<span class="nc" id="L36">        String username = params.get(2);</span>
+
+<span class="nc" id="L38">        this.primaryStage = stage;</span>
+<span class="nc" id="L39">        stage.setTitle(&quot;GolfIt - Sultans of Swing&quot;);</span>
+<span class="nc" id="L40">        stage.setOnCloseRequest(e -&gt; {</span>
+<span class="nc" id="L41">            try { stop(); } catch (Exception ex) { ex.printStackTrace(); }</span>
+<span class="nc" id="L42">        });</span>
+<span class="nc" id="L43">        launchGame(host, port, username);</span>
+<span class="nc" id="L44">        stage.show();</span>
+<span class="nc" id="L45">        stage.toFront();</span>
+<span class="nc" id="L46">        stage.requestFocus();</span>
+<span class="nc" id="L47">    }</span>
+
+    /**
+     * Creates the client, connects to the server, builds the UI layout,
+     * and registers EventBus listeners for game state transitions.
+     */
+    private void launchGame(String ip, int port, String username) {
+        try {
+<span class="nc" id="L55">            client = new Client(ip, port, username);</span>
+<span class="nc" id="L56">            org.golfit.Main.currentClient = client;</span>
+<span class="nc" id="L57">            client.start();</span>
+
+            // — Splash screen shown initially —
+<span class="nc" id="L60">            SplashView splash = new SplashView();</span>
+<span class="nc" id="L61">            centerArea = new StackPane(splash);</span>
+
+<span class="nc" id="L63">            Sidebar sidebar = new Sidebar(client.getClientApi());</span>
+
+<span class="nc" id="L65">            HBox root = new HBox(centerArea, sidebar);</span>
+<span class="nc" id="L66">            HBox.setHgrow(centerArea, Priority.ALWAYS);</span>
+
+<span class="nc" id="L68">            primaryStage.setScene(new Scene(root, 1350, 600));</span>
+
+            // Connect AFTER scene/sidebar are fully set up so all EventBus listeners are registered
+<span class="nc" id="L71">            client.getClientApi().connect(username);</span>
+<span class="nc" id="L72">            client.pingService.start();</span>
+
+            // — Listen for GAME_START: swap splash → game map —
+<span class="nc" id="L75">            EventBus.get().on(Constants.GAME_START, data -&gt; {</span>
+<span class="nc" id="L76">                Platform.runLater(() -&gt; {</span>
+                    try {
+<span class="nc" id="L78">                        StackPane gameArea = new StackPane();</span>
+<span class="nc" id="L79">                        Game game = new Game(gameArea);</span>
+<span class="nc" id="L80">                        GameView gameView = new GameView();</span>
+<span class="nc" id="L81">                        gameArea.getChildren().addAll(game.getRoot(), gameView.getRoot());</span>
+<span class="nc" id="L82">                        client.getMovementHandler().setGamePane(gameView.getRoot());</span>
+
+<span class="nc" id="L84">                        centerArea.getChildren().setAll(gameArea);</span>
+<span class="nc" id="L85">                    } catch (Exception e) {</span>
+<span class="nc" id="L86">                        e.printStackTrace();</span>
+<span class="nc" id="L87">                    }</span>
+<span class="nc" id="L88">                });</span>
+<span class="nc" id="L89">            });</span>
+
+            // — Listen for GAME_END: swap game map → splash —
+<span class="nc" id="L92">            EventBus.get().on(Constants.GAME_END, data -&gt; {</span>
+<span class="nc" id="L93">                Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L94">                    SplashView newSplash = new SplashView();</span>
+<span class="nc" id="L95">                    centerArea.getChildren().setAll(newSplash);</span>
+<span class="nc" id="L96">                });</span>
+<span class="nc" id="L97">            });</span>
+
+<span class="nc" id="L99">        } catch (Exception e) {</span>
+<span class="nc" id="L100">            e.printStackTrace();</span>
+<span class="nc" id="L101">        }</span>
+<span class="nc" id="L102">    }</span>
+
+    /** Shuts down the client connection and exits the application. */
+    @Override
+    public void stop() throws Exception {
+<span class="nc bnc" id="L107" title="All 2 branches missed.">        if (client != null) {</span>
+<span class="nc" id="L108">            client.getClientApi().shutdown();</span>
+        }
+<span class="nc" id="L110">        System.exit(0);</span>
+<span class="nc" id="L111">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

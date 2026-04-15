@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GameView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.game</a> &gt; <span class="el_source">GameView.java</span></div><h1>GameView.java</h1><pre class="source lang-java linenums">package org.golfit.client.game;
+
+import javafx.scene.layout.CornerRadii;
+import javafx.scene.layout.Pane;
+import javafx.scene.layout.Background;
+import javafx.scene.layout.BackgroundFill;
+import javafx.scene.paint.Color;
+import javafx.geometry.Insets;
+
+/**
+ * Transparent overlay pane that captures mouse drag input for aiming and shooting.
+ * Converts pixel drag distances to grid-unit force vectors and sends them to the server.
+ */
+public class GameView {
+    private Pane root;
+    private double startX;
+    private double startY;
+
+    /** Creates the game view pane and sets up mouse drag controls for aiming. */
+<span class="nc" id="L20">    public GameView() {</span>
+<span class="nc" id="L21">        this.root = new Pane();</span>
+
+<span class="nc" id="L23">        this.root.setBackground(Background.EMPTY);</span>
+                
+<span class="nc" id="L25">        setupMouseControls();</span>
+<span class="nc" id="L26">    }</span>
+
+    /** Registers mouse press/release handlers that compute and send force vectors. */
+    private void setupMouseControls() {
+<span class="nc" id="L30">        this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -&gt; {</span>
+<span class="nc" id="L31">            startX = e.getX();</span>
+<span class="nc" id="L32">            startY = e.getY();</span>
+<span class="nc" id="L33">        });</span>
+
+<span class="nc" id="L35">        this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -&gt; {</span>
+            try {
+<span class="nc bnc" id="L37" title="All 2 branches missed.">                if (org.golfit.Main.currentClient != null) {</span>
+                    // 1. Calculate difference
+<span class="nc" id="L39">                    double diffX = startX - e.getX();</span>
+<span class="nc" id="L40">                    double diffY = startY - e.getY();</span>
+
+                    // 2. Convert from pixels to grid units
+                    // We divide by the current width/height of the pane
+<span class="nc" id="L44">                    double scaleX = root.getWidth() / 80.0;</span>
+<span class="nc" id="L45">                    double scaleY = root.getHeight() / 45.0;</span>
+
+<span class="nc" id="L47">                    double gridFx = diffX / scaleX;</span>
+<span class="nc" id="L48">                    double gridFy = diffY / scaleY;</span>
+
+                    // 3. Force multiplier for the feel (Tweak here!)
+                    // A value between 1.5 and 2.5 usually feels good
+<span class="nc" id="L52">                    double powerMultiplier = 2.0;</span>
+<span class="nc" id="L53">                    gridFx *= powerMultiplier;</span>
+<span class="nc" id="L54">                    gridFy *= powerMultiplier;</span>
+
+                    // 4. Maximum limit (so the ball doesn't glitch out of the map)
+<span class="nc" id="L57">                    double maxForce = 45.0;</span>
+<span class="nc" id="L58">                    double currentForce = Math.sqrt(gridFx * gridFx + gridFy * gridFy);</span>
+
+<span class="nc bnc" id="L60" title="All 2 branches missed.">                    if (currentForce &gt; maxForce) {</span>
+<span class="nc" id="L61">                        gridFx = (gridFx / currentForce) * maxForce;</span>
+<span class="nc" id="L62">                        gridFy = (gridFy / currentForce) * maxForce;</span>
+                    }
+
+                    // Only send if it wasn't an accidental click
+<span class="nc bnc" id="L66" title="All 2 branches missed.">                    if (currentForce &gt; 0.5) {</span>
+<span class="nc" id="L67">                        org.golfit.Main.currentClient.clientApi.sendMovement(gridFx, gridFy);</span>
+                    }
+                }
+<span class="nc" id="L70">            } catch (Exception ex) {</span>
+<span class="nc" id="L71">                ex.printStackTrace();</span>
+<span class="nc" id="L72">            }</span>
+<span class="nc" id="L73">        });</span>
+<span class="nc" id="L74">    }</span>
+
+    /** Returns the root pane for insertion into the JavaFX scene graph. */
+    public Pane getRoot() {
+<span class="nc" id="L78">        return root;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

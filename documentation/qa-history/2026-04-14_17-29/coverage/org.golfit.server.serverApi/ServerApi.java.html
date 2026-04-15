@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServerApi.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.server.serverApi</a> &gt; <span class="el_source">ServerApi.java</span></div><h1>ServerApi.java</h1><pre class="source lang-java linenums">package org.golfit.server.serverApi;
+
+import org.golfit.server.ClientHandler.ClientHandler;
+import org.golfit.server.ServerContext;
+import org.golfit.shared.lobby.Lobby;
+import org.golfit.shared.protocol.Protocol;
+
+import java.util.Collection;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+
+/** Implements server-side actions: sending responses to clients, managing usernames, and broadcasting messages. */
+public class ServerApi implements IServerApi{
+    private final ServerContext serverContext;
+
+    /**
+     * Creates a new ServerApi backed by the given server context.
+     *
+     * @param serverContext provides access to clients, lobbies, and usernames
+     */
+<span class="nc" id="L22">    public ServerApi(ServerContext serverContext) {</span>
+<span class="nc" id="L23">        this.serverContext = serverContext;</span>
+<span class="nc" id="L24">    }</span>
+
+    /** Sends a SYS_CONNECTED response to the client with their assigned ID and username. */
+    @Override
+    public void sendConnected(ClientHandler clientHandler, String payload) throws Exception {
+<span class="nc" id="L29">        clientHandler.getChannelManager().send(Protocol.SYS_CONNECTED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L30">    }</span>
+
+    /** Sends a pong response with the current session ID. */
+    @Override
+    public void sendPong(ClientHandler clientHandler) throws Exception {
+<span class="nc" id="L35">        String payload = String.valueOf(serverContext.getSessionId());</span>
+<span class="nc" id="L36">        clientHandler.getChannelManager().send(Protocol.SYS_PONG, Protocol.CH_PINGS, Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L37">    }</span>
+
+    /** Removes a client from the server: releases their username, stops their handler, and removes them from the client map. */
+    public void disconnectClient(ClientHandler clientHandler) {
+        // Remove client from any lobby they're in
+<span class="nc bnc" id="L42" title="All 2 branches missed.">        for (Lobby lobby : serverContext.getLobbies().values()) {</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">            if (lobby.getClients().contains(clientHandler)) {</span>
+<span class="nc" id="L44">                lobby.removeClient(clientHandler);</span>
+                // If lobby is now empty, remove it
+<span class="nc bnc" id="L46" title="All 2 branches missed.">                if (lobby.getClients().isEmpty()) {</span>
+<span class="nc" id="L47">                    serverContext.getLobbies().remove(lobby.getId());</span>
+                }
+            }
+<span class="nc" id="L50">        }</span>
+
+<span class="nc bnc" id="L52" title="All 2 branches missed.">        if (clientHandler.getUsername() != null) {</span>
+<span class="nc" id="L53">            serverContext.getUsernameSet().remove(clientHandler.getUsername());</span>
+        }
+<span class="nc" id="L55">        clientHandler.shutdown();</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (clientHandler.getClientKey() != null) {</span>
+<span class="nc" id="L57">            serverContext.getClients().remove(clientHandler.getClientKey());</span>
+        }
+
+        // Update lobby list for remaining clients
+<span class="nc bnc" id="L61" title="All 2 branches missed.">        for (ClientHandler client : serverContext.getClients().values()) {</span>
+            try {
+<span class="nc" id="L63">                sendLobbyList(client);</span>
+<span class="nc" id="L64">            } catch (Exception ignored) {}</span>
+<span class="nc" id="L65">        }</span>
+<span class="nc" id="L66">    }</span>
+
+    /** Creates a lobby and sends a SYS_LOBBY_CREATED confirmation to the requesting client. */
+    @Override
+    public void sendCreateLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
+<span class="nc" id="L71">        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_CREATED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);</span>
+<span class="nc" id="L72">    }</span>
+
+    /** Sends the list of available lobbies to the requesting client. */
+    @Override
+    public void sendLobbyList(ClientHandler clientHandler) throws Exception {
+<span class="nc" id="L77">        String payload = serverContext.getLobbies().values().stream()</span>
+<span class="nc" id="L78">                .sorted((a, b) -&gt; Integer.compare(a.getId(), b.getId()))</span>
+<span class="nc" id="L79">                .map(Lobby::getLobbyListContext)</span>
+<span class="nc" id="L80">                .collect(Collectors.joining(&quot;&amp;&quot;));</span>
+
+<span class="nc" id="L82">        clientHandler.getChannelManager().send(</span>
+                Protocol.SYS_LOBBY_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload
+        );
+<span class="nc" id="L85">    }</span>
+    /** Sends a lobby leave confirmation to the client. */
+    public void sendLeaveLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
+<span class="nc" id="L88">        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);</span>
+<span class="nc" id="L89">    }</span>
+
+    /** Sends lobby info (player list) to the specified client. */
+    public void sendLobbyInfo(ClientHandler clientHandler, String lobbyId) throws Exception {
+<span class="nc" id="L93">        Lobby lobbyContext = serverContext.getLobbies().get(Integer.parseInt(lobbyId));</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        if (lobbyContext == null) return;</span>
+<span class="nc" id="L95">        String payload = lobbyContext.getLobbyContext();</span>
+<span class="nc" id="L96">        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_INFO, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L97">    }</span>
+
+    /** Sends a private chat message to the specified client. */
+    @Override
+    public void sendPrivateChat(ClientHandler clientHandler, int targetId, String data) throws Exception {
+<span class="nc" id="L102">        clientHandler.getChannelManager().send( Protocol.SYS_CHAT_PRIVATE, Protocol.CH_SYSTEM, targetId, data);</span>
+<span class="nc" id="L103">    }</span>
+
+    /** Broadcasts a chat message to all connected clients. */
+    @Override
+    public void broadcastChat(int senderId, String data) throws Exception {
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        for(ClientHandler client : serverContext.getClients().values()) {</span>
+<span class="nc" id="L109">            client.getChannelManager().send( Protocol.SYS_CHAT_BROADCAST,Protocol.CH_CHAT, senderId, data);</span>
+<span class="nc" id="L110">        }</span>
+<span class="nc" id="L111">    }</span>
+
+    /** Sends a lobby chat message to the specified client. */
+    @Override
+    public void sendLobbyChat(ClientHandler clientHandler, String data) throws Exception {
+<span class="nc" id="L116">        clientHandler.getChannelManager().send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);</span>
+<span class="nc" id="L117">    }</span>
+
+    /** Broadcasts movement updates to all connected clients. */
+    @Override
+    public void broadcastMovement(String payload) throws Exception {
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        for(ClientHandler client : serverContext.getClients().values()) {</span>
+<span class="nc" id="L123">            client.getChannelManager().send(Protocol.MOVE_UPDATE, Protocol.CH_MOVEMENT, Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L124">        }</span>
+<span class="nc" id="L125">    }</span>
+
+    /** Broadcasts movement updates only to clients in the specified lobby. */
+    public void broadcastMovementToLobby(int lobbyId, String payload) throws Exception {
+<span class="nc" id="L129">        Lobby lobby = serverContext.getLobbies().get(lobbyId);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        if (lobby == null) return;</span>
+<span class="nc bnc" id="L131" title="All 2 branches missed.">        for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc" id="L132">            client.getChannelManager().send(Protocol.MOVE_UPDATE, Protocol.CH_MOVEMENT, Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L133">        }</span>
+<span class="nc" id="L134">    }</span>
+
+    /** Sends the full player list to the requesting client. */
+    public void sendPlayerList(ClientHandler clientHandler, String payload) throws Exception {
+<span class="nc" id="L138">        clientHandler.getChannelManager().send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L139">    }</span>
+
+    /** Broadcasts SYS_GAME_START to every client in the given lobby. */
+    public void sendGameStart(Lobby lobby) throws Exception {
+<span class="nc bnc" id="L143" title="All 2 branches missed.">        for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc" id="L144">            client.getChannelManager().send(</span>
+<span class="nc" id="L145">                Protocol.SYS_GAME_START, Protocol.CH_SYSTEM, Protocol.ID_SERVER, String.valueOf(lobby.getId()));</span>
+<span class="nc" id="L146">        }</span>
+<span class="nc" id="L147">    }</span>
+
+    /** Broadcasts SYS_STROKE_UPDATE to every client in the given lobby.
+     *  Payload format: &quot;username1:strokes,username2:strokes,...&quot; */
+    public void sendStrokeUpdate(Lobby lobby, String payload) throws Exception {
+<span class="nc bnc" id="L152" title="All 2 branches missed.">        for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc" id="L153">            client.getChannelManager().send(</span>
+                Protocol.SYS_STROKE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+<span class="nc" id="L155">        }</span>
+<span class="nc" id="L156">    }</span>
+
+    /** Broadcasts SYS_GAME_END to every client in the given lobby.
+     *  Payload format: &quot;winner=username;username1:2,username2:5&quot; */
+    public void sendGameEnd(Lobby lobby, String payload) throws Exception {
+<span class="nc bnc" id="L161" title="All 2 branches missed.">        for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc" id="L162">            client.getChannelManager().send(</span>
+                Protocol.SYS_GAME_END, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+<span class="nc" id="L164">        }</span>
+<span class="nc" id="L165">    }</span>
+
+
+    /** Attempts to claim a username. Returns true if the username was available and successfully claimed. */
+    public boolean claimUsername(String username) {
+<span class="nc" id="L170">        return serverContext.getUsernameSet().add(username);</span>
+    }
+
+    /** Releases a previously claimed username so it can be used by another client. */
+    public void releaseUsername(String username) {
+<span class="nc" id="L175">        serverContext.getUsernameSet().remove(username);</span>
+<span class="nc" id="L176">    }</span>
+
+    /** Returns the map of all connected clients. */
+    public Map&lt;String, ClientHandler&gt; getClients() {
+<span class="nc" id="L180">        return serverContext.getClients();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

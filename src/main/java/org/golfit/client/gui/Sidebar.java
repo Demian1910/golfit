@@ -25,7 +25,6 @@ public class Sidebar extends VBox {
     private final TextField targetField;
     private final Label targetLabel;
     private final Label usernameLabel;
-
     private final LobbyMenu lobbyMenu;
 
     public Sidebar(ClientApi clientApi) {

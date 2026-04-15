@@ -9,7 +9,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.TimeUynit;
+import java.util.concurrent.TimeUnit;
 
 import static org.golfit.shared.constants.Constants.*;
 
@@ -140,6 +140,9 @@ public class ServerGameSimulation {
     /**
      * Main simulation loop. Calculates physics for all balls and broadcasts updates.
      */
+    /**
+     * Main simulation loop. Calculates physics for all balls and broadcasts updates.
+     */
     private void tick() {
         try {
             double deltaTime = TICK_RATE_MS / 1000.0;
@@ -155,20 +158,19 @@ public class ServerGameSimulation {
                 StringBuilder payloadBuilder = lobbyPayloads.computeIfAbsent(lobbyId, k -> new StringBuilder());
                 boolean ballNeedsUpdate = forceUpdate;
 
-                // Skip finished balls — they disappear from the payload
                 if (ball.isFinished()) {
-                    lobbiesRequiringUpdate.add(lobbyId); // ensure one final broadcast to remove them
+                    lobbiesRequiringUpdate.add(lobbyId);
                     continue;
                 }
 
-                // 1. Check if ball is within the golf hole capture radius
+                // 1. Hole Detection (Unchanged)
                 double dx = ball.getPx() - HOLE_CENTER_X;
                 double dy = ball.getPy() - HOLE_CENTER_Y;
                 if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
                     ball.setFinished(true);
                     finishedPlayers.add(playerId);
                     lobbiesRequiringUpdate.add(lobbyId);
-                    logger.info("Player {} holed out in {} strokes!", playerId, ball.getStrokeCount());
+                    logger.info("Player {} holed out!", playerId);
                     checkGameEnd(playerId);
                     continue;
                 }
@@ -181,23 +183,41 @@ public class ServerGameSimulation {
                     if (col >= 0 && col < MapData.COLS && row >= 0 && row < MapData.ROWS) {
                         int terrainType = MapData.SERVER_MAP[row][col];
 
-                        if (terrainType == 4) { // Water Hazard
+                        // DEBUG: Log terrain changes
+                        if (terrainType == 4) { // Water
                             ball.resetToLastPosition();
                             ballNeedsUpdate = true;
-                            logger.info("Player {} hit water and was reset.", playerId);
+                            logger.info("COLLISION DEBUG: Player {} reset by water at [{},{}]", playerId, col, row);
                         } else {
-                            double friction = switch (terrainType) {
-                                case 2 -> FRICTION_SAND;
-                                case 3 -> FRICTION_ICE;
-                                default -> FRICTION_GRASS;
-                            };
-                            ball.changeFriction(friction);
+                            ball.changeFriction(getFrictionForTerrain(terrainType));
                         }
                     }
 
-                    // 3. Physics Update
+                    // 3. Physics & Collision Debugging
                     List<MapData.ServerShape> nearby = getNearbyShapes(ball.getPx(), ball.getPy(), 3.0);
+
+                    // Run the ball update
                     ball.update(deltaTime, nearby);
+
+
+                    List<Integer> toRemove = ball.getPendingRemovals();
+                    if (!toRemove.isEmpty()) {
+                        for (int shapeId : toRemove) {
+                            // DEBUG: Log which ID was hit and its partner
+                            MapData.ServerShape shape = MapData.LEVEL_1_OBSTACLES.get(shapeId);
+                            logger.info("COLLISION DEBUG: Player {} triggered removal of Shape ID: {} (Partner: {})",
+                                    playerId, shapeId, shape.partnerId);
+
+                            /*Physically remove from the logical grid so ball can now pass through
+                            removeShapeFromLogicalGrid(shapeId);
+
+                            // Tell the API to hide this object on all clients
+                            serverApi.broadcastObjectHide(lobbyId, shapeId);
+
+                             */
+                        }
+                        ballNeedsUpdate = true;
+                    }
 
                     if (ball.isMoving()) {
                         ballNeedsUpdate = true;
@@ -208,18 +228,17 @@ public class ServerGameSimulation {
                     lobbiesRequiringUpdate.add(lobbyId);
                 }
 
-                // 4. Generate Update Payload (ID:X,Y;)
+                // 4. Generate Update Payload
                 payloadBuilder.append(playerId).append(":")
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPx())).append(",")
                         .append(String.format(java.util.Locale.US, "%.2f", ball.getPy())).append(";");
             }
 
-            // Broadcast only to lobbies that have movement, forced update, or player changes
+            // Broadcast loop (Unchanged)
             for (Map.Entry<Integer, StringBuilder> entry : lobbyPayloads.entrySet()) {
                 int lobbyId = entry.getKey();
-                String payload = entry.getValue().toString();
-                if (lobbiesRequiringUpdate.contains(lobbyId) || forceUpdate) {
-                    serverApi.broadcastMovementToLobby(lobbyId, payload);
+                if (lobbiesRequiringUpdate.contains(lobbyId)) {
+                    serverApi.broadcastMovementToLobby(lobbyId, entry.getValue().toString());
                 }
             }
             forceUpdate = false;
@@ -227,6 +246,29 @@ public class ServerGameSimulation {
         } catch (Exception e) {
             logger.error("Error in physics tick", e);
         }
+    }
+
+    /**
+     * Clears a shape ID from the SERVER_MAP and SHAPE_ID_MAP so collisions no longer occur.
+     */
+    private void removeShapeFromLogicalGrid(int shapeId) {
+        for (int r = 0; r < MapData.ROWS; r++) {
+            for (int c = 0; c < MapData.COLS; c++) {
+                if (MapData.SHAPE_ID_MAP[r][c] == shapeId) {
+                    // Set both maps to empty/passable
+                    MapData.SERVER_MAP[r][c] = 0;
+                    MapData.SHAPE_ID_MAP[r][c] = -1;
+                }
+            }
+        }
+    }
+
+    private double getFrictionForTerrain(int terrainType) {
+        return switch (terrainType) {
+            case 2 -> FRICTION_SAND;
+            case 3 -> FRICTION_ICE;
+            default -> FRICTION_GRASS;
+        };
     }
 
     /**

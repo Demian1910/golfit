@@ -1,0 +1,308 @@
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:44: Warnung: kein @param f�r s
+    private void setupShape(Shape s) {
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:54: Warnung: kein @param f�r col
+    public Rectangle addRect(int col, int row, int width, int height, Color color) {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:54: Warnung: kein @param f�r row
+    public Rectangle addRect(int col, int row, int width, int height, Color color) {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:54: Warnung: kein @param f�r width
+    public Rectangle addRect(int col, int row, int width, int height, Color color) {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:54: Warnung: kein @param f�r height
+    public Rectangle addRect(int col, int row, int width, int height, Color color) {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:54: Warnung: kein @param f�r color
+    public Rectangle addRect(int col, int row, int width, int height, Color color) {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:54: Warnung: kein @return
+    public Rectangle addRect(int col, int row, int width, int height, Color color) {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:64: Warnung: kein @param f�r col
+    public void addWall(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:64: Warnung: kein @param f�r row
+    public void addWall(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:64: Warnung: kein @param f�r width
+    public void addWall(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:64: Warnung: kein @param f�r height
+    public void addWall(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:71: Warnung: kein @param f�r col
+    public void addSand(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:71: Warnung: kein @param f�r row
+    public void addSand(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:71: Warnung: kein @param f�r width
+    public void addSand(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:71: Warnung: kein @param f�r height
+    public void addSand(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:78: Warnung: kein @param f�r col
+    public void addIce(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:78: Warnung: kein @param f�r row
+    public void addIce(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:78: Warnung: kein @param f�r width
+    public void addIce(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:78: Warnung: kein @param f�r height
+    public void addIce(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:85: Warnung: kein @param f�r col
+    public void addWater(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:85: Warnung: kein @param f�r row
+    public void addWater(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:85: Warnung: kein @param f�r width
+    public void addWater(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:85: Warnung: kein @param f�r height
+    public void addWater(int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:92: Warnung: kein @param f�r col
+    public void addGolfHole(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:92: Warnung: kein @param f�r row
+    public void addGolfHole(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:99: Warnung: kein @param f�r col
+    public void addSwitch(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:99: Warnung: kein @param f�r row
+    public void addSwitch(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:108: Warnung: kein @param f�r col
+    public void addBall(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:108: Warnung: kein @param f�r row
+    public void addBall(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:115: Warnung: kein @param f�r col
+    public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:115: Warnung: kein @param f�r row
+    public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:115: Warnung: kein @param f�r width
+    public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:115: Warnung: kein @param f�r height
+    public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:115: Warnung: kein @param f�r color
+    public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:115: Warnung: kein @return
+    public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:130: Warnung: kein @param f�r coords
+    public void addPolygon(double... coords) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:159: Warnung: kein @param f�r col
+    public void addTree(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:159: Warnung: kein @param f�r row
+    public void addTree(int col, int row) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:203: Warnung: kein @param f�r rect
+    public void bindGrid(Rectangle rect, int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:203: Warnung: kein @param f�r col
+    public void bindGrid(Rectangle rect, int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:203: Warnung: kein @param f�r row
+    public void bindGrid(Rectangle rect, int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:203: Warnung: kein @param f�r width
+    public void bindGrid(Rectangle rect, int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:203: Warnung: kein @param f�r height
+    public void bindGrid(Rectangle rect, int col, int row, int width, int height) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:211: Warnung: kein @return
+    public List<Shape> getObstacleList() {
+                       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:25: Warnung: kein Kommentar
+    private static final int BOUNCE = 5;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:17: Warnung: kein Kommentar
+    private static final int COLS = 80;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:30: Warnung: kein Kommentar
+    private final Pane container;
+                       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:23: Warnung: kein Kommentar
+    private static final int ICE = 3;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:29: Warnung: kein Kommentar
+    public List<Shape> obstacles = new ArrayList<>();
+                       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:18: Warnung: kein Kommentar
+    private static final int ROWS = 45;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:22: Warnung: kein Kommentar
+    private static final int SAND = 2;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:26: Warnung: kein Kommentar
+    private static final int SWITCH = 6;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:21: Warnung: kein Kommentar
+    private static final int WALL = 1;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\graphics\AddObstacle.java:24: Warnung: kein Kommentar
+    private static final int WATER = 4;
+                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\AimIndicator.java:4: Warnung: Verwendung von Standardkonstruktor, der keinen Kommentar bereitstellt
+public class AimIndicator {
+       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\App.java:53: Warnung: kein @param f�r ip
+    private void launchGame(String ip, int port, String username) {
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\App.java:53: Warnung: kein @param f�r port
+    private void launchGame(String ip, int port, String username) {
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\App.java:53: Warnung: kein @param f�r username
+    private void launchGame(String ip, int port, String username) {
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\App.java:24: Warnung: kein Kommentar
+    private Client client;
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\App.java:25: Warnung: kein Kommentar
+    private Stage primaryStage;
+                  ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\App.java:23: Warnung: Verwendung von Standardkonstruktor, der keinen Kommentar bereitstellt
+public class App extends Application {
+       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\Ball.java:20: Warnung: kein @return
+    public double getPx() {
+                  ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\Ball.java:25: Warnung: kein @return
+    public double getPy() {
+                  ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\Ball.java:5: Warnung: kein Kommentar
+    private double px, py;
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\Ball.java:5: Warnung: kein Kommentar
+    private double px, py;
+                       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:37: Warnung: kein @return
+    private double calculatePixelRadius() {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:48: Warnung: kein @param f�r ball
+    public void updatePosition(Ball ball) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:57: Warnung: kein @return
+    public Color getColor() {
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:62: Warnung: kein @param f�r newColor
+    public void changeColor(Color newColor) {
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:70: Warnung: kein @return
+    public Circle getCircle() {
+                  ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:13: Warnung: kein Kommentar
+    public Color ballColor = Color.BLUE;
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:11: Warnung: kein Kommentar
+    private Circle circle;
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:12: Warnung: kein Kommentar
+    private static final double GRID_RADIUS = Constants.BALL_RADIUS;
+                                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\game\BallRender.java:14: Warnung: kein Kommentar
+    private Pane root;
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:24: Warnung: kein @return
+    public int nextSequence() {
+               ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:29: Warnung: kein @return
+    public int nextExpectedSequence() {
+               ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:34: Warnung: kein @param f�r seq
+    public boolean isNewPacket(int seq) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:34: Warnung: kein @return
+    public boolean isNewPacket(int seq) {
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:10: Warnung: kein Kommentar
+    public final String id;
+                        ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:14: Warnung: kein Kommentar
+    private int nextExpectedSequence = 0;
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:13: Warnung: kein Kommentar
+    private int nextSendSequence = 0;
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:16: Warnung: kein Kommentar
+    public final Map<Integer, PendingPacket> pendingAck = new LinkedHashMap<>();
+                                             ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:11: Warnung: kein Kommentar
+    public final boolean reliable;
+                         ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channel\Channel.java:18: Warnung: kein Kommentar
+    public Channel(String id, boolean reliable) {
+           ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channelManager\ChannelManager.java:46: Warnung: kein @param f�r localId
+    public ChannelManager(Protocol.SendFunction sender, Protocol.PacketDispatcher dispatcher, int localId) {
+           ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channelManager\ChannelManager.java:34: Warnung: kein Kommentar
+    private final Map<String, Channel> channels = new HashMap<>();
+                                       ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channelManager\ChannelManager.java:36: Warnung: kein Kommentar
+    private final Protocol.PacketDispatcher dispatcher;
+                                            ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channelManager\ChannelManager.java:38: Warnung: kein Kommentar
+    private int localId;
+                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channelManager\ChannelManager.java:37: Warnung: kein Kommentar
+    private final Logger logger = LoggerFactory.getLogger(ChannelManager.class);
+                         ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\protocol\channelManager\ChannelManager.java:35: Warnung: kein Kommentar
+    private final Protocol.SendFunction sender;
+                                        ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:156: Warnung: kein @return
+    public MovementHandler getMovementHandler() {
+                           ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:161: Warnung: kein @return
+    public SystemHandler getSystemHandler() {
+                         ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:166: Warnung: kein @return
+    public ClientApi getClientApi() {
+                     ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:174: Warnung: kein @throws f�r java.lang.Exception
+    private void dispatch(MessageParser.Message message) throws Exception {
+                 ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:59: Warnung: kein Kommentar
+    int lobbyId = 0;
+        ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:60: Warnung: kein Kommentar
+    LinkedHashSet<String> lobbyPlayers = new LinkedHashSet<>();
+                          ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:71: Warnung: kein Kommentar
+    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Client.class);
+                                ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:51: Warnung: kein Kommentar
+    private MovementHandler movementHandler;
+                            ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:62: Warnung: kein Kommentar
+    final private int port;
+                      ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\Client.java:63: Warnung: kein Kommentar
+    DatagramSocket socket;
+                   ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\client\clientLogic\ClientApi.java:134: Fehler: @param-Name nicht gefunden
+     * @param movementData The movement data to be sent
+              ^
+C:\Users\const\IdeaProjects\Gruppe-4\src\main\java\org\golfit\shared\messageBuilder\MessageBuilder.java:21: Fehler: Referenz nicht gefunden
+     * @return the encoded message string terminated by {@link Protocol#TERMINATOR}
+                                                               ^
+2 Fehler
+100 Warnungen

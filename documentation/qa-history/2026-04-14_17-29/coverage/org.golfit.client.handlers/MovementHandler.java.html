@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovementHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.handlers</a> &gt; <span class="el_source">MovementHandler.java</span></div><h1>MovementHandler.java</h1><pre class="source lang-java linenums">package org.golfit.client.handlers;
+
+import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.client.game.BallRender;
+import org.golfit.client.game.Ball;
+import javafx.scene.layout.Pane;
+import javafx.application.Platform;
+
+import java.util.HashMap;
+import java.util.Map;
+
+/**
+ * Handles movement update messages from the server on the client side.
+ * Converts server grid coordinates to pixel positions and manages ball rendering.
+ */
+public class MovementHandler {
+    private final ClientApi clientApi;
+    /** Map of player IDs to their rendered ball instances. */
+<span class="nc" id="L20">    public Map&lt;Integer, BallRender&gt; players = new HashMap&lt;&gt;();</span>
+    private Pane gamePane;
+
+    /**
+     * Creates a new client-side MovementHandler.
+     *
+     * @param clientApi the client API instance
+     */
+<span class="nc" id="L28">    public MovementHandler(ClientApi clientApi) {</span>
+<span class="nc" id="L29">        this.clientApi = clientApi;</span>
+<span class="nc" id="L30">    }</span>
+
+    /** Sets the game pane where balls are rendered. Clears any existing ball renders. */
+    public void setGamePane(Pane pane) {
+<span class="nc" id="L34">        this.gamePane = pane;</span>
+<span class="nc" id="L35">        this.players.clear();</span>
+<span class="nc" id="L36">    }</span>
+
+    /**
+     * Handles a movement update from the server. Parses the payload containing
+     * player positions in {@code &quot;id:x,y;id:x,y;...&quot;} format, converts grid
+     * coordinates to pixel coordinates, and updates or creates ball renders.
+     *
+     * @param message the parsed movement update message
+     */
+    public void onMoveUpdate(MessageParser.Message message) {
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (gamePane == null) return;</span>
+
+<span class="nc" id="L48">        String payload = message.payload;</span>
+<span class="nc bnc" id="L49" title="All 4 branches missed.">        if (payload == null || payload.isEmpty()) return;</span>
+
+        // FIXED: Re-added the fallback so the ball spawns immediately even if
+        // the layout pass hasn't finished (width is 0).
+<span class="nc bnc" id="L53" title="All 2 branches missed.">        double currentWidth = gamePane.getWidth() &gt; 0 ? gamePane.getWidth() : 1100.0;</span>
+<span class="nc bnc" id="L54" title="All 2 branches missed.">        double currentHeight = gamePane.getHeight() &gt; 0 ? gamePane.getHeight() : 600.0;</span>
+
+<span class="nc" id="L56">        double scaleX = currentWidth / 80.0;</span>
+<span class="nc" id="L57">        double scaleY = currentHeight / 45.0;</span>
+
+<span class="nc" id="L59">        java.util.Set&lt;Integer&gt; receivedIds = new java.util.HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        String[] playerUpdates = payload.isEmpty() ? new String[0] : payload.split(&quot;;&quot;);</span>
+
+<span class="nc bnc" id="L62" title="All 2 branches missed.">        for (String update : playerUpdates) {</span>
+<span class="nc" id="L63">            String[] parts = update.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">            if (parts.length == 2) {</span>
+                try {
+<span class="nc" id="L66">                    int playerId = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L67">                    receivedIds.add(playerId);</span>
+<span class="nc" id="L68">                    String[] coords = parts[1].split(&quot;,&quot;);</span>
+
+                    // GRID-Coordinates of Server (e.g. 40.5)
+<span class="nc" id="L71">                    double gridX = Double.parseDouble(coords[0]);</span>
+<span class="nc" id="L72">                    double gridY = Double.parseDouble(coords[1]);</span>
+
+                    // CONVERSION: Grid -&gt; Pixel
+<span class="nc" id="L75">                    double pixelX = gridX * scaleX;</span>
+<span class="nc" id="L76">                    double pixelY = gridY * scaleY;</span>
+
+<span class="nc" id="L78">                    Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L79">                        BallRender render = players.get(playerId);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">                        if (render == null) {</span>
+                            // If the ball is new, calculate Pixel-Value
+<span class="nc" id="L82">                            Ball initialBall = new Ball(pixelX, pixelY);</span>
+<span class="nc" id="L83">                            render = new BallRender(gamePane, initialBall);</span>
+<span class="nc" id="L84">                            players.put(playerId, render);</span>
+
+                            // Debug to see if it's being created
+<span class="nc" id="L87">                            System.out.println(&quot;Ball created for ID &quot; + playerId + &quot; at &quot; + pixelX + &quot;,&quot; + pixelY);</span>
+<span class="nc" id="L88">                        } else {</span>
+                            // Move the existing ball to the new pixel coordinates
+<span class="nc" id="L90">                            Ball tempBall = new Ball(pixelX, pixelY);</span>
+<span class="nc" id="L91">                            render.updatePosition(tempBall);</span>
+                        }
+<span class="nc" id="L93">                    });</span>
+<span class="nc" id="L94">                } catch (Exception e) {</span>
+                    // Silently catch parsing errors
+<span class="nc" id="L96">                }</span>
+            }
+        }
+
+        // Cleanup: Remove balls that are no longer in the server payload (e.g., they went into the hole)
+<span class="nc" id="L101">        Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L102">            players.entrySet().removeIf(entry -&gt; {</span>
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                if (!receivedIds.contains(entry.getKey())) {</span>
+                    // Remove both the circle and the aim line from the UI
+<span class="nc" id="L105">                    gamePane.getChildren().removeAll(</span>
+<span class="nc" id="L106">                        entry.getValue().getCircle()</span>
+                    );
+<span class="nc" id="L108">                    return true; // remove from map</span>
+                }
+<span class="nc" id="L110">                return false;</span>
+            });
+<span class="nc" id="L112">        });</span>
+<span class="nc" id="L113">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

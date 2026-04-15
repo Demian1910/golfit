@@ -1,5 +1,6 @@
 package org.golfit.graphics;
 
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
 
@@ -47,6 +48,7 @@ public class Game {
         });
 
          */
+
 
     }
 

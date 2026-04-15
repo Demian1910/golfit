@@ -1,0 +1,289 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>LobbyMenu.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.gui.lobby</a> &gt; <span class="el_source">LobbyMenu.java</span></div><h1>LobbyMenu.java</h1><pre class="source lang-java linenums">package org.golfit.client.gui.lobby;
+
+import javafx.application.Platform;
+import javafx.geometry.Insets;
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.ScrollPane;
+import javafx.scene.layout.HBox;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.VBox;
+import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.shared.constants.Constants;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+import java.util.ArrayList;
+
+/**
+ * Sidebar component for lobby management. Shows either the lobby list (with create/join)
+ * or the current lobby view (with player list, stroke counts, start, and leave buttons).
+ * Listens to EventBus events for lobby updates, game start/end, and stroke updates.
+ */
+public class LobbyMenu extends VBox {
+    ClientApi clientApi;
+<span class="nc" id="L27">    VBox lobbyVBox = new VBox(5);</span>
+    private VBox playerList;
+    private Button leaveLobbyBtn;
+    private Button startBtn;
+
+    private final VBox lobbyListView;
+    private final VBox inLobbyView;
+
+<span class="nc" id="L35">    private final Map&lt;String, Integer&gt; strokesMap = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L36">    private final List&lt;String&gt; currentPlayers = new ArrayList&lt;&gt;();</span>
+
+<span class="nc" id="L38">    public LobbyMenu(ClientApi clientApi) {</span>
+<span class="nc" id="L39">        this.clientApi = clientApi;</span>
+
+<span class="nc" id="L41">        lobbyListView = buildLobbyListView();</span>
+
+<span class="nc" id="L43">        inLobbyView = buildInLobbyView();</span>
+<span class="nc" id="L44">        inLobbyView.setVisible(false);</span>
+<span class="nc" id="L45">        inLobbyView.setManaged(false);</span>
+
+<span class="nc" id="L47">        this.setSpacing(8);</span>
+<span class="nc" id="L48">        this.setPadding(new Insets(8));</span>
+<span class="nc" id="L49">        this.getChildren().addAll(lobbyListView, inLobbyView);</span>
+
+        // Events
+<span class="nc" id="L52">        EventBus.get().on(Constants.LOBBY_LIST, data -&gt; {</span>
+<span class="nc" id="L53">            String[] lobbyList = (String[]) data;</span>
+
+<span class="nc" id="L55">            javafx.application.Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L56">                lobbyVBox.getChildren().clear();</span>
+<span class="nc bnc" id="L57" title="All 2 branches missed.">                for (String lobbyString : lobbyList) {</span>
+<span class="nc bnc" id="L58" title="All 4 branches missed.">                    if (lobbyString == null || lobbyString.isBlank())</span>
+<span class="nc" id="L59">                        continue;</span>
+<span class="nc" id="L60">                    String[] lobby = lobbyString.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L61" title="All 2 branches missed.">                    if (lobby.length &lt; 4)</span>
+<span class="nc" id="L62">                        continue;</span>
+<span class="nc" id="L63">                    createLobbyRow(lobby);</span>
+                }
+<span class="nc" id="L65">            });</span>
+<span class="nc" id="L66">        });</span>
+<span class="nc" id="L67">        EventBus.get().on(Constants.LOBBY_INFO, data -&gt; {</span>
+<span class="nc" id="L68">            String[] players = (String[]) data;</span>
+<span class="nc" id="L69">            updatePlayers(players);</span>
+<span class="nc" id="L70">        });</span>
+<span class="nc" id="L71">        EventBus.get().on(Constants.LOBBY_JOINED, data -&gt; {</span>
+<span class="nc" id="L72">             strokesMap.clear();</span>
+<span class="nc" id="L73">             showInLobbyView();</span>
+<span class="nc" id="L74">        });</span>
+<span class="nc" id="L75">        EventBus.get().on(Constants.LOBBY_LEFT, data -&gt; {</span>
+<span class="nc" id="L76">             strokesMap.clear();</span>
+<span class="nc" id="L77">             showLobbyListView();</span>
+<span class="nc" id="L78">        });</span>
+
+<span class="nc" id="L80">        EventBus.get().on(Constants.GAME_START, data -&gt; {</span>
+<span class="nc" id="L81">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L82">                startBtn.setVisible(false);</span>
+<span class="nc" id="L83">                startBtn.setManaged(false);</span>
+<span class="nc" id="L84">                leaveLobbyBtn.setVisible(false);</span>
+<span class="nc" id="L85">                leaveLobbyBtn.setManaged(false);</span>
+<span class="nc" id="L86">            });</span>
+<span class="nc" id="L87">        });</span>
+
+<span class="nc" id="L89">        EventBus.get().on(Constants.STROKE_UPDATE, data -&gt; {</span>
+<span class="nc" id="L90">            String payload = (String) data;</span>
+<span class="nc bnc" id="L91" title="All 4 branches missed.">            if (payload != null &amp;&amp; !payload.isEmpty()) {</span>
+<span class="nc" id="L92">                String[] parts = payload.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L93" title="All 2 branches missed.">                for (String part : parts) {</span>
+<span class="nc" id="L94">                    String[] kv = part.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">                    if (kv.length == 2) {</span>
+<span class="nc" id="L96">                        try { strokesMap.put(kv[0], Integer.parseInt(kv[1])); } catch (NumberFormatException ignored) {}</span>
+                    }
+                }
+<span class="nc" id="L99">                updatePlayers(currentPlayers.toArray(new String[0]));</span>
+            }
+<span class="nc" id="L101">        });</span>
+
+<span class="nc" id="L103">        EventBus.get().on(Constants.GAME_END, data -&gt; {</span>
+<span class="nc" id="L104">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L105">                startBtn.setVisible(true);</span>
+<span class="nc" id="L106">                startBtn.setManaged(true);</span>
+<span class="nc" id="L107">                leaveLobbyBtn.setVisible(true);</span>
+<span class="nc" id="L108">                leaveLobbyBtn.setManaged(true);</span>
+<span class="nc" id="L109">                strokesMap.clear();</span>
+<span class="nc" id="L110">                updatePlayers(currentPlayers.toArray(new String[0]));</span>
+<span class="nc" id="L111">            });</span>
+<span class="nc" id="L112">        });</span>
+<span class="nc" id="L113">    }</span>
+
+    /** Enables or disables the leave button based on lobby membership. */
+    public void setInLobby(boolean inLobby) {
+<span class="nc" id="L117">        javafx.application.Platform.runLater(() -&gt; {</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">            leaveLobbyBtn.setDisable(!inLobby);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            leaveLobbyBtn.setStyle(inLobby ? &quot;&quot; : &quot;-fx-opacity: 0.6;&quot;);</span>
+<span class="nc" id="L120">        });</span>
+<span class="nc" id="L121">    }</span>
+
+    /** Creates a UI row for a lobby entry showing host name, player count, status, and join button. */
+    public HBox createLobbyRow(String[] lobby) {
+<span class="nc" id="L125">        HBox row = new HBox(6);</span>
+<span class="nc" id="L126">        row.setPadding(new Insets(4));</span>
+<span class="nc" id="L127">        row.setAlignment(javafx.geometry.Pos.CENTER_LEFT);</span>
+
+<span class="nc" id="L129">        Label nameLabel = new Label(lobby[1] + &quot;'s lobby&quot;);</span>
+<span class="nc" id="L130">        nameLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);</span>
+<span class="nc" id="L131">        Label playerCount = new Label(lobby[2] + &quot;/4&quot;);</span>
+<span class="nc" id="L132">        playerCount.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);</span>
+<span class="nc" id="L133">        Label status = new Label(lobby[3]);</span>
+<span class="nc" id="L134">        status.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);</span>
+<span class="nc bnc" id="L135" title="All 4 branches missed.">        switch (lobby[3]) {</span>
+            case &quot;open&quot;:
+<span class="nc" id="L137">                status.setStyle(&quot;-fx-text-fill: green&quot;);</span>
+<span class="nc" id="L138">                break;</span>
+            case &quot;ongoing&quot;:
+<span class="nc" id="L140">                status.setStyle(&quot;-fx-text-fill: yellow&quot;);</span>
+<span class="nc" id="L141">                break;</span>
+            case &quot;finished&quot;:
+<span class="nc" id="L143">                status.setStyle(&quot;-fx-text-fill: red&quot;);</span>
+<span class="nc" id="L144">                break;</span>
+            default:
+<span class="nc" id="L146">                status.setStyle(&quot;-fx-text-fill: white&quot;);</span>
+        }
+<span class="nc" id="L148">        javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();</span>
+<span class="nc" id="L149">        HBox.setHgrow(spacer, Priority.ALWAYS);</span>
+
+<span class="nc" id="L151">        Button joinBtn = new Button(&quot;Join&quot;);</span>
+<span class="nc" id="L152">        joinBtn.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);</span>
+
+<span class="nc" id="L154">        joinBtn.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L155" title="All 2 branches missed.">            if (clientApi.getLobbyId() &gt; 0)</span>
+<span class="nc" id="L156">                return;</span>
+            try {
+<span class="nc" id="L158">                clientApi.joinLobby(lobby[0]);</span>
+<span class="nc" id="L159">            } catch (Exception ex) {</span>
+<span class="nc" id="L160">                throw new RuntimeException(ex);</span>
+<span class="nc" id="L161">            }</span>
+<span class="nc" id="L162">        });</span>
+
+<span class="nc" id="L164">        row.getChildren().addAll(nameLabel, playerCount, status, spacer, joinBtn);</span>
+<span class="nc" id="L165">        lobbyVBox.getChildren().add(row);</span>
+<span class="nc" id="L166">        return row;</span>
+    }
+
+    /** Builds the lobby list view with a create button and scrollable lobby rows. */
+    private VBox buildLobbyListView() {
+<span class="nc" id="L171">        Label title = new Label(&quot;Lobbies&quot;);</span>
+<span class="nc" id="L172">        title.setStyle(&quot;-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;&quot;);</span>
+
+<span class="nc" id="L174">        Button createLobbyBtn = new Button(&quot;Create Lobby&quot;);</span>
+<span class="nc" id="L175">        createLobbyBtn.setMaxWidth(Double.MAX_VALUE);</span>
+<span class="nc" id="L176">        createLobbyBtn.setOnAction(e -&gt; {</span>
+<span class="nc bnc" id="L177" title="All 2 branches missed.">            if (clientApi.getLobbyId() &gt; 0)</span>
+<span class="nc" id="L178">                return;</span>
+            try {
+<span class="nc" id="L180">                clientApi.createLobby();</span>
+<span class="nc" id="L181">            } catch (Exception ex) {</span>
+<span class="nc" id="L182">                throw new RuntimeException(ex);</span>
+<span class="nc" id="L183">            }</span>
+<span class="nc" id="L184">        });</span>
+
+<span class="nc" id="L186">        HBox buttons = new HBox(6, createLobbyBtn);</span>
+<span class="nc" id="L187">        HBox.setHgrow(createLobbyBtn, Priority.ALWAYS);</span>
+
+<span class="nc" id="L189">        ScrollPane scroll = new ScrollPane(lobbyVBox);</span>
+<span class="nc" id="L190">        scroll.setFitToWidth(true);</span>
+<span class="nc" id="L191">        scroll.setMaxHeight(Double.MAX_VALUE);</span>
+<span class="nc" id="L192">        VBox.setVgrow(scroll, Priority.ALWAYS);</span>
+
+<span class="nc" id="L194">        VBox view = new VBox(8, title, buttons, scroll);</span>
+<span class="nc" id="L195">        VBox.setVgrow(view, Priority.ALWAYS);</span>
+<span class="nc" id="L196">        return view;</span>
+    }
+
+    /** Builds the in-lobby view with player list, start button, and leave button. */
+    private VBox buildInLobbyView() {
+<span class="nc" id="L201">        Label title = new Label(&quot;Current Lobby&quot;);</span>
+<span class="nc" id="L202">        title.setStyle(&quot;-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;&quot;);</span>
+
+<span class="nc" id="L204">        Label playersLabel = new Label(&quot;Players:&quot;);</span>
+<span class="nc" id="L205">        playersLabel.setStyle(&quot;-fx-text-fill: white;&quot;);</span>
+<span class="nc" id="L206">        playerList = new VBox(4);</span>
+
+<span class="nc" id="L208">        startBtn = new Button(&quot;▶ START&quot;);</span>
+<span class="nc" id="L209">        startBtn.setMaxWidth(Double.MAX_VALUE);</span>
+<span class="nc" id="L210">        startBtn.setDisable(true);</span>
+<span class="nc" id="L211">        startBtn.setStyle(&quot;-fx-opacity: 0.5;&quot;);</span>
+<span class="nc" id="L212">        startBtn.setOnAction(e -&gt; {</span>
+            try {
+<span class="nc" id="L214">                clientApi.startGame();</span>
+<span class="nc" id="L215">            } catch (Exception ex) {</span>
+<span class="nc" id="L216">                throw new RuntimeException(ex);</span>
+<span class="nc" id="L217">            }</span>
+<span class="nc" id="L218">        });</span>
+
+<span class="nc" id="L220">        leaveLobbyBtn = new Button(&quot;Leave Lobby&quot;);</span>
+<span class="nc" id="L221">        leaveLobbyBtn.setMaxWidth(Double.MAX_VALUE);</span>
+<span class="nc" id="L222">        leaveLobbyBtn.setOnAction(e -&gt; {</span>
+            try {
+<span class="nc" id="L224">                clientApi.leaveLobby(String.valueOf(clientApi.getLobbyId()));</span>
+<span class="nc" id="L225">            } catch (Exception ex) {</span>
+<span class="nc" id="L226">                throw new RuntimeException(ex);</span>
+<span class="nc" id="L227">            }</span>
+<span class="nc" id="L228">        });</span>
+
+<span class="nc" id="L230">        VBox view = new VBox(8, title, playersLabel, playerList, startBtn, leaveLobbyBtn);</span>
+<span class="nc" id="L231">        VBox.setVgrow(view, Priority.ALWAYS);</span>
+<span class="nc" id="L232">        return view;</span>
+    }
+
+    /** Switches the display to the in-lobby view. */
+    private void showInLobbyView() {
+<span class="nc" id="L237">        javafx.application.Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L238">            lobbyListView.setVisible(false);</span>
+<span class="nc" id="L239">            lobbyListView.setManaged(false);</span>
+<span class="nc" id="L240">            inLobbyView.setVisible(true);</span>
+<span class="nc" id="L241">            inLobbyView.setManaged(true);</span>
+<span class="nc" id="L242">        });</span>
+<span class="nc" id="L243">    }</span>
+
+    /** Switches the display back to the lobby list view. */
+    private void showLobbyListView() {
+<span class="nc" id="L247">        javafx.application.Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L248">            inLobbyView.setVisible(false);</span>
+<span class="nc" id="L249">            inLobbyView.setManaged(false);</span>
+<span class="nc" id="L250">            lobbyListView.setVisible(true);</span>
+<span class="nc" id="L251">            lobbyListView.setManaged(true);</span>
+<span class="nc" id="L252">        });</span>
+<span class="nc" id="L253">    }</span>
+
+    /** Updates the player list display with current usernames and stroke counts. */
+    public void updatePlayers(String[] players) {
+<span class="nc" id="L257">        javafx.application.Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L258">            currentPlayers.clear();</span>
+<span class="nc bnc" id="L259" title="All 2 branches missed.">            for (String p : players) {</span>
+<span class="nc bnc" id="L260" title="All 4 branches missed.">                if (p != null &amp;&amp; !p.isBlank()) currentPlayers.add(p);</span>
+            }
+
+<span class="nc" id="L263">            playerList.getChildren().clear();</span>
+<span class="nc bnc" id="L264" title="All 2 branches missed.">            for (String player : currentPlayers) {</span>
+<span class="nc" id="L265">                HBox pRow = new HBox(8);</span>
+<span class="nc" id="L266">                Label playerLabel = new Label(&quot;👤 &quot; + player);</span>
+<span class="nc" id="L267">                playerLabel.setStyle(&quot;-fx-text-fill: white;&quot;);</span>
+
+<span class="nc" id="L269">                javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();</span>
+<span class="nc" id="L270">                HBox.setHgrow(spacer, Priority.ALWAYS);</span>
+
+<span class="nc" id="L272">                int strokes = strokesMap.getOrDefault(player, 0);</span>
+<span class="nc" id="L273">                Label strokeLabel = new Label(strokes + &quot; strokes&quot;);</span>
+<span class="nc" id="L274">                strokeLabel.setStyle(&quot;-fx-text-fill: yellow;&quot;);</span>
+                
+                // Only show stroke label if game is active (buttons hidden)
+<span class="nc bnc" id="L277" title="All 2 branches missed.">                strokeLabel.setVisible(!startBtn.isVisible());</span>
+
+<span class="nc" id="L279">                pRow.getChildren().addAll(playerLabel, spacer, strokeLabel);</span>
+<span class="nc" id="L280">                playerList.getChildren().add(pRow);</span>
+<span class="nc" id="L281">            }</span>
+            // Enable START only when exactly 4 players are in the lobby
+<span class="nc" id="L283">            boolean canStart = true; // playerList.getChildren().size() == 4;</span>
+<span class="nc bnc" id="L284" title="All 2 branches missed.">            startBtn.setDisable(!canStart);</span>
+<span class="nc bnc" id="L285" title="All 2 branches missed.">            startBtn.setStyle(canStart ? &quot;-fx-base: #27ae60;&quot; : &quot;-fx-opacity: 0.5;&quot;);</span>
+<span class="nc" id="L286">        });</span>
+<span class="nc" id="L287">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServerBall.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.server.game</a> &gt; <span class="el_source">ServerBall.java</span></div><h1>ServerBall.java</h1><pre class="source lang-java linenums">package org.golfit.server.game;
+
+import org.golfit.shared.constants.Constants;
+import org.golfit.shared.constants.MapData;
+
+import java.util.List;
+
+import static org.golfit.shared.constants.Constants.BALL_RADIUS;
+import static org.golfit.shared.constants.Constants.FRICTION_GRASS;
+
+/**
+ * Represents the server-side physical state and behavior of a golf ball.
+ * Optimized to prevent tunneling via dynamic sub-stepping and continuous resolution.
+ */
+public class ServerBall {
+    private double px, py;
+    private double vx, vy;
+<span class="nc" id="L18">    private final double radius = BALL_RADIUS;</span>
+
+    private double lastStaticX;
+    private double lastStaticY;
+
+    /** Number of strokes taken by this ball's player. */
+<span class="nc" id="L24">    private int strokeCount = 0;</span>
+    /** True once the ball has entered the hole and the player has finished. */
+<span class="nc" id="L26">    private boolean finished = false;</span>
+
+<span class="nc" id="L28">    private final double STOPPING_VELOCITY = Constants.STOPPING_VELOCITY;</span>
+<span class="nc" id="L29">    private double friction = FRICTION_GRASS;</span>
+
+    private double lastNormalX, lastNormalY;
+    private double overlap;
+
+    /**
+     * Creates a new server ball at the given position.
+     * Coordinates are normalized to grid units if they appear to be raw pixels.
+     *
+     * @param px the initial x position
+     * @param py the initial y position
+     */
+<span class="nc" id="L41">    public ServerBall(double px, double py) {</span>
+        // Normalizing coordinates if they come in as raw pixels
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        this.px = (px &gt; MapData.COLS) ? px / (1100.0 / MapData.COLS) : px;</span>
+<span class="nc bnc" id="L44" title="All 2 branches missed.">        this.py = (py &gt; MapData.ROWS) ? py / (600.0 / MapData.ROWS) : py;</span>
+
+<span class="nc" id="L46">        this.lastStaticX = this.px;</span>
+<span class="nc" id="L47">        this.lastStaticY = this.py;</span>
+<span class="nc" id="L48">        this.vx = 0;</span>
+<span class="nc" id="L49">        this.vy = 0;</span>
+<span class="nc" id="L50">    }</span>
+
+    /**
+     * Applies a stroke to the ball with the given initial velocity.
+     * Saves the current position for water hazard resets and increments the stroke counter.
+     *
+     * @param initialVx the initial x velocity in grid units per second
+     * @param initialVy the initial y velocity in grid units per second
+     */
+    public void stroke(double initialVx, double initialVy) {
+<span class="nc bnc" id="L60" title="All 2 branches missed.">        if (finished) return; // Cannot stroke a finished ball</span>
+        // Save position BEFORE the stroke for reset purposes (e.g., water hazards)
+<span class="nc" id="L62">        this.lastStaticX = this.px;</span>
+<span class="nc" id="L63">        this.lastStaticY = this.py;</span>
+
+<span class="nc" id="L65">        this.vx = initialVx;</span>
+<span class="nc" id="L66">        this.vy = initialVy;</span>
+<span class="nc" id="L67">        strokeCount++;</span>
+
+<span class="nc" id="L69">        double maxGridSpeed = 60.0;</span>
+<span class="nc" id="L70">        double currentSpeed = Math.sqrt(vx * vx + vy * vy);</span>
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        if (currentSpeed &gt; maxGridSpeed) {</span>
+<span class="nc" id="L73">            double ratio = maxGridSpeed / currentSpeed;</span>
+<span class="nc" id="L74">            this.vx *= ratio;</span>
+<span class="nc" id="L75">            this.vy *= ratio;</span>
+        }
+<span class="nc" id="L77">    }</span>
+
+    /**
+     * Advances the ball's physics by one tick. Applies friction, performs sub-stepped
+     * movement to prevent tunneling, and resolves collisions with nearby obstacles.
+     *
+     * @param deltaTime    the time step in seconds
+     * @param nearbyShapes the obstacles to check for collision
+     */
+    public void update(double deltaTime, List&lt;MapData.ServerShape&gt; nearbyShapes) {
+<span class="nc" id="L87">        double speed = Math.sqrt(vx * vx + vy * vy);</span>
+<span class="nc bnc" id="L88" title="All 6 branches missed.">        if (speed &lt;= 0 &amp;&amp; vx == 0 &amp;&amp; vy == 0) return;</span>
+
+        // 1. Apply Friction
+<span class="nc" id="L91">        double currentFriction = this.friction;</span>
+<span class="nc bnc" id="L92" title="All 2 branches missed.">        if (speed &lt; 3.0) currentFriction *= 0.85;</span>
+<span class="nc" id="L93">        double frictionFactor = Math.pow(currentFriction, deltaTime);</span>
+<span class="nc" id="L94">        vx *= frictionFactor;</span>
+<span class="nc" id="L95">        vy *= frictionFactor;</span>
+
+<span class="nc bnc" id="L97" title="All 2 branches missed.">        if (Math.sqrt(vx * vx + vy * vy) &lt; STOPPING_VELOCITY) {</span>
+<span class="nc" id="L98">            vx = 0;</span>
+<span class="nc" id="L99">            vy = 0;</span>
+<span class="nc" id="L100">            return;</span>
+        }
+
+        // 2. Dynamic Sub-stepping Logic
+        // We ensure no sub-step moves the ball further than half its radius.
+<span class="nc" id="L105">        double maxStepDist = radius * 0.5;</span>
+<span class="nc" id="L106">        double distanceToTravel = Math.sqrt(vx * vx + vy * vy) * deltaTime;</span>
+<span class="nc" id="L107">        int numSteps = (int) Math.ceil(distanceToTravel / maxStepDist);</span>
+<span class="nc" id="L108">        double subDeltaTime = deltaTime / numSteps;</span>
+
+<span class="nc bnc" id="L110" title="All 2 branches missed.">        for (int i = 0; i &lt; numSteps; i++) {</span>
+<span class="nc" id="L111">            px += vx * subDeltaTime;</span>
+<span class="nc" id="L112">            py += vy * subDeltaTime;</span>
+
+            // Check collisions for the current sub-position
+<span class="nc bnc" id="L115" title="All 2 branches missed.">            for (MapData.ServerShape shape : nearbyShapes) {</span>
+                // terrainType 1 = Wall, 5 = Bumper/Object
+<span class="nc bnc" id="L117" title="All 4 branches missed.">                if (shape.terrainType == 1 || shape.terrainType == 5) {</span>
+<span class="nc bnc" id="L118" title="All 2 branches missed.">                    if (checkCollision(shape)) {</span>
+<span class="nc" id="L119">                        resolveCollision();</span>
+
+                        // We do NOT break here. After resolution, the ball is
+                        // outside the wall with a new velocity. We allow it to
+                        // finish the loop/remaining steps with its new vector.
+                    }
+                }
+<span class="nc" id="L126">            }</span>
+        }
+<span class="nc" id="L128">    }</span>
+
+    /** Resolves a detected collision by pushing the ball out and reflecting its velocity. */
+    private void resolveCollision() {
+        // Push ball out of the object by the overlap amount plus a small buffer
+<span class="nc" id="L133">        px += lastNormalX * (overlap + 0.005);</span>
+<span class="nc" id="L134">        py += lastNormalY * (overlap + 0.005);</span>
+
+        // Reflect velocity vector based on collision normal
+<span class="nc" id="L137">        double dotProduct = vx * lastNormalX + vy * lastNormalY;</span>
+
+        // Only reflect if the ball is moving TOWARDS the face (prevents getting stuck inside)
+<span class="nc bnc" id="L140" title="All 2 branches missed.">        if (dotProduct &lt; 0) {</span>
+<span class="nc" id="L141">            double bounciness = 0.75;</span>
+<span class="nc" id="L142">            vx = (vx - 2 * dotProduct * lastNormalX) * bounciness;</span>
+<span class="nc" id="L143">            vy = (vy - 2 * dotProduct * lastNormalY) * bounciness;</span>
+        }
+<span class="nc" id="L145">    }</span>
+
+    /** Resets the ball to its last stationary position (used for water hazard resets). */
+    public void resetToLastPosition() {
+<span class="nc" id="L149">        this.px = lastStaticX;</span>
+<span class="nc" id="L150">        this.py = lastStaticY;</span>
+<span class="nc" id="L151">        this.vx = 0;</span>
+<span class="nc" id="L152">        this.vy = 0;</span>
+<span class="nc" id="L153">    }</span>
+
+    /**
+     * Checks whether this ball collides with the given shape.
+     * Supports rectangle, polygon, and ellipse shapes.
+     *
+     * @param shape the obstacle shape to test against
+     * @return true if a collision is detected
+     */
+    public boolean checkCollision(MapData.ServerShape shape) {
+<span class="nc bnc" id="L163" title="All 2 branches missed.">        if (shape.formType == MapData.ServerShape.RECT) {</span>
+<span class="nc" id="L164">            double closestX = Math.max(shape.x, Math.min(px, shape.x + shape.w));</span>
+<span class="nc" id="L165">            double closestY = Math.max(shape.y, Math.min(py, shape.y + shape.h));</span>
+<span class="nc" id="L166">            return updateCollisionData(closestX, closestY);</span>
+<span class="nc bnc" id="L167" title="All 2 branches missed.">        } else if (shape.formType == MapData.ServerShape.POLYGON) {</span>
+<span class="nc" id="L168">            double[] pts = shape.points;</span>
+<span class="nc" id="L169">            boolean hit = false;</span>
+<span class="nc bnc" id="L170" title="All 2 branches missed.">            for (int i = 0; i &lt; pts.length; i += 2) {</span>
+<span class="nc" id="L171">                double x1 = pts[i], y1 = pts[i + 1];</span>
+<span class="nc" id="L172">                double x2 = pts[(i + 2) % pts.length], y2 = pts[(i + 3) % pts.length];</span>
+
+<span class="nc" id="L174">                double dx = x2 - x1, dy = y2 - y1;</span>
+<span class="nc" id="L175">                double l2 = dx * dx + dy * dy;</span>
+<span class="nc bnc" id="L176" title="All 2 branches missed.">                if (l2 == 0) continue;</span>
+
+<span class="nc" id="L178">                double t = Math.max(0, Math.min(1, ((px - x1) * dx + (py - y1) * dy) / l2));</span>
+<span class="nc bnc" id="L179" title="All 2 branches missed.">                if (updateCollisionData(x1 + t * dx, y1 + t * dy)) hit = true;</span>
+            }
+<span class="nc" id="L181">            return hit;</span>
+<span class="nc bnc" id="L182" title="All 2 branches missed.">        } else if (shape.formType == MapData.ServerShape.ELLIPSE) {</span>
+<span class="nc" id="L183">            return updateCollisionData(shape.x + shape.w / 2.0, shape.y + shape.h / 2.0);</span>
+        }
+<span class="nc" id="L185">        return false;</span>
+    }
+
+    /**
+     * Tests if the ball overlaps the nearest point and updates collision normal/overlap data.
+     *
+     * @param nearestX the x coordinate of the nearest point on the shape
+     * @param nearestY the y coordinate of the nearest point on the shape
+     * @return true if the ball overlaps the point (collision detected)
+     */
+    private boolean updateCollisionData(double nearestX, double nearestY) {
+<span class="nc" id="L196">        double dx = px - nearestX;</span>
+<span class="nc" id="L197">        double dy = py - nearestY;</span>
+<span class="nc" id="L198">        double distSq = dx * dx + dy * dy;</span>
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">        if (distSq &lt; radius * radius) {</span>
+<span class="nc" id="L201">            double dist = Math.sqrt(distSq);</span>
+
+            // Safeguard against center-on-edge collision (division by zero)
+<span class="nc bnc" id="L204" title="All 2 branches missed.">            if (dist &lt; 0.0001) {</span>
+                // If velocity is zero, push up. Otherwise, push opposite to movement.
+<span class="nc" id="L206">                double mag = Math.sqrt(vx * vx + vy * vy);</span>
+<span class="nc bnc" id="L207" title="All 2 branches missed.">                lastNormalX = (mag &gt; 0) ? -vx / mag : 0;</span>
+<span class="nc bnc" id="L208" title="All 2 branches missed.">                lastNormalY = (mag &gt; 0) ? -vy / mag : -1;</span>
+<span class="nc" id="L209">                overlap = radius;</span>
+<span class="nc" id="L210">            } else {</span>
+<span class="nc" id="L211">                lastNormalX = dx / dist;</span>
+<span class="nc" id="L212">                lastNormalY = dy / dist;</span>
+<span class="nc" id="L213">                overlap = radius - dist;</span>
+            }
+<span class="nc" id="L215">            return true;</span>
+        }
+<span class="nc" id="L217">        return false;</span>
+    }
+
+    /** Returns the current x position in grid coordinates. */
+    public double getPx() {
+<span class="nc" id="L222">        return px;</span>
+    }
+
+    /** Returns the current y position in grid coordinates. */
+    public double getPy() {
+<span class="nc" id="L227">        return py;</span>
+    }
+
+    /** Returns true if the ball has any non-zero velocity. */
+    public boolean isMoving() {
+<span class="nc bnc" id="L232" title="All 4 branches missed.">        return vx != 0 || vy != 0;</span>
+    }
+
+    /** Sets the current friction coefficient based on the terrain under the ball. */
+    public void changeFriction(double currentFriction) {
+<span class="nc" id="L237">        this.friction = currentFriction;</span>
+<span class="nc" id="L238">    }</span>
+    /** Returns the number of strokes taken by this ball's player. */
+<span class="nc" id="L240">    public int getStrokeCount() { return strokeCount; }</span>
+    /** Returns true if this ball has entered the hole. */
+<span class="nc" id="L242">    public boolean isFinished() { return finished; }</span>
+    /** Sets whether this ball has finished (entered the hole). */
+<span class="nc" id="L244">    public void setFinished(boolean finished) { this.finished = finished; }</span>
+
+    /** Resets the ball to the default spawn position with zero velocity and stroke count. */
+    public void reset() {
+<span class="nc" id="L248">        this.px = 9.8;</span>
+<span class="nc" id="L249">        this.py = 42.4;</span>
+<span class="nc" id="L250">        this.lastStaticX = this.px;</span>
+<span class="nc" id="L251">        this.lastStaticY = this.py;</span>
+<span class="nc" id="L252">        this.vx = 0;</span>
+<span class="nc" id="L253">        this.vy = 0;</span>
+<span class="nc" id="L254">        this.strokeCount = 0;</span>
+<span class="nc" id="L255">        this.finished = false;</span>
+<span class="nc" id="L256">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
