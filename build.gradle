@@ -13,7 +13,6 @@ java {
     toolchain {
         languageVersion = JavaLanguageVersion.of(25)
     }
-    // DOWN-TARGETING: Allows SpotBugs (Class Version 65) to read Java 25 code
     targetCompatibility = JavaVersion.VERSION_21
     sourceCompatibility = JavaVersion.VERSION_21
 }
@@ -35,24 +34,42 @@ dependencies {
     testImplementation("org.junit.jupiter:junit-jupiter:5.11.0")
     testRuntimeOnly("org.junit.platform:junit-platform-launcher:1.11.0")
 
-
     implementation 'org.slf4j:slf4j-api:2.0.12'
     implementation 'ch.qos.logback:logback-classic:1.5.3'
     implementation 'org.jline:jline:3.26.1'
 }
 
-// --- QA & METRICS CONFIGURATION ---
+// --- COMPILER & XLINT CONFIGURATION ---
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+    options.compilerArgs << "-Xlint:all"
+    options.fork = true
+}
+
+// --- QA & JAVADOC (XDOCLINT) CONFIGURATION ---
 tasks.withType(Javadoc).configureEach {
-
     options.memberLevel = JavadocMemberLevel.PRIVATE
-
     options.addStringOption('Xdoclint:all', '-quiet')
-
+    options.encoding = 'UTF-8'
     failOnError = false
+
+    // Captures the 100+ Xdoclint issues into a file
+    doFirst {
+        def javadocLogDir = file("${buildDir}/reports/javadoc-log")
+        javadocLogDir.mkdirs()
+        def logFile = new File(javadocLogDir, "javadoc-warnings.txt")
+        logFile.text = ""
+
+        logging.addStandardErrorListener(new StandardOutputListener() {
+            void onOutput(CharSequence output) {
+                logFile.append(output)
+            }
+        })
+    }
 }
 
 jacoco {
-    toolVersion = "0.8.14" // Latest version with experimental J25 support
+    toolVersion = "0.8.14"
 }
 
 spotbugs {
@@ -62,7 +79,9 @@ spotbugs {
     extraArgs = ["-noClassOk"]
 }
 
+// FIX: Only enable SpotBugs if explicitly requested or running the full report
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
+    enabled = gradle.startParameter.taskNames.any { it.contains('metrics-report') || it.contains('spotbugs') || it.contains('build-cs108') }
     reports {
         html.required = true
     }
@@ -71,11 +90,14 @@ tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
 test {
     useJUnitPlatform()
     ignoreFailures = true
-    finalizedBy jacocoTestReport
+
+    // FIX: Properly conditionalize JaCoCo report
+    if (gradle.startParameter.taskNames.any { it.contains('metrics-report') || it.contains('build-cs108') }) {
+        finalizedBy jacocoTestReport
+    }
 }
 
 jacocoTestReport {
-    dependsOn test
     reports {
         html.required = true
         xml.required = true
@@ -87,39 +109,56 @@ jacocoTestReport {
     }
 }
 
-javadoc {
-
-    options.addStringOption('Xdoclint:all', '-quiet')
-    failOnError = false
-}
-
-// --- CUSTOM TASKS ---
+// --- CUSTOM METRICS & ARCHIVING ---
 
 tasks.register('metrics-report') {
     group = 'verification'
-    description = 'Runs all quality metrics '
+    description = 'The only task that runs SpotBugs, JaCoCo, and Javadoc for the timeline.'
+
+    // Explicitly pull in all QA tasks
     dependsOn test, jacocoTestReport, spotbugsMain, javadoc
 
     doLast {
-        println "--- GOLFIT QA METRICS REPORT ---"
-        println "1. Static Analysis (SpotBugs): build/reports/spotbugs/main.html"
-        println "2. Code Coverage (JaCoCo):     build/reports/jacoco/test/html/index.html"
-        println "3. Doc Quality (Javadoc):      build/docs/javadoc/index.html"
+        def timestamp = new Date().format('yyyy-MM-dd_HH-mm')
+        def archiveDir = file("documentation/qa-history/${timestamp}")
+
+        println "--- GENERATING & ARCHIVING FULL QA REPORT ---"
+        archiveDir.mkdirs()
+
+        // 1. Archive SpotBugs
+        if (file('build/reports/spotbugs/main.html').exists()) {
+            copy {
+                from 'build/reports/spotbugs/main.html'
+                into archiveDir
+                rename { "spotbugs-report.html" }
+            }
+        }
+
+        // 2. Archive JaCoCo
+        if (file('build/reports/jacoco/test/html').exists()) {
+            copy {
+                from 'build/reports/jacoco/test/html'
+                into "${archiveDir}/coverage"
+            }
+        }
+
+        // 3. Archive Javadoc Warnings (Xdoclint)
+        def lintFile = file("${buildDir}/reports/javadoc-log/javadoc-warnings.txt")
+        if (lintFile.exists()) {
+            copy { from lintFile; into archiveDir }
+        }
+
+        println "Saved to: ${archiveDir}"
         println "---------------------------------"
     }
 }
 
 tasks.register('build-cs108') {
     group = 'build'
-    description = 'Produces executable jar, javadoc and full metrics report.'
-    dependsOn 'jar', 'javadoc', 'metrics-report'
-
-    doLast {
-        println "Build Complete"
-    }
+    description = 'The "Final" build task.'
+    dependsOn 'jar', 'metrics-report'
 }
 
-// Helper task for Fat JAR creation
 tasks.named('jar', Jar) {
     manifest {
         attributes('Main-Class': application.mainClass.get())
