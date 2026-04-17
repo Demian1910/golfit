@@ -1,70 +1,82 @@
 package org.golfit.client.game;
 
-import javafx.scene.layout.CornerRadii;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Background;
-import javafx.scene.layout.BackgroundFill;
-import javafx.scene.paint.Color;
-import javafx.geometry.Insets;
+import org.golfit.client.handlers.MovementHandler;
+import org.golfit.shared.constants.MapData;
 
 /**
  * Transparent overlay pane that captures mouse drag input for aiming and shooting.
  * Converts pixel drag distances to grid-unit force vectors and sends them to the server.
+ * Also drives the {@link AimIndicator} to give live visual feedback during a stroke.
  */
 public class GameView {
-    private Pane root;
+    private final Pane root;
+
     private double startX;
     private double startY;
+    private boolean pressing = false;
 
-    /** Creates the game view pane and sets up mouse drag controls for aiming. */
-    public GameView() {
+    private static final double POWER_MULTIPLIER = 2.0;
+    private static final double MAX_FORCE        = 45.0;
+
+    private final MovementHandler movementHandler;
+    private final int             localPlayerId;
+    private       AimIndicator    aimIndicator;
+
+    public GameView(MovementHandler movementHandler, int localPlayerId) {
+        this.movementHandler = movementHandler;
+        this.localPlayerId   = localPlayerId;
         this.root = new Pane();
-
         this.root.setBackground(Background.EMPTY);
-                
         setupMouseControls();
     }
 
-    /** Registers mouse press/release handlers that compute and send force vectors. */
+    public void setAimIndicator(AimIndicator indicator) {
+        this.aimIndicator = indicator;
+    }
+
     private void setupMouseControls() {
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_PRESSED, e -> {
-            startX = e.getX();
-            startY = e.getY();
+            if (!movementHandler.isPlayerBallStill(localPlayerId)) return;
+            startX   = e.getX();
+            startY   = e.getY();
+            pressing = true;
+            if (aimIndicator != null) aimIndicator.hide();
+        });
+
+        this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_DRAGGED, e -> {
+            if (!pressing || aimIndicator == null) return;
+            if (!movementHandler.isPlayerBallStill(localPlayerId)) {
+                aimIndicator.hide();
+                return;
+            }
+
+            double[] force    = calculateForceVector(e.getX(), e.getY());
+            double magnitude  = Math.sqrt(force[0] * force[0] + force[1] * force[1]);
+            double ratio      = magnitude / MAX_FORCE;
+            double angle      = Math.atan2(force[1], force[0]) + Math.PI;
+
+            BallRender br = movementHandler.players.get(localPlayerId);
+            if (br == null) return;
+
+            aimIndicator.update(br.getCircle().getCenterX(), br.getCircle().getCenterY(),
+                                br.getCircle().getRadius(), angle, ratio);
         });
 
         this.root.addEventFilter(javafx.scene.input.MouseEvent.MOUSE_RELEASED, e -> {
+            if (aimIndicator != null) aimIndicator.hide();
+            if (!pressing || !movementHandler.isPlayerBallStill(localPlayerId)) {
+                pressing = false;
+                return;
+            }
+            pressing = false;
+
             try {
                 if (org.golfit.Main.currentClient != null) {
-                    // 1. Calculate difference
-                    double diffX = startX - e.getX();
-                    double diffY = startY - e.getY();
-
-                    // 2. Convert from pixels to grid units
-                    // We divide by the current width/height of the pane
-                    double scaleX = root.getWidth() / 80.0;
-                    double scaleY = root.getHeight() / 45.0;
-
-                    double gridFx = diffX / scaleX;
-                    double gridFy = diffY / scaleY;
-
-                    // 3. Force multiplier for the feel (Tweak here!)
-                    // A value between 1.5 and 2.5 usually feels good
-                    double powerMultiplier = 2.0;
-                    gridFx *= powerMultiplier;
-                    gridFy *= powerMultiplier;
-
-                    // 4. Maximum limit (so the ball doesn't glitch out of the map)
-                    double maxForce = 45.0;
-                    double currentForce = Math.sqrt(gridFx * gridFx + gridFy * gridFy);
-
-                    if (currentForce > maxForce) {
-                        gridFx = (gridFx / currentForce) * maxForce;
-                        gridFy = (gridFy / currentForce) * maxForce;
-                    }
-
-                    // Only send if it wasn't an accidental click
-                    if (currentForce > 0.5) {
-                        org.golfit.Main.currentClient.clientApi.sendMovement(gridFx, gridFy);
+                    double[] force = calculateForceVector(e.getX(), e.getY());
+                    if (Math.abs(force[0]) > 0.1 || Math.abs(force[1]) > 0.1) {
+                        org.golfit.Main.currentClient.clientApi.sendMovement(force[0], force[1]);
                     }
                 }
             } catch (Exception ex) {
@@ -73,7 +85,21 @@ public class GameView {
         });
     }
 
-    /** Returns the root pane for insertion into the JavaFX scene graph. */
+    private double[] calculateForceVector(double endX, double endY) {
+        double scaleX = root.getWidth()  > 0 ? root.getWidth()  / MapData.COLS : 1.0;
+        double scaleY = root.getHeight() > 0 ? root.getHeight() / MapData.ROWS : 1.0;
+
+        double fx = ((startX - endX) / scaleX) * POWER_MULTIPLIER;
+        double fy = ((startY - endY) / scaleY) * POWER_MULTIPLIER;
+
+        double force = Math.sqrt(fx * fx + fy * fy);
+        if (force > MAX_FORCE) {
+            fx = (fx / force) * MAX_FORCE;
+            fy = (fy / force) * MAX_FORCE;
+        }
+        return new double[]{fx, fy};
+    }
+
     public Pane getRoot() {
         return root;
     }

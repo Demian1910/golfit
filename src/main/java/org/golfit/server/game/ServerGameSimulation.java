@@ -155,9 +155,7 @@ public class ServerGameSimulation {
                 StringBuilder payloadBuilder = lobbyPayloads.computeIfAbsent(lobbyId, k -> new StringBuilder());
                 boolean ballNeedsUpdate = forceUpdate;
 
-                // Skip finished balls — they disappear from the payload
                 if (ball.isFinished()) {
-                    lobbiesRequiringUpdate.add(lobbyId); // ensure one final broadcast to remove them
                     continue;
                 }
 
@@ -167,7 +165,7 @@ public class ServerGameSimulation {
                 if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
                     ball.setFinished(true);
                     finishedPlayers.add(playerId);
-                    lobbiesRequiringUpdate.add(lobbyId);
+                    lobbiesRequiringUpdate.add(lobbyId); // One final broadcast to remove them client-side
                     logger.info("Player {} holed out in {} strokes!", playerId, ball.getStrokeCount());
                     checkGameEnd(playerId);
                     continue;

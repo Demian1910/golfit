@@ -9,6 +9,7 @@ import javafx.application.Platform;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Handles movement update messages from the server on the client side.
@@ -16,40 +17,34 @@ import java.util.Map;
  */
 public class MovementHandler {
     private final ClientApi clientApi;
-    /** Map of player IDs to their rendered ball instances. */
     public Map<Integer, BallRender> players = new HashMap<>();
     private Pane gamePane;
 
-    /**
-     * Creates a new client-side MovementHandler.
-     *
-     * @param clientApi the client API instance
-     */
+    private static final long STILL_TIME_THRESHOLD_MS = 150;
+    private final Map<Integer, Long> lastUpdateTime = new ConcurrentHashMap<>();
+    private MessageParser.Message lastMessage = null;
+
     public MovementHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
 
-    /** Sets the game pane where balls are rendered. Clears any existing ball renders. */
     public void setGamePane(Pane pane) {
         this.gamePane = pane;
         this.players.clear();
+        this.lastUpdateTime.clear();
+        
+        if (lastMessage != null) {
+            onMoveUpdate(lastMessage);
+        }
     }
 
-    /**
-     * Handles a movement update from the server. Parses the payload containing
-     * player positions in {@code "id:x,y;id:x,y;..."} format, converts grid
-     * coordinates to pixel coordinates, and updates or creates ball renders.
-     *
-     * @param message the parsed movement update message
-     */
     public void onMoveUpdate(MessageParser.Message message) {
+        this.lastMessage = message;
         if (gamePane == null) return;
 
         String payload = message.payload;
         if (payload == null || payload.isEmpty()) return;
 
-        // FIXED: Re-added the fallback so the ball spawns immediately even if
-        // the layout pass hasn't finished (width is 0).
         double currentWidth = gamePane.getWidth() > 0 ? gamePane.getWidth() : 1100.0;
         double currentHeight = gamePane.getHeight() > 0 ? gamePane.getHeight() : 600.0;
 
@@ -67,48 +62,66 @@ public class MovementHandler {
                     receivedIds.add(playerId);
                     String[] coords = parts[1].split(",");
 
-                    // GRID-Coordinates of Server (e.g. 40.5)
                     double gridX = Double.parseDouble(coords[0]);
                     double gridY = Double.parseDouble(coords[1]);
 
-                    // CONVERSION: Grid -> Pixel
                     double pixelX = gridX * scaleX;
                     double pixelY = gridY * scaleY;
 
                     Platform.runLater(() -> {
                         BallRender render = players.get(playerId);
-                        if (render == null) {
-                            // If the ball is new, calculate Pixel-Value
-                            Ball initialBall = new Ball(pixelX, pixelY);
-                            render = new BallRender(gamePane, initialBall);
-                            players.put(playerId, render);
+                        boolean genuinelyMoved = true;
 
-                            // Debug to see if it's being created
-                            System.out.println("Ball created for ID " + playerId + " at " + pixelX + "," + pixelY);
+                        if (render == null) {
+                            render = new BallRender(gamePane, new Ball(pixelX, pixelY));
+                            players.put(playerId, render);
                         } else {
-                            // Move the existing ball to the new pixel coordinates
-                            Ball tempBall = new Ball(pixelX, pixelY);
-                            render.updatePosition(tempBall);
+                            // Check if the difference is substantial enough to disrupt "stillness"
+                            double dx = render.getCircle().getCenterX() - pixelX;
+                            double dy = render.getCircle().getCenterY() - pixelY;
+                            if (Math.abs(dx) < 0.1 && Math.abs(dy) < 0.1) {
+                                genuinelyMoved = false;
+                            } else {
+                                render.updatePosition(new Ball(pixelX, pixelY));
+                            }
+                        }
+
+                        if (genuinelyMoved || !lastUpdateTime.containsKey(playerId)) {
+                            lastUpdateTime.put(playerId, System.currentTimeMillis());
                         }
                     });
-                } catch (Exception e) {
-                    // Silently catch parsing errors
-                }
+                } catch (Exception ignored) {}
             }
         }
 
-        // Cleanup: Remove balls that are no longer in the server payload (e.g., they went into the hole)
         Platform.runLater(() -> {
             players.entrySet().removeIf(entry -> {
                 if (!receivedIds.contains(entry.getKey())) {
-                    // Remove both the circle and the aim line from the UI
-                    gamePane.getChildren().removeAll(
-                        entry.getValue().getCircle()
-                    );
-                    return true; // remove from map
+                    gamePane.getChildren().removeAll(entry.getValue().getCircle());
+                    lastUpdateTime.remove(entry.getKey());
+                    return true;
                 }
                 return false;
             });
         });
+    }
+
+    /**
+     * Determines if a player's ball has come to a complete physical stop on the map.
+     * <p>
+     * <b>Why we wait for a timeout instead of checking Velocity:</b><br>
+     * The client is visually "dumb" and runs no physics logic internally. Sending live velocity
+     * (vx, vy) data continuously over the network strictly to check if a ball has stopped
+     * would drastically inflate bandwidth consumption. Instead, the server automatically 
+     * optimizes the network by completely dropping stationary balls from its physics broadcasts.
+     * Because the server halts updates naturally when a ball stops, the client securely infers
+     * global stillness if the ball's coordinates haven't changed in {@value #STILL_TIME_THRESHOLD_MS}ms.
+     *
+     * @param playerId the server-assigned player ID
+     * @return true if the ball has not visibly moved recently, false otherwise
+     */
+    public boolean isPlayerBallStill(int playerId) {
+        Long lastUpdate = lastUpdateTime.get(playerId);
+        return lastUpdate != null && (System.currentTimeMillis() - lastUpdate > STILL_TIME_THRESHOLD_MS);
     }
 }

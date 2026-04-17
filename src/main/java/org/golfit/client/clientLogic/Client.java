@@ -54,7 +54,7 @@ public class Client {
     final private String host;
 
     /** Server assigned identifier for the client (Default 0) **/
-    int id = 0;
+    volatile int id = 0;
 
     int lobbyId = 0;
     LinkedHashSet<String> lobbyPlayers = new LinkedHashSet<>();
