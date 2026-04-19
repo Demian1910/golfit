@@ -51,9 +51,9 @@ public class Constants {
     public static final String STROKE_UPDATE =  "STROKE_UPDATE"; // EventBus event for stroke count updates
     public static final String GAME_END      =  "GAME_END";      // EventBus event for game-over results
 
-    /** Golf hole position in grid coordinates (matches Course.java addGolfHole(65, 9) with width=3, height=1) */
-    public static final double HOLE_CENTER_X    = 66.5;
-    public static final double HOLE_CENTER_Y    = 9.5;
+    /** Golf hole position in grid coordinates (matches Course.java addGolfHole(64,8) with width=3, height=1) */
+    public static final double HOLE_CENTER_X    = 64+1;
+    public static final double HOLE_CENTER_Y    = 8+1;
     public static final double HOLE_CAPTURE_RADIUS = 1.3;
 
 
@@ -61,7 +61,7 @@ public class Constants {
     // Frictions
     public static final double FRICTION_GRASS = 0.3;
     public static final double FRICTION_SAND  = 0.07;
-    public static final double FRICTION_ICE   = 0.7;
+    public static final double FRICTION_ICE   = 0.5;
     public static final double FRICTION_WATER = 0.00;
     public static final double FRICTION_BOUNCE = 0.6;
     /**

@@ -38,7 +38,7 @@ public class Game {
         parentPane.heightProperty().addListener((obs, old, newVal) -> updateScale(parentPane));
 
         // 5. Run the map export logic
-        /*
+
         Platform.runLater(() -> {
             updateScale(parentPane);
             HelpGridMap helpGridMap = new HelpGridMap(course);
@@ -47,7 +47,7 @@ public class Game {
             helpGridMap.printServerData();
         });
 
-         */
+
 
 
     }

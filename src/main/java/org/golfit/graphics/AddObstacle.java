@@ -105,7 +105,7 @@ public class AddObstacle {
 
     public void addBall(int col, int row) {
 
-        Ellipse b = createEllipse(col, row, 2, 2, Color.rgb(255, 16, 240));
+        Ellipse b = createEllipse(col, row, 3, 3, Color.rgb(255, 16, 240));
         b.setUserData(new int[]{BOUNCE, -1});
         obstacles.add(b);
         setupShape(b);

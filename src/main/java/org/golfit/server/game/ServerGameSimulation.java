@@ -119,10 +119,15 @@ public class ServerGameSimulation {
                     continue;
                 }
 
-                // 1. Hole Detection (Unchanged physics)
+
+                // 1. Hole Detection (Size: 2.  0 x 2.0)
                 double dx = ball.getPx() - HOLE_CENTER_X;
                 double dy = ball.getPy() - HOLE_CENTER_Y;
-                if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
+                double distanceSquared = dx * dx + dy * dy;
+
+                double captureRadius = 1.0;
+
+                if (distanceSquared < (captureRadius * captureRadius)) {
                     ball.setFinished(true);
                     finishedPlayers.add(playerId);
                     lobbiesRequiringUpdate.add(lobbyId);
