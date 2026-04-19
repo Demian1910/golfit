@@ -1,19 +1,18 @@
 package org.golfit.shared.lobby;
 
 import org.golfit.server.ClientHandler.ClientHandler;
+import org.golfit.shared.constants.MapData;
 
-import java.util.HashSet;
 import java.util.LinkedHashSet;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
- * Represents a game lobby that groups players together before and during a match.
- * Each lobby has a host, a set of clients, and a status indicating its current phase.
+ * Represents a game lobby. Each lobby maintains its own unique instance
+ * of MapData to ensure physics and breakable objects stay isolated.
  */
 public class Lobby {
-   /** Lifecycle states of a lobby. */
-   public enum LobbyStatus {
+    /** Lifecycle states of a lobby. */
+    public enum LobbyStatus {
         open,
         ongoing,
         finished
@@ -23,20 +22,22 @@ public class Lobby {
     private LobbyStatus status;
     private ClientHandler lobbyHost;
     private final LinkedHashSet<ClientHandler> clients = new LinkedHashSet<>();
-    private int playerCount;
 
+    // Each lobby gets its own physics map instance
+    private final MapData physicsMap;
 
     /**
-     * Creates a new lobby with the given ID and host.
-     *
-     * @param id        the unique lobby identifier
-     * @param lobbyHost the client who created and initially hosts the lobby
+     * Creates a new lobby and initializes a fresh map instance.
      */
     public Lobby(int id, ClientHandler lobbyHost) {
         this.id = id;
         this.lobbyHost = lobbyHost;
-        clients.add(lobbyHost);
-        setStatus(LobbyStatus.open);
+        this.clients.add(lobbyHost);
+        this.status = LobbyStatus.open;
+
+        // Even if there is only 1 map design, we create a 'new' instance
+        // so that broken objects/state are unique to THIS lobby.
+        this.physicsMap = new MapData();
     }
 
     /** Returns the unique lobby ID. */
@@ -54,79 +55,62 @@ public class Lobby {
         return status;
     }
 
-    /** Returns the set of clients currently in this lobby, in join order. */
+    /** Returns the physics map instance specifically for this lobby. */
+    public MapData getPhysicsMap() {
+        return physicsMap;
+    }
+
+    /** Returns the set of clients currently in this lobby. */
     public LinkedHashSet<ClientHandler> getClients() {
         return clients;
     }
 
-    /**
-     * Adds a client to this lobby.
-     *
-     * @param client the client to add
-     * @return true if the client was added, false if they were already present
-     */
+    /** Adds a client to this lobby. */
     public boolean addClient(ClientHandler client) {
-        if(clients.contains(client)) {
-            System.err.println("Client already exists!");
+        if (clients.contains(client)) {
+            System.err.println("Client already exists in lobby!");
             return false;
         }
         clients.add(client);
         return true;
     }
 
-    /**
-     * Removes a client from this lobby. If the removed client was the host,
-     * the next client in join order becomes the new host.
-     *
-     * @param client the client to remove
-     * @return true after removal
-     */
+    /** Removes a client and reassigns host if necessary. */
     public boolean removeClient(ClientHandler client) {
-        if(!clients.contains(client)) {
-            System.err.println("Client doesn't exists!");
+        if (!clients.contains(client)) {
+            System.err.println("Client doesn't exist in lobby!");
+            return false;
         }
         clients.remove(client);
-        // If the host left, reassign to next client (or null if empty)
         if (client.equals(lobbyHost) && !clients.isEmpty()) {
             lobbyHost = clients.iterator().next();
         }
         return true;
     }
 
-    /**
-     * Sets the lobby host, provided the client is already in the lobby.
-     *
-     * @param lobbyHost the client to promote to host
-     */
+    /** Promotes a client to host. */
     public void setLobbyHost(ClientHandler lobbyHost) {
-        if(clients.contains(lobbyHost)) {
+        if (clients.contains(lobbyHost)) {
             this.lobbyHost = lobbyHost;
         }
-        else{
-            System.err.println("Client doesn't exists!");
-        }
-
     }
 
-    /** Returns the current lobby host, or null if the host is no longer in the lobby. */
+    /** Returns the current lobby host. */
     public ClientHandler getLobbyHost() {
-        if(clients.contains(lobbyHost)) {
-            return lobbyHost;
-        }
-
-        System.err.println("Client doesn't exists!");
-        return null;
+        return clients.contains(lobbyHost) ? lobbyHost : null;
     }
 
-    /** Returns a string representation of the lobby for info updates: {@code "lobbyId:player1,player2,..."}. */
+    /** Returns string: "lobbyId:player1,player2,..." */
     public String getLobbyContext() {
-        String clientString = clients.stream().map(ClientHandler::getUsername).collect(Collectors.joining(","));
-        return getId() + ":" +
-                clientString;
-
+        String clientString = clients.stream()
+                .map(ClientHandler::getUsername)
+                .collect(Collectors.joining(","));
+        return id + ":" + clientString;
     }
-    /** Returns a summary string for lobby list display: {@code "lobbyId:hostName:playerCount:status"}. */
+
+    /** Returns string: "lobbyId:hostName:playerCount:status" */
     public String getLobbyListContext() {
-        return getId() + ":" + getLobbyHost().getUsername() + ":" + clients.size() + ":" + getStatus();
+        String hostName = (getLobbyHost() != null) ? getLobbyHost().getUsername() : "None";
+        return id + ":" + hostName + ":" + clients.size() + ":" + status;
     }
 }
