@@ -6,6 +6,7 @@ import javafx.scene.Scene;
 import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.golfit.client.clientLogic.Client;
+import org.golfit.client.game.AimIndicator;
 import org.golfit.client.game.GameView;
 import org.golfit.client.gui.Sidebar;
 import org.golfit.client.gui.SplashView;
@@ -77,9 +78,22 @@ public class App extends Application {
                     try {
                         StackPane gameArea = new StackPane();
                         Game game = new Game(gameArea);
-                        GameView gameView = new GameView();
-                        gameArea.getChildren().addAll(game.getRoot(), gameView.getRoot());
-                        client.getMovementHandler().setGamePane(gameView.getRoot());
+
+                        // GameView now receives the movement handler and local player ID
+                        // so the drag handler can look up the ball's live pixel position.
+                        int localId = client.getClientApi().getId();
+                        GameView gameView = new GameView(
+                                client.getMovementHandler(), localId);
+
+                        // The game pane (gameView.getRoot()) is a transparent overlay.
+                        // AimIndicator adds its polygons to that pane at z-index 0,
+                        // so ball circles (added later by MovementHandler) render on top.
+                        Pane overlayPane = gameView.getRoot();
+                        AimIndicator aimIndicator = new AimIndicator(overlayPane);
+                        gameView.setAimIndicator(aimIndicator);
+
+                        gameArea.getChildren().addAll(game.getRoot(), overlayPane);
+                        client.getMovementHandler().setGamePane(overlayPane);
 
                         centerArea.getChildren().setAll(gameArea);
                     } catch (Exception e) {

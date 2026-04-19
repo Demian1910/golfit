@@ -168,5 +168,15 @@ Demian:
 
 ## Entry #15 11.04.26
 Tamer added comprehensive JavaDoc to anything he could find which might have not been worth it but he had already invested 
-too much time in it to give up when he noticed that it would be a painfull process, So he pulled through to get those 
+too much time in it to give up when he noticed that it would be a painful process, So he pulled through to get those 
 bittersweet 10 points for the javadoc task hopefully...
+
+## Entry #16 13.04.26
+Presented M4 Product tasks in exercise session. Group discussion about project presentation and task division.
+- Anton: About a Game, Demo! (3min)
+- Demian: Rules to Code (1.5min)
+- Constantin: QA and Technology! (2.5min)
+- Tamer: Progress Report (2min
+
+Discussion about next milestones features: interactive environment, aiming and power shamanism, screen resizing, game layout
+textures, ball bug in water, hole logic position shifted.

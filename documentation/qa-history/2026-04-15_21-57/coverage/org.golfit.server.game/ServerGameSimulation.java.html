@@ -1,0 +1,302 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ServerGameSimulation.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.server.game</a> &gt; <span class="el_source">ServerGameSimulation.java</span></div><h1>ServerGameSimulation.java</h1><pre class="source lang-java linenums">package org.golfit.server.game;
+
+import org.golfit.server.serverApi.ServerApi;
+import org.golfit.shared.constants.MapData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import static org.golfit.shared.constants.Constants.*;
+
+/**
+ * Manages the server-side physics simulation for all active players.
+ * Handles movement ticks, terrain-based friction, and water hazard resets.
+ * black hole detection, stroke counting, and game-end detection.
+ */
+public class ServerGameSimulation {
+<span class="nc" id="L22">    private static final Logger logger = LoggerFactory.getLogger(ServerGameSimulation.class);</span>
+
+    private final ServerApi serverApi;
+<span class="nc" id="L25">    private final Map&lt;Integer, ServerBall&gt; balls = new ConcurrentHashMap&lt;&gt;();</span>
+    private ScheduledExecutorService ticker;
+
+    private static final int TICK_RATE_MS = 40;
+<span class="nc" id="L29">    private boolean forceUpdate = false;</span>
+
+    // ---- Game state tracking ----
+    /** Maps playerId → lobbyId (registered when a game starts). */
+<span class="nc" id="L33">    private final Map&lt;Integer, Integer&gt; playerToLobby = new ConcurrentHashMap&lt;&gt;();</span>
+    /** Set of playerIds who have finished (ball in hole). */
+<span class="nc" id="L35">    private final Set&lt;Integer&gt; finishedPlayers = ConcurrentHashMap.newKeySet();</span>
+
+    /** Callback fired when a player's ball enters the hole. */
+    @FunctionalInterface
+    public interface StrokeListener {
+        void onStroke(int playerId);
+    }
+
+    /** Callback fired when all players in a lobby have finished. */
+    @FunctionalInterface
+    public interface GameEndListener {
+        void onGameEnd(int lobbyId, Map&lt;Integer, Integer&gt; strokeResults);
+    }
+
+    private StrokeListener strokeListener;
+    private GameEndListener gameEndListener;
+
+<span class="nc" id="L52">    public ServerGameSimulation(ServerApi serverApi) {</span>
+<span class="nc" id="L53">        this.serverApi = serverApi;</span>
+<span class="nc" id="L54">    }</span>
+
+<span class="nc" id="L56">    public void setStrokeListener(StrokeListener listener) { this.strokeListener = listener; }</span>
+<span class="nc" id="L57">    public void setGameEndListener(GameEndListener listener) { this.gameEndListener = listener; }</span>
+
+    /**
+     * Starts the simulation ticker at the fixed rate.
+     */
+    public void start() {
+<span class="nc" id="L63">        ticker = Executors.newSingleThreadScheduledExecutor();</span>
+<span class="nc" id="L64">        ticker.scheduleAtFixedRate(this::tick, 0, TICK_RATE_MS, TimeUnit.MILLISECONDS);</span>
+<span class="nc" id="L65">    }</span>
+
+    /**
+     * Stops the simulation ticker.
+     */
+    public void stop() {
+<span class="nc bnc" id="L71" title="All 2 branches missed.">        if (ticker != null) {</span>
+<span class="nc" id="L72">            ticker.shutdown();</span>
+        }
+<span class="nc" id="L74">    }</span>
+
+    /**
+     * Adds a new player to the simulation.
+     * Automatically converts screen coordinates to grid coordinates.
+     */
+    public void addPlayer(int playerId, double startX, double startY) {
+<span class="nc" id="L81">        double gridX = startX / (1100.0 / MapData.COLS);</span>
+<span class="nc" id="L82">        double gridY = startY / (600.0 / MapData.ROWS);</span>
+<span class="nc" id="L83">        balls.put(playerId, new ServerBall(gridX, gridY));</span>
+<span class="nc" id="L84">        forceUpdate = true;</span>
+<span class="nc" id="L85">    }</span>
+
+    /**
+     * Registers a player as belonging to a specific lobby game.
+     * Called when a lobby game starts so we can track game-end per lobby.
+     */
+    public void registerPlayerLobby(int playerId, int lobbyId) {
+<span class="nc" id="L92">        playerToLobby.put(playerId, lobbyId);</span>
+<span class="nc" id="L93">        finishedPlayers.remove(playerId); // reset in case of replay</span>
+<span class="nc" id="L94">        ServerBall ball = balls.get(playerId);</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (ball != null) {</span>
+<span class="nc" id="L96">            ball.reset();</span>
+        }
+<span class="nc" id="L98">        forceUpdate = true;</span>
+<span class="nc" id="L99">    }</span>
+
+    /**
+     * Removes a player from the simulation.
+     */
+    public void removePlayer(int playerId) {
+<span class="nc" id="L105">        balls.remove(playerId);</span>
+<span class="nc" id="L106">        playerToLobby.remove(playerId);</span>
+<span class="nc" id="L107">        finishedPlayers.remove(playerId);</span>
+<span class="nc" id="L108">        forceUpdate = true;</span>
+<span class="nc" id="L109">    }</span>
+
+    /**
+     * Applies a stroke force to a specific player's ball.
+     * Ignores the stroke if the ball has already finished.
+     */
+    public void strokeBall(int playerId, double forceX, double forceY) {
+<span class="nc" id="L116">        ServerBall ball = balls.get(playerId);</span>
+<span class="nc bnc" id="L117" title="All 4 branches missed.">        if (ball != null &amp;&amp; !ball.isFinished()) {</span>
+<span class="nc" id="L118">            ball.stroke(forceX, forceY);</span>
+<span class="nc bnc" id="L119" title="All 2 branches missed.">            if (strokeListener != null) {</span>
+<span class="nc" id="L120">                strokeListener.onStroke(playerId);</span>
+            }
+<span class="nc bnc" id="L122" title="All 2 branches missed.">        } else if (ball == null) {</span>
+<span class="nc" id="L123">            logger.warn(&quot;Received stroke for unknown player ID: {}&quot;, playerId);</span>
+        }
+<span class="nc" id="L125">    }</span>
+
+    /** Returns the current stroke count for a player, or 0 if not found. */
+    public int getStrokeCount(int playerId) {
+<span class="nc" id="L129">        ServerBall ball = balls.get(playerId);</span>
+<span class="nc bnc" id="L130" title="All 2 branches missed.">        return ball != null ? ball.getStrokeCount() : 0;</span>
+    }
+
+    /**
+     * Main simulation loop. Calculates physics for all balls and broadcasts updates.
+     */
+    private void tick() {
+        try {
+<span class="nc" id="L138">            double deltaTime = TICK_RATE_MS / 1000.0;</span>
+<span class="nc" id="L139">            Map&lt;Integer, StringBuilder&gt; lobbyPayloads = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L140">            Set&lt;Integer&gt; lobbiesRequiringUpdate = new HashSet&lt;&gt;();</span>
+
+<span class="nc bnc" id="L142" title="All 2 branches missed.">            for (Map.Entry&lt;Integer, ServerBall&gt; entry : balls.entrySet()) {</span>
+<span class="nc" id="L143">                int playerId = entry.getKey();</span>
+<span class="nc" id="L144">                ServerBall ball = entry.getValue();</span>
+<span class="nc" id="L145">                Integer lobbyId = playerToLobby.get(playerId);</span>
+<span class="nc bnc" id="L146" title="All 2 branches missed.">                if (lobbyId == null) continue;</span>
+
+<span class="nc" id="L148">                StringBuilder payloadBuilder = lobbyPayloads.computeIfAbsent(lobbyId, k -&gt; new StringBuilder());</span>
+<span class="nc" id="L149">                boolean ballNeedsUpdate = forceUpdate;</span>
+
+                // Skip finished balls — they disappear from the payload
+<span class="nc bnc" id="L152" title="All 2 branches missed.">                if (ball.isFinished()) {</span>
+<span class="nc" id="L153">                    lobbiesRequiringUpdate.add(lobbyId); // ensure one final broadcast to remove them</span>
+<span class="nc" id="L154">                    continue;</span>
+                }
+
+                // 1. Check if ball is within the golf hole capture radius
+<span class="nc" id="L158">                double dx = ball.getPx() - HOLE_CENTER_X;</span>
+<span class="nc" id="L159">                double dy = ball.getPy() - HOLE_CENTER_Y;</span>
+<span class="nc bnc" id="L160" title="All 2 branches missed.">                if (Math.sqrt(dx * dx + dy * dy) &lt; HOLE_CAPTURE_RADIUS) {</span>
+<span class="nc" id="L161">                    ball.setFinished(true);</span>
+<span class="nc" id="L162">                    finishedPlayers.add(playerId);</span>
+<span class="nc" id="L163">                    lobbiesRequiringUpdate.add(lobbyId);</span>
+<span class="nc" id="L164">                    logger.info(&quot;Player {} holed out in {} strokes!&quot;, playerId, ball.getStrokeCount());</span>
+<span class="nc" id="L165">                    checkGameEnd(playerId);</span>
+<span class="nc" id="L166">                    continue;</span>
+                }
+
+                // 2. Terrain and Logic Processing
+<span class="nc bnc" id="L170" title="All 4 branches missed.">                if (ball.isMoving() || forceUpdate) {</span>
+<span class="nc" id="L171">                    int col = (int) ball.getPx();</span>
+<span class="nc" id="L172">                    int row = (int) ball.getPy();</span>
+
+<span class="nc bnc" id="L174" title="All 8 branches missed.">                    if (col &gt;= 0 &amp;&amp; col &lt; MapData.COLS &amp;&amp; row &gt;= 0 &amp;&amp; row &lt; MapData.ROWS) {</span>
+<span class="nc" id="L175">                        int terrainType = MapData.SERVER_MAP[row][col];</span>
+
+<span class="nc bnc" id="L177" title="All 2 branches missed.">                        if (terrainType == 4) { // Water Hazard</span>
+<span class="nc" id="L178">                            ball.resetToLastPosition();</span>
+<span class="nc" id="L179">                            ballNeedsUpdate = true;</span>
+<span class="nc" id="L180">                            logger.info(&quot;Player {} hit water and was reset.&quot;, playerId);</span>
+                        } else {
+<span class="nc bnc" id="L182" title="All 3 branches missed.">                            double friction = switch (terrainType) {</span>
+<span class="nc" id="L183">                                case 2 -&gt; FRICTION_SAND;</span>
+<span class="nc" id="L184">                                case 3 -&gt; FRICTION_ICE;</span>
+<span class="nc" id="L185">                                default -&gt; FRICTION_GRASS;</span>
+<span class="nc" id="L186">                            };</span>
+<span class="nc" id="L187">                            ball.changeFriction(friction);</span>
+                        }
+                    }
+
+                    // 3. Physics Update
+<span class="nc" id="L192">                    List&lt;MapData.ServerShape&gt; nearby = getNearbyShapes(ball.getPx(), ball.getPy(), 3.0);</span>
+<span class="nc" id="L193">                    ball.update(deltaTime, nearby);</span>
+
+<span class="nc bnc" id="L195" title="All 2 branches missed.">                    if (ball.isMoving()) {</span>
+<span class="nc" id="L196">                        ballNeedsUpdate = true;</span>
+                    }
+                }
+
+<span class="nc bnc" id="L200" title="All 2 branches missed.">                if (ballNeedsUpdate) {</span>
+<span class="nc" id="L201">                    lobbiesRequiringUpdate.add(lobbyId);</span>
+                }
+
+                // 4. Generate Update Payload (ID:X,Y;)
+<span class="nc" id="L205">                payloadBuilder.append(playerId).append(&quot;:&quot;)</span>
+<span class="nc" id="L206">                        .append(String.format(java.util.Locale.US, &quot;%.2f&quot;, ball.getPx())).append(&quot;,&quot;)</span>
+<span class="nc" id="L207">                        .append(String.format(java.util.Locale.US, &quot;%.2f&quot;, ball.getPy())).append(&quot;;&quot;);</span>
+<span class="nc" id="L208">            }</span>
+
+            // Broadcast only to lobbies that have movement, forced update, or player changes
+<span class="nc bnc" id="L211" title="All 2 branches missed.">            for (Map.Entry&lt;Integer, StringBuilder&gt; entry : lobbyPayloads.entrySet()) {</span>
+<span class="nc" id="L212">                int lobbyId = entry.getKey();</span>
+<span class="nc" id="L213">                String payload = entry.getValue().toString();</span>
+<span class="nc bnc" id="L214" title="All 4 branches missed.">                if (lobbiesRequiringUpdate.contains(lobbyId) || forceUpdate) {</span>
+<span class="nc" id="L215">                    serverApi.broadcastMovementToLobby(lobbyId, payload);</span>
+                }
+<span class="nc" id="L217">            }</span>
+<span class="nc" id="L218">            forceUpdate = false;</span>
+
+<span class="nc" id="L220">        } catch (Exception e) {</span>
+<span class="nc" id="L221">            logger.error(&quot;Error in physics tick&quot;, e);</span>
+<span class="nc" id="L222">        }</span>
+<span class="nc" id="L223">    }</span>
+
+    /**
+     * Called when a player finishes. Checks if all players in the same lobby are done.
+     */
+    private void checkGameEnd(int finishedPlayerId) {
+<span class="nc bnc" id="L229" title="All 2 branches missed.">        if (gameEndListener == null) return;</span>
+
+<span class="nc" id="L231">        Integer lobbyId = playerToLobby.get(finishedPlayerId);</span>
+<span class="nc bnc" id="L232" title="All 2 branches missed.">        if (lobbyId == null) return;</span>
+
+        // Check if every player in this lobby has finished
+<span class="nc" id="L235">        boolean allFinished = playerToLobby.entrySet().stream()</span>
+<span class="nc" id="L236">                .filter(e -&gt; e.getValue().equals(lobbyId))</span>
+<span class="nc" id="L237">                .allMatch(e -&gt; finishedPlayers.contains(e.getKey()));</span>
+
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (allFinished) {</span>
+            // Build results: playerId → strokes
+<span class="nc" id="L241">            Map&lt;Integer, Integer&gt; results = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L242">            playerToLobby.forEach((pid, pLobbyId) -&gt; {</span>
+<span class="nc bnc" id="L243" title="All 2 branches missed.">                if (pLobbyId.equals(lobbyId)) {</span>
+<span class="nc" id="L244">                    ServerBall ball = balls.get(pid);</span>
+<span class="nc bnc" id="L245" title="All 2 branches missed.">                    if (ball != null) results.put(pid, ball.getStrokeCount());</span>
+                }
+<span class="nc" id="L247">            });</span>
+
+<span class="nc" id="L249">            gameEndListener.onGameEnd(lobbyId, results);</span>
+
+            // Cleanup lobby's tracking data
+<span class="nc" id="L252">            playerToLobby.entrySet().removeIf(e -&gt; e.getValue().equals(lobbyId));</span>
+<span class="nc" id="L253">            results.keySet().forEach(finishedPlayers::remove);</span>
+        }
+<span class="nc" id="L255">    }</span>
+
+    /**
+     * Retrieves static obstacles near the specified coordinates to optimize collision detection.
+     * * @param worldX Current X grid position.
+     * @param worldY Current Y grid position.
+     * @param searchRadius Distance in grid units to check for obstacles.
+     * @return List of nearby shapes.
+     */
+    public static List&lt;MapData.ServerShape&gt; getNearbyShapes(double worldX, double worldY, double searchRadius) {
+<span class="nc" id="L265">        List&lt;MapData.ServerShape&gt; nearbyShapes = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L266">        Set&lt;Integer&gt; foundIds = new HashSet&lt;&gt;();</span>
+
+<span class="nc" id="L268">        int startCol = (int) Math.max(0, Math.floor(worldX - searchRadius));</span>
+<span class="nc" id="L269">        int endCol   = (int) Math.min(MapData.COLS - 1, (int) Math.floor(worldX + searchRadius));</span>
+<span class="nc" id="L270">        int startRow = (int) Math.max(0, Math.floor(worldY - searchRadius));</span>
+<span class="nc" id="L271">        int endRow   = (int) Math.min(MapData.ROWS - 1, (int) Math.floor(worldY + searchRadius));</span>
+
+<span class="nc bnc" id="L273" title="All 2 branches missed.">        for (int r = startRow; r &lt;= endRow; r++) {</span>
+<span class="nc bnc" id="L274" title="All 2 branches missed.">            for (int c = startCol; c &lt;= endCol; c++) {</span>
+<span class="nc" id="L275">                int id = MapData.SHAPE_ID_MAP[r][c];</span>
+<span class="nc bnc" id="L276" title="All 4 branches missed.">                if (id != -1 &amp;&amp; !foundIds.contains(id)) {</span>
+<span class="nc" id="L277">                    MapData.ServerShape ss = MapData.LEVEL_1_OBSTACLES.get(id);</span>
+<span class="nc bnc" id="L278" title="All 2 branches missed.">                    if (ss != null) {</span>
+<span class="nc" id="L279">                        nearbyShapes.add(ss);</span>
+<span class="nc" id="L280">                        foundIds.add(id);</span>
+                    }
+                }
+            }
+        }
+<span class="nc" id="L285">        return nearbyShapes;</span>
+    }
+
+    /**
+     * Checks if the center of the ball is within the bounds of a specific shape.
+     */
+    private boolean isBallOverShape(ServerBall ball, MapData.ServerShape shape) {
+<span class="nc" id="L292">        double bx = ball.getPx();</span>
+<span class="nc" id="L293">        double by = ball.getPy();</span>
+
+<span class="nc bnc" id="L295" title="All 2 branches missed.">        if (shape.formType == MapData.ServerShape.RECT) {</span>
+<span class="nc bnc" id="L296" title="All 8 branches missed.">            return bx &gt;= shape.x &amp;&amp; bx &lt;= shape.x + shape.w &amp;&amp;</span>
+                    by &gt;= shape.y &amp;&amp; by &lt;= shape.y + shape.h;
+        }
+<span class="nc" id="L299">        return false;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
