@@ -16,6 +16,11 @@ import org.golfit.shared.constants.MapData;
 
 import java.util.List;
 
+/**
+ * Development utility that converts the visual JavaFX course into server-side data structures.
+ * Rasterizes obstacle shapes onto an 80x45 grid to produce terrain type maps, shape ID maps,
+ * and {@link MapData.ServerShape} definitions for the physics engine.
+ */
 public class HelpGridMap {
     private static final int EMPTY = 0;
     private static final int COLS = 80;
@@ -26,6 +31,11 @@ public class HelpGridMap {
     private int[][] idGrid;
     private Pane container;
 
+    /**
+     * Creates a new HelpGridMap from the given course.
+     *
+     * @param course the course whose obstacles will be rasterized
+     */
     public HelpGridMap(Course course) {
         this.container = course.getPane();
         this.obstacles = course.getObstacles();
@@ -33,6 +43,7 @@ public class HelpGridMap {
         this.idGrid = new int[ROWS][COLS];
     }
 
+    /** Rasterizes all obstacles onto the terrain grid and shape ID grid. */
     public void updateGrids() {
         double w = container.getWidth();
         double h = container.getHeight();
@@ -77,6 +88,7 @@ public class HelpGridMap {
         }
     }
 
+    /** Overlays a debug grid visualization showing occupied cells on the course pane. */
     public void debugViewGrid() {
         container.getChildren().removeIf(node -> "DEBUG_GRID".equals(node.getUserData()));
 
@@ -99,6 +111,7 @@ public class HelpGridMap {
         }
     }
 
+    /** Overlays color-coded shape IDs on each grid cell for visual verification. */
     public void verifyIdMapping() {
         // 1. Remove old elements
         container.getChildren().removeIf(node -> "ID_VERIFY".equals(node.getUserData()));
@@ -151,6 +164,7 @@ public class HelpGridMap {
         }
     }
 
+    /** Prints Java source code for {@code LEVEL_1_OBSTACLES}, {@code SERVER_MAP}, and {@code SHAPE_ID_MAP} to stdout. */
     public void printServerData() {
         double cellW = container.getWidth() / (double) COLS;
         double cellH = container.getHeight() / (double) ROWS;
@@ -185,6 +199,7 @@ public class HelpGridMap {
         printGridExport("SHAPE_ID_MAP", idGrid);
     }
 
+    /** Prints a 2D int array as a Java source code declaration. */
     private void printGridExport(String varName, int[][] targetGrid) {
         System.out.println("public static final int[][] " + varName + " = {");
         for (int r = 0; r < ROWS; r++) {

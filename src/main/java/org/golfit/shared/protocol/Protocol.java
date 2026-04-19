@@ -54,13 +54,27 @@ public class Protocol {
     public static final char TERMINATOR = '\n';
     public static final int FIELD_COUNT = 5;
 
+    /** Function that transmits a raw message string over the network. */
     @FunctionalInterface
     public interface SendFunction {
+        /**
+         * Sends a raw message string.
+         *
+         * @param data the encoded message to send
+         * @throws Exception if transmission fails
+         */
         void send(String data) throws Exception;
     }
 
+    /** Function that dispatches a parsed message to the appropriate handler. */
     @FunctionalInterface
     public interface PacketDispatcher {
+        /**
+         * Dispatches a parsed message.
+         *
+         * @param message the parsed incoming message
+         * @throws Exception if handling fails
+         */
         void dispatch(MessageParser.Message message) throws Exception;
     }
 }

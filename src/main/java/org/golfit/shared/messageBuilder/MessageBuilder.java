@@ -10,7 +10,16 @@ import static org.golfit.shared.protocol.Protocol.TERMINATOR;
  */
 public class MessageBuilder {
 
-    /** Encodes a message into a string. Used for sending messages over the network. */
+    /**
+     * Encodes a message into a delimited string for network transmission.
+     *
+     * @param type     the message type constant (e.g. {@code Protocol.SYS_CONNECT})
+     * @param channel  the channel identifier (e.g. {@code Protocol.CH_SYSTEM})
+     * @param senderId the ID of the sender
+     * @param sequence the sequence number for this message
+     * @param payload  the message payload; may be empty but not null
+     * @return the encoded message string terminated by {@link Protocol#TERMINATOR}
+     */
     public static String buildMessage(String type, String channel, int senderId, int sequence, String payload) {
         StringBuilder builder = new StringBuilder();
         builder.append(type).append(DELIMITER);

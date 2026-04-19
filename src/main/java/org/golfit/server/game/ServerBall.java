@@ -31,6 +31,13 @@ public class ServerBall {
     private double lastNormalX, lastNormalY;
     private double overlap;
 
+    /**
+     * Creates a new server ball at the given position.
+     * Coordinates are normalized to grid units if they appear to be raw pixels.
+     *
+     * @param px the initial x position
+     * @param py the initial y position
+     */
     public ServerBall(double px, double py) {
         // Normalizing coordinates if they come in as raw pixels
         this.px = (px > MapData.COLS) ? px / (1100.0 / MapData.COLS) : px;
@@ -42,6 +49,13 @@ public class ServerBall {
         this.vy = 0;
     }
 
+    /**
+     * Applies a stroke to the ball with the given initial velocity.
+     * Saves the current position for water hazard resets and increments the stroke counter.
+     *
+     * @param initialVx the initial x velocity in grid units per second
+     * @param initialVy the initial y velocity in grid units per second
+     */
     public void stroke(double initialVx, double initialVy) {
         if (finished) return; // Cannot stroke a finished ball
         // Save position BEFORE the stroke for reset purposes (e.g., water hazards)
@@ -62,6 +76,13 @@ public class ServerBall {
         }
     }
 
+    /**
+     * Advances the ball's physics by one tick. Applies friction, performs sub-stepped
+     * movement to prevent tunneling, and resolves collisions with nearby obstacles.
+     *
+     * @param deltaTime    the time step in seconds
+     * @param nearbyShapes the obstacles to check for collision
+     */
     public void update(double deltaTime, List<MapData.ServerShape> nearbyShapes) {
         double speed = Math.sqrt(vx * vx + vy * vy);
         if (speed <= 0 && vx == 0 && vy == 0) return;
@@ -106,6 +127,7 @@ public class ServerBall {
         }
     }
 
+    /** Resolves a detected collision by pushing the ball out and reflecting its velocity. */
     private void resolveCollision() {
         // Push ball out of the object by the overlap amount plus a small buffer
         px += lastNormalX * (overlap + 0.005);
@@ -122,6 +144,7 @@ public class ServerBall {
         }
     }
 
+    /** Resets the ball to its last stationary position (used for water hazard resets). */
     public void resetToLastPosition() {
         this.px = lastStaticX;
         this.py = lastStaticY;
@@ -129,6 +152,13 @@ public class ServerBall {
         this.vy = 0;
     }
 
+    /**
+     * Checks whether this ball collides with the given shape.
+     * Supports rectangle, polygon, and ellipse shapes.
+     *
+     * @param shape the obstacle shape to test against
+     * @return true if a collision is detected
+     */
     public boolean checkCollision(MapData.ServerShape shape) {
         if (shape.formType == MapData.ServerShape.RECT) {
             double closestX = Math.max(shape.x, Math.min(px, shape.x + shape.w));
@@ -155,6 +185,13 @@ public class ServerBall {
         return false;
     }
 
+    /**
+     * Tests if the ball overlaps the nearest point and updates collision normal/overlap data.
+     *
+     * @param nearestX the x coordinate of the nearest point on the shape
+     * @param nearestY the y coordinate of the nearest point on the shape
+     * @return true if the ball overlaps the point (collision detected)
+     */
     private boolean updateCollisionData(double nearestX, double nearestY) {
         double dx = px - nearestX;
         double dy = py - nearestY;
@@ -180,25 +217,33 @@ public class ServerBall {
         return false;
     }
 
+    /** Returns the current x position in grid coordinates. */
     public double getPx() {
         return px;
     }
 
+    /** Returns the current y position in grid coordinates. */
     public double getPy() {
         return py;
     }
 
+    /** Returns true if the ball has any non-zero velocity. */
     public boolean isMoving() {
         return vx != 0 || vy != 0;
     }
 
+    /** Sets the current friction coefficient based on the terrain under the ball. */
     public void changeFriction(double currentFriction) {
         this.friction = currentFriction;
     }
+    /** Returns the number of strokes taken by this ball's player. */
     public int getStrokeCount() { return strokeCount; }
+    /** Returns true if this ball has entered the hole. */
     public boolean isFinished() { return finished; }
+    /** Sets whether this ball has finished (entered the hole). */
     public void setFinished(boolean finished) { this.finished = finished; }
 
+    /** Resets the ball to the default spawn position with zero velocity and stroke count. */
     public void reset() {
         this.px = 9.8;
         this.py = 42.4;

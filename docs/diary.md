@@ -132,7 +132,7 @@ The array containing mapdata is not perfect and will need readjustments in the f
 Also fixed the course rendering since the blue sidebar had to be deleted.
 
 ## Entry #13 02.04.26
-Worked on the chat GUI sidebar today. Started by adding a username label at the top so players can see who 
+Tamer Worked on the chat GUI sidebar today. Started by adding a username label at the top so players can see who 
 theyre logged in as, then added Create Lobby and Leave Lobby buttons to the lobby section. The Leave Lobby button 
 dims out when your not in a lobby and lights up when you join one which is handled through EventBus events that get 
 emitted when the server confirms a join or leave. After that I implemented slash command support in the chat input 
@@ -154,7 +154,7 @@ going to be moved in a way that for example we make a start screen then an activ
 case the change will just be like i said moving them to their own individual places which would just change where the 
 components live in the UI not what actually they do.
 
-## Entry #14 6.4
+## Entry #14 06.04.26
 
 Constantin: fixed the implementation of the course. Previously there was a conflict between the sidebar and course, where the sidebar would "eat" the space of the course. Now the course is a fixed 1100 x 600, resizing will need to be adjusted.
 
@@ -165,3 +165,18 @@ Demian:
 - Implemented server-side stroke counting and end-game detection.
 - Added persistent result tracking in 'results.csv' with winner detection and stroke summaries.
 - Completed the translation of all remaining German comments and Javadocs to English for not breaking coding conventions.
+
+## Entry #15 11.04.26
+Tamer added comprehensive JavaDoc to anything he could find which might have not been worth it but he had already invested 
+too much time in it to give up when he noticed that it would be a painful process, So he pulled through to get those 
+bittersweet 10 points for the javadoc task hopefully...
+
+## Entry #16 13.04.26
+Presented M4 Product tasks in exercise session. Group discussion about project presentation and task division.
+- Anton: About a Game, Demo! (3min)
+- Demian: Rules to Code (1.5min)
+- Constantin: QA and Technology! (2.5min)
+- Tamer: Progress Report (2min
+
+Discussion about next milestones features: interactive environment, aiming and power shamanism, screen resizing, game layout
+textures, ball bug in water, hole logic position shifted.

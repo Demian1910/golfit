@@ -7,6 +7,12 @@ public class PendingPacket {
     public long sentAt;
     public int retryCount = 0;
 
+    /**
+     * Creates a new PendingPacket.
+     *
+     * @param packet the raw message string awaiting acknowledgement
+     * @param sentAt the timestamp (millis) when the packet was last sent
+     */
     public PendingPacket(String packet, long sentAt) {
         this.packet = packet;
         this.sentAt = sentAt;

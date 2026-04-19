@@ -54,7 +54,7 @@ public class Client {
     final private String host;
 
     /** Server assigned identifier for the client (Default 0) **/
-    int id = 0;
+    volatile int id = 0;
 
     int lobbyId = 0;
     LinkedHashSet<String> lobbyPlayers = new LinkedHashSet<>();
@@ -152,14 +152,17 @@ public class Client {
         inputThread.start();
     }
 
+    /** Returns the movement handler for wiring game pane events. */
     public MovementHandler getMovementHandler() {
         return movementHandler;
     }
 
+    /** Returns the system handler for protocol message processing. */
     public SystemHandler getSystemHandler() {
         return systemHandler;
     }
 
+    /** Returns the public client API. */
     public ClientApi getClientApi() {
         return clientApi;
     }

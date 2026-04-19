@@ -15,6 +15,7 @@ import java.util.concurrent.*;
 
 /** Handles a single connected client on the server side. Runs its own thread with a message queue and periodic channel tick. */
 public class ClientHandler implements Runnable {
+    /** Tracks whether a client is in the menu or actively playing a game. */
     enum ClientState {
         IN_MENU,
         IN_GAME
@@ -100,16 +101,20 @@ public class ClientHandler implements Runnable {
     private void dispatch(MessageParser.Message message) throws Exception {
         dispatcher.dispatch(message);
     }
+    /** Returns the channel manager handling reliable delivery for this client. */
     public ChannelManager getChannelManager() {
         return channelManager;
     }
 
+    /** Returns the unique client ID assigned by the server. */
     public int getId() {
         return Id;
     }
+    /** Sets this client's username. */
     public void setUsername(String username) {
         this.username = username;
     }
+    /** Updates the last ping timestamp to the current time. */
     public void updateLastPing() {
         lastPing = System.currentTimeMillis();
     }
@@ -117,6 +122,7 @@ public class ClientHandler implements Runnable {
     public boolean isTimedOut() {
         return System.currentTimeMillis() - lastPing > Constants.TIMEOUT_PING_MS;
     }
+    /** Returns this client's username. */
     public String getUsername() {
         return username;
     }
@@ -124,6 +130,7 @@ public class ClientHandler implements Runnable {
     public void shutdown() {
         thread.interrupt();
     }
+    /** Returns the client's network key in {@code "ip:port"} format. */
     public String getClientKey(){
         return key;
     }

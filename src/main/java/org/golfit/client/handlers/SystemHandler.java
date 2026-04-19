@@ -17,10 +17,16 @@ public class SystemHandler {
     private final Logger logger = LoggerFactory.getLogger(SystemHandler.class);
     private Sidebar sidebar;
 
+    /**
+     * Creates a new client-side SystemHandler.
+     *
+     * @param clientApi the client API for accessing client state
+     */
     public SystemHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
     }
 
+    /** Sets the sidebar reference for legacy direct message display. */
     public void setSidebar(Sidebar sidebar) {
         this.sidebar = sidebar;
     }
@@ -64,6 +70,7 @@ public class SystemHandler {
         EventBus.get().emit(Constants.PRIVATE_MESSAGE, parts);
     }
 
+    /** Handles an incoming lobby chat message and emits it on the EventBus. */
     public void onChatLobby(MessageParser.Message message) {
         String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
@@ -101,6 +108,7 @@ public class SystemHandler {
         EventBus.get().emit(Constants.LOBBY_LEFT, null);
     }
 
+    /** Handles a lobby info update with the current player list. */
     public void onLobbyInfo(MessageParser.Message message) throws Exception {
         String[] lobbyInfo = message.payload.split(":", 2);
         String lobbyId = lobbyInfo[0];
@@ -113,6 +121,7 @@ public class SystemHandler {
         Collections.addAll(clientApi.getLobbyPlayers(), players);
     }
 
+    /** Handles the full player list response and emits it on the EventBus. */
     public void onPlayerList(MessageParser.Message message) throws Exception {
         String[] players = message.payload.split(":");
         EventBus.get().emit(Constants.PLAYERS_LIST, players);

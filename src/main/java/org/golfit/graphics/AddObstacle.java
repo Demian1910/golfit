@@ -8,6 +8,11 @@ import javafx.scene.shape.*;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Factory for creating and placing grid-aligned obstacle shapes on the course pane.
+ * All positions and sizes are specified in grid units (80 columns x 45 rows) and
+ * bound to the container's dimensions so they scale automatically.
+ */
 public class AddObstacle {
     private static final int COLS = 80;
     private static final int ROWS = 45;
@@ -24,6 +29,11 @@ public class AddObstacle {
     public List<Shape> obstacles = new ArrayList<>();
     private final Pane container;
 
+    /**
+     * Creates an obstacle factory attached to the given container pane.
+     *
+     * @param container the pane to add shapes to
+     */
     public AddObstacle(Pane container) {
         this.container = container;
     }
@@ -40,6 +50,7 @@ public class AddObstacle {
      * ================= Helper Functions =================
      **/
 
+    /** Adds a colored rectangle at the given grid position and returns it. */
     public Rectangle addRect(int col, int row, int width, int height, Color color) {
         Rectangle rect = new Rectangle();
         rect.setFill(color);
@@ -49,36 +60,42 @@ public class AddObstacle {
         return rect;
     }
 
+    /** Adds a wall obstacle (brown rectangle) at the given grid position. */
     public void addWall(int col, int row, int width, int height) {
         Rectangle rect = addRect(col, row, width, height, Color.rgb(124, 63, 0));
         rect.setUserData(WALL);
         obstacles.add(rect);
     }
 
+    /** Adds a sand terrain patch at the given grid position. */
     public void addSand(int col, int row, int width, int height) {
         Rectangle rect = addRect(col, row, width, height, Color.rgb(203, 189, 147));
         rect.setUserData(SAND);
         obstacles.add(rect);
     }
 
+    /** Adds an ice terrain patch at the given grid position. */
     public void addIce(int col, int row, int width, int height) {
         Rectangle rect = addRect(col, row, width, height, Color.rgb(148, 247, 255));
         rect.setUserData(ICE);
         obstacles.add(rect);
     }
 
+    /** Adds a water hazard at the given grid position. */
     public void addWater(int col, int row, int width, int height) {
         Rectangle rect = addRect(col, row, width, height, Color.rgb(35, 137, 218));
         rect.setUserData(WATER);
         obstacles.add(rect);
     }
 
+    /** Adds the golf hole (black ellipse) at the given grid position. */
     public void addGolfHole(int col, int row) {
         // Golf holes are typically small, 1.5x1.5 or 2x2
         Ellipse ellipse = addEllipse(col, row, 2, 2, Color.BLACK);
         ellipse.setUserData(0); // Goal or specific ID
     }
 
+    /** Adds a switch obstacle (gray base with red ellipse) at the given grid position. */
     public void addSwitch(int col, int row) {
         addRect(col, row, 2, 1, Color.GRAY);
         Ellipse ellipse = addEllipse(col, row, 2, 1, Color.RED);
@@ -87,12 +104,14 @@ public class AddObstacle {
 
     }
 
+    /** Adds a bouncy ball obstacle (pink ellipse) at the given grid position. */
     public void addBall(int col, int row) {
         Ellipse ellipse = addEllipse(col, row, 3, 3, Color.rgb(255, 16, 240));
         ellipse.setUserData(BOUNCE);
         obstacles.add(ellipse);
     }
 
+    /** Adds a colored ellipse at the given grid position and returns it. */
     public Ellipse addEllipse(int col, int row, double width, double height, Color color) {
         Ellipse ellipse = new Ellipse();
         ellipse.setFill(color);
@@ -107,6 +126,7 @@ public class AddObstacle {
         return ellipse;
     }
 
+    /** Adds a wall polygon with the given grid-coordinate vertices. */
     public void addPolygon(double... coords) {
         Polygon poly = new Polygon();
         DoubleBinding unitW = container.widthProperty().divide((double) COLS);
@@ -135,6 +155,7 @@ public class AddObstacle {
         javafx.application.Platform.runLater(update);
     }
 
+    /** Adds a tree (trunk rectangle + triangular canopy) at the given grid position. */
     public void addTree(int col, int row) {
         Rectangle trunk = new Rectangle();
         trunk.setFill(Color.rgb(101, 67, 33));
@@ -178,6 +199,7 @@ public class AddObstacle {
         javafx.application.Platform.runLater(updateTree);
     }
 
+    /** Binds a rectangle's position and size to the container so it scales with the grid. */
     public void bindGrid(Rectangle rect, int col, int row, int width, int height) {
         rect.xProperty().bind(container.widthProperty().divide(COLS).multiply(col));
         rect.yProperty().bind(container.heightProperty().divide(ROWS).multiply(row));
@@ -185,6 +207,7 @@ public class AddObstacle {
         rect.heightProperty().bind(container.heightProperty().divide(ROWS).multiply(height));
     }
 
+    /** Returns all obstacle shapes added to this factory. */
     public List<Shape> getObstacleList() {
         return obstacles;
     }

@@ -19,6 +19,11 @@ import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.*;
 
+/**
+ * The GolfIt game server. Listens for UDP packets on a given port,
+ * creates a {@link ClientHandler} per unique client address, and dispatches
+ * incoming messages to the appropriate handlers (system, movement, chat).
+ */
 public class Server implements ServerContext{
     private final int sessionId = generateUniqueId();
     /**

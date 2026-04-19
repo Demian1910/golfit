@@ -6,6 +6,10 @@ import javafx.scene.shape.Shape;
 
 import java.util.List;
 
+/**
+ * Defines the mini-golf course layout by placing terrain obstacles (walls, sand, ice, water,
+ * trees, switches, and the golf hole) onto an 80x45 grid within a fixed 1100x600 pane.
+ */
 public class Course {
 
     private static final int COLS = 80;
@@ -127,10 +131,12 @@ public class Course {
         addObstacle.addWall(79, 0, 1, ROWS);         // Right
     }
 
+    /** Returns the pane containing all course elements. */
     public Pane getPane() {
         return container;
     }
 
+    /** Returns the list of obstacle shapes for grid mapping and collision export. */
     public List<Shape> getObstacles() {
         return addObstacle.getObstacleList();
     }

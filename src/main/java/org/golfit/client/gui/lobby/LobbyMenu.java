@@ -17,6 +17,11 @@ import java.util.Map;
 import java.util.List;
 import java.util.ArrayList;
 
+/**
+ * Sidebar component for lobby management. Shows either the lobby list (with create/join)
+ * or the current lobby view (with player list, stroke counts, start, and leave buttons).
+ * Listens to EventBus events for lobby updates, game start/end, and stroke updates.
+ */
 public class LobbyMenu extends VBox {
     ClientApi clientApi;
     VBox lobbyVBox = new VBox(5);
@@ -107,6 +112,7 @@ public class LobbyMenu extends VBox {
         });
     }
 
+    /** Enables or disables the leave button based on lobby membership. */
     public void setInLobby(boolean inLobby) {
         javafx.application.Platform.runLater(() -> {
             leaveLobbyBtn.setDisable(!inLobby);
@@ -114,6 +120,7 @@ public class LobbyMenu extends VBox {
         });
     }
 
+    /** Creates a UI row for a lobby entry showing host name, player count, status, and join button. */
     public HBox createLobbyRow(String[] lobby) {
         HBox row = new HBox(6);
         row.setPadding(new Insets(4));
@@ -159,6 +166,7 @@ public class LobbyMenu extends VBox {
         return row;
     }
 
+    /** Builds the lobby list view with a create button and scrollable lobby rows. */
     private VBox buildLobbyListView() {
         Label title = new Label("Lobbies");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
@@ -188,6 +196,7 @@ public class LobbyMenu extends VBox {
         return view;
     }
 
+    /** Builds the in-lobby view with player list, start button, and leave button. */
     private VBox buildInLobbyView() {
         Label title = new Label("Current Lobby");
         title.setStyle("-fx-text-fill: white; -fx-font-size: 14px; -fx-font-weight: bold;");
@@ -223,6 +232,7 @@ public class LobbyMenu extends VBox {
         return view;
     }
 
+    /** Switches the display to the in-lobby view. */
     private void showInLobbyView() {
         javafx.application.Platform.runLater(() -> {
             lobbyListView.setVisible(false);
@@ -232,6 +242,7 @@ public class LobbyMenu extends VBox {
         });
     }
 
+    /** Switches the display back to the lobby list view. */
     private void showLobbyListView() {
         javafx.application.Platform.runLater(() -> {
             inLobbyView.setVisible(false);
@@ -241,6 +252,7 @@ public class LobbyMenu extends VBox {
         });
     }
 
+    /** Updates the player list display with current usernames and stroke counts. */
     public void updatePlayers(String[] players) {
         javafx.application.Platform.runLater(() -> {
             currentPlayers.clear();

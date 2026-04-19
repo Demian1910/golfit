@@ -2,6 +2,11 @@ package org.golfit.shared.constants;
 
 import java.util.List;
 
+/**
+ * Contains pre-computed map data for the server-side physics engine.
+ * Includes the terrain grid ({@code SERVER_MAP}), shape ID grid ({@code SHAPE_ID_MAP}),
+ * and the list of obstacle shapes ({@code LEVEL_1_OBSTACLES}) used for collision detection.
+ */
 public class MapData {
     public static final int COLS = 80;
     public static final int ROWS = 45;
@@ -202,7 +207,9 @@ public class MapData {
             {95, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 32, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 33, 31, 31, 31, 31, 34, 34, 34, 34, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 54, 53, 53, -1, -1, 49, -1, -1, -1, 51, -1, -1, -1, 55, 55, 55, 55, 55, 55, 55, 55, 96},
             {95, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 94, 96}
     };
-
+    /*
+    This class represents an obstacle, since the server doesn't know javafx
+     */
     public static class ServerShape {
         public static final int RECT = 0;
         public static final int ELLIPSE = 1;

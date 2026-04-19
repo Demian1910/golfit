@@ -49,11 +49,18 @@ public class ServerGameSimulation {
     private StrokeListener strokeListener;
     private GameEndListener gameEndListener;
 
+    /**
+     * Creates a new game simulation.
+     *
+     * @param serverApi the server API used for broadcasting movement updates
+     */
     public ServerGameSimulation(ServerApi serverApi) {
         this.serverApi = serverApi;
     }
 
+    /** Sets the callback invoked after each stroke. */
     public void setStrokeListener(StrokeListener listener) { this.strokeListener = listener; }
+    /** Sets the callback invoked when all players in a lobby have finished. */
     public void setGameEndListener(GameEndListener listener) { this.gameEndListener = listener; }
 
     /**
@@ -148,9 +155,7 @@ public class ServerGameSimulation {
                 StringBuilder payloadBuilder = lobbyPayloads.computeIfAbsent(lobbyId, k -> new StringBuilder());
                 boolean ballNeedsUpdate = forceUpdate;
 
-                // Skip finished balls — they disappear from the payload
                 if (ball.isFinished()) {
-                    lobbiesRequiringUpdate.add(lobbyId); // ensure one final broadcast to remove them
                     continue;
                 }
 
@@ -160,7 +165,7 @@ public class ServerGameSimulation {
                 if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
                     ball.setFinished(true);
                     finishedPlayers.add(playerId);
-                    lobbiesRequiringUpdate.add(lobbyId);
+                    lobbiesRequiringUpdate.add(lobbyId); // One final broadcast to remove them client-side
                     logger.info("Player {} holed out in {} strokes!", playerId, ball.getStrokeCount());
                     checkGameEnd(playerId);
                     continue;
@@ -256,7 +261,8 @@ public class ServerGameSimulation {
 
     /**
      * Retrieves static obstacles near the specified coordinates to optimize collision detection.
-     * * @param worldX Current X grid position.
+     *
+     * @param worldX Current X grid position.
      * @param worldY Current Y grid position.
      * @param searchRadius Distance in grid units to check for obstacles.
      * @return List of nearby shapes.
