@@ -85,7 +85,7 @@ public class ServerBall {
                 if (checkCollision(shape)) {
                     // If it's a Wall (1) or Bumper (5), we ALWAYS bounce.
                     if (shape.terrainType == 1 || shape.terrainType == 5) {
-                        resolveCollision();
+                        resolveCollision(shape.terrainType);
 
                         // Only queue removal if it's a "breakable" part (like a Tree)
                         // If it's a standard wall, partnerId will be -1, so nothing else happens.
@@ -95,6 +95,21 @@ public class ServerBall {
                     }
                 }
             }
+        }
+    }
+    private void resolveCollision(int terrainType) {
+        // Push the ball out of the object
+        px += lastNormalX * (overlap + 0.005);
+        py += lastNormalY * (overlap + 0.005);
+
+        double dotProduct = vx * lastNormalX + vy * lastNormalY;
+
+        if (dotProduct < 0) {
+            // If terrain is 5 (Bumper), use 1.2 (boost), otherwise 0.75 (standard wall)
+            double bounciness = (terrainType == 5) ? 1.2 : 0.75;
+
+            vx = (vx - 2 * dotProduct * lastNormalX) * bounciness;
+            vy = (vy - 2 * dotProduct * lastNormalY) * bounciness;
         }
     }
 
@@ -113,18 +128,7 @@ public class ServerBall {
         return out;
     }
 
-    private void resolveCollision() {
-        px += lastNormalX * (overlap + 0.005);
-        py += lastNormalY * (overlap + 0.005);
 
-        double dotProduct = vx * lastNormalX + vy * lastNormalY;
-
-        if (dotProduct < 0) {
-            double bounciness = 0.75;
-            vx = (vx - 2 * dotProduct * lastNormalX) * bounciness;
-            vy = (vy - 2 * dotProduct * lastNormalY) * bounciness;
-        }
-    }
 
     public boolean checkCollision(MapData.ServerShape shape) {
         if (shape.formType == MapData.ServerShape.RECT) {

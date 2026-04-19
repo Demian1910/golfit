@@ -108,7 +108,6 @@ public class ServerGameSimulation {
 
                 if (lobbyId == null) continue;
 
-                // FIX: Get the SPECIFIC map for this lobby
                 MapData lobbyMap = lobbyPhysicsMaps.get(lobbyId);
                 if (lobbyMap == null) continue;
 
@@ -131,7 +130,7 @@ public class ServerGameSimulation {
                     continue;
                 }
 
-                // 2. Terrain and Logic Processing (Using lobbyMap instead of static)
+
                 if (ball.isMoving() || forceUpdate) {
                     int col = (int) ball.getPx();
                     int row = (int) ball.getPy();
@@ -147,7 +146,7 @@ public class ServerGameSimulation {
                         }
                     }
 
-                    // 3. Physics & Collision (Using lobbyMap)
+
                     List<MapData.ServerShape> nearby = getNearbyShapes(lobbyMap, ball.getPx(), ball.getPy(), 3.0);
                     ball.update(deltaTime, nearby);
 
