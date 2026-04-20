@@ -2,19 +2,15 @@ package org.golfit.graphics;
 
 import javafx.application.Platform;
 import javafx.scene.layout.Pane;
-import javafx.scene.transform.Scale;
-
 
 /**
- * Manages the fixed-size 1100x600 game world and scales it to fit the available screen space.
- * Contains the {@link Course} and applies a dynamic {@link Scale} transform based on the parent pane size.
+ * Manages the fixed-size 1100x600 game world.
+ * The scaling is handled by the parent container in App.java.
  */
 public class Game {
 
-    private Pane root; // This is the fixed 1100x600 logical world
-    private Course course;
-
-    private Scale scale = new Scale();
+    private final Pane root;
+    private final Course course;
 
     /**
      * @param parentPane The StackPane (gameArea) from App.java
@@ -30,45 +26,19 @@ public class Game {
         course = new Course();
         root.getChildren().add(course.getPane());
 
-        // 3. Apply the scaling transformation
-        root.getTransforms().add(scale);
-
-        // 4. Listen for resizing (when the Sidebar takes up space)
-        parentPane.widthProperty().addListener((obs, old, newVal) -> updateScale(parentPane));
-        parentPane.heightProperty().addListener((obs, old, newVal) -> updateScale(parentPane));
-
-        // 5. Run the map export logic
-
+        /*3. Run the map export logic
         Platform.runLater(() -> {
-            updateScale(parentPane);
             HelpGridMap helpGridMap = new HelpGridMap(course);
             helpGridMap.updateGrids();
             helpGridMap.verifyIdMapping();
             helpGridMap.printServerData();
         });
 
-
-
-
+         */
     }
 
-    /**
-     * Adjusts the visual "zoom" so the 1100px world fits into the available screen space.
-     */
-    private void updateScale(Pane parent) {
-        double availableW = parent.getWidth();
-        double availableH = parent.getHeight();
-
-        if (availableW > 0 && availableH > 0) {
-
-            scale.setX(availableW / 1100.0);
-            scale.setY(availableH / 600.0);
-        }
-    }
-
-    /** Returns the root pane containing the scaled game world. */
+    /** Returns the root pane containing the game world. */
     public Pane getRoot() {
         return root;
     }
-
 }

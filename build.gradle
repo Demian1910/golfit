@@ -53,13 +53,11 @@ tasks.withType(Javadoc).configureEach {
     options.encoding = 'UTF-8'
     failOnError = false
 
-    // CAPTURE XDOCLINT TO FILE:
-    // This listens to the Javadoc task and writes warnings to a text file
     doFirst {
         def javadocLogDir = file("${buildDir}/reports/javadoc-log")
         javadocLogDir.mkdirs()
         def logFile = new File(javadocLogDir, "javadoc-warnings.txt")
-        logFile.text = "" // Clear previous logs
+        logFile.text = ""
 
         logging.addStandardErrorListener(new StandardOutputListener() {
             void onOutput(CharSequence output) {
@@ -78,6 +76,8 @@ spotbugs {
     ignoreFailures = true
     showProgress = true
     extraArgs = ["-noClassOk"]
+
+
 }
 
 tasks.withType(com.github.spotbugs.snom.SpotBugsTask).configureEach {
@@ -110,6 +110,8 @@ jacocoTestReport {
 tasks.register('metrics-report') {
     group = 'verification'
     description = 'Runs all quality metrics and archives them for timeline documentation.'
+
+    // SpotBugs is explicitly called here, so it only runs when you want the metrics
     dependsOn test, jacocoTestReport, spotbugsMain, javadoc
 
     doLast {
@@ -119,7 +121,7 @@ tasks.register('metrics-report') {
         println "--- ARCHIVING QA METRICS TO: ${archiveDir} ---"
         archiveDir.mkdirs()
 
-        // 1. Archive SpotBugs (Code Logic Bugs)
+        // 1. Archive SpotBugs
         if (file('build/reports/spotbugs/main.html').exists()) {
             copy {
                 from 'build/reports/spotbugs/main.html'
@@ -128,7 +130,7 @@ tasks.register('metrics-report') {
             }
         }
 
-        // 2. Archive JaCoCo (Test Coverage)
+        // 2. Archive JaCoCo
         if (file('build/reports/jacoco/test/html').exists()) {
             copy {
                 from 'build/reports/jacoco/test/html'
@@ -138,13 +140,13 @@ tasks.register('metrics-report') {
 
         // 3. Archive Javadoc Site
         if (file('build/docs/javadoc').exists()) {
-            copy {yy
+            copy {
                 from 'build/docs/javadoc'
                 into "${archiveDir}/javadoc-site"
             }
         }
 
-        // 4. Archive Xdoclint Warnings (The "100 Issues" List)
+        // 4. Archive Xdoclint Warnings
         def lintFile = file("${buildDir}/reports/javadoc-log/javadoc-warnings.txt")
         if (lintFile.exists()) {
             copy {
@@ -176,5 +178,11 @@ tasks.named('jar', Jar) {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     from {
         configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}
+
+tasks.named('check') {
+    dependsOn = dependsOn.findAll {
+        task -> !task.toString().contains("spotbugs")
     }
 }

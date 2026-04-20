@@ -241,20 +241,7 @@ public class MapData {
         }
     }
 
-    public void removeObstacle(int shapeId) {
-        // Remove from the collision list so balls stop hitting it
-        worldShapes.removeIf(s -> s.id == shapeId);
 
-        // Wipe from the grid so the terrain returns to grass
-        List<int[]> cells = shapeOccupancy.get(shapeId);
-        if (cells != null) {
-            for (int[] coord : cells) {
-                SHAPE_ID_MAP[coord[0]][coord[1]] = -1;
-                SERVER_MAP[coord[0]][coord[1]] = 0;
-            }
-            shapeOccupancy.remove(shapeId);
-        }
-    }
 
     // --- Inner Class for Data Structure ---
     public static class ServerShape {
