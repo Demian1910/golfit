@@ -164,6 +164,13 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    public void sendObstacleChange(Lobby lobby, String payload) throws Exception {
+        for (ClientHandler client : lobby.getClients()) {
+            client.getChannelManager().send(
+                Protocol.SYS_OBSTACLE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+        }
+    }
+
 
     /** Attempts to claim a username. Returns true if the username was available and successfully claimed. */
     public boolean claimUsername(String username) {

@@ -8,9 +8,7 @@ import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -342,7 +340,7 @@ public class SystemHandler {
      * Appends a game result to results.csv.
      */
     private void saveResults(int lobbyId, String winner, Map<String, Integer> results) {
-        try (PrintWriter pw = new PrintWriter(new FileWriter("results.csv", true))) {
+         try (PrintWriter pw = new PrintWriter(new FileWriter("results.csv", true))) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
             String row = timestamp + "," + lobbyId + "," + winner + "," +
                 results.entrySet().stream().map(e -> e.getKey() + ":" + e.getValue()).collect(Collectors.joining("|"));

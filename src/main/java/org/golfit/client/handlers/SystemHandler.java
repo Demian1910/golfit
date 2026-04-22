@@ -149,4 +149,9 @@ public class SystemHandler {
         System.out.println("[GAME END] " + message.payload);
         EventBus.get().emit(Constants.GAME_END, message.payload);
     }
+
+    public void onObstacleUpdate(MessageParser.Message message) {
+        System.out.println("[OBSTACLE CHANGE] " + message.payload);
+        EventBus.get().emit(Constants.OBSTACLE_UPDATE, message.payload);
+    }
 }

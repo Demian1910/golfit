@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ConsoleManager.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.cli</a> &gt; <span class="el_source">ConsoleManager.java</span></div><h1>ConsoleManager.java</h1><pre class="source lang-java linenums">package org.golfit.client.cli;
+
+import org.jline.reader.LineReader;
+import org.jline.reader.LineReaderBuilder;
+import org.jline.terminal.Terminal;
+import org.jline.terminal.TerminalBuilder;
+
+/** Manages console I/O using JLine to allow log output without disrupting the user's input line. */
+<span class="nc" id="L9">public class ConsoleManager {</span>
+    private static Terminal terminal;
+    private static LineReader lineReader;
+
+    /** Initializes the JLine terminal and line reader. Must be called before any other methods. */
+    public static void init() throws Exception {
+<span class="nc" id="L15">        terminal = TerminalBuilder.builder().system(true).build();</span>
+<span class="nc" id="L16">        lineReader = LineReaderBuilder.builder()</span>
+<span class="nc" id="L17">                .terminal(terminal)</span>
+<span class="nc" id="L18">                .build();</span>
+<span class="nc" id="L19">    }</span>
+
+    /** Prints a message above the current input line without disrupting user input. */
+    public static void println(String message) {
+<span class="nc bnc" id="L23" title="All 2 branches missed.">        if (lineReader != null) {</span>
+<span class="nc" id="L24">            lineReader.printAbove(message);</span>
+        } else {
+<span class="nc" id="L26">            System.out.println(message);</span>
+        }
+<span class="nc" id="L28">    }</span>
+
+    /** Reads a line of user input with the given prompt. */
+    public static String readLine(String prompt) {
+<span class="nc" id="L32">        return lineReader.readLine(prompt);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

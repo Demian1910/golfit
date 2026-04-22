@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Game.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.graphics</a> &gt; <span class="el_source">Game.java</span></div><h1>Game.java</h1><pre class="source lang-java linenums">package org.golfit.graphics;
+
+import javafx.scene.layout.Pane;
+import javafx.scene.transform.Scale;
+
+
+/**
+ * Manages the fixed-size 1100x600 game world and scales it to fit the available screen space.
+ * Contains the {@link Course} and applies a dynamic {@link Scale} transform based on the parent pane size.
+ */
+public class Game {
+
+    private Pane root; // This is the fixed 1100x600 logical world
+    private Course course;
+
+<span class="nc" id="L16">    private Scale scale = new Scale();</span>
+
+    /**
+     * @param parentPane The StackPane (gameArea) from App.java
+     */
+<span class="nc" id="L21">    public Game(Pane parentPane) {</span>
+        // 1. Create a fixed-size internal Pane (The Server's World)
+<span class="nc" id="L23">        root = new Pane();</span>
+<span class="nc" id="L24">        root.setPrefSize(1100, 600);</span>
+<span class="nc" id="L25">        root.setMinSize(1100, 600);</span>
+<span class="nc" id="L26">        root.setMaxSize(1100, 600);</span>
+
+        // 2. Initialize the course inside this fixed pane
+<span class="nc" id="L29">        course = new Course();</span>
+<span class="nc" id="L30">        root.getChildren().add(course.getPane());</span>
+
+        // 3. Apply the scaling transformation
+<span class="nc" id="L33">        root.getTransforms().add(scale);</span>
+
+        // 4. Listen for resizing (when the Sidebar takes up space)
+<span class="nc" id="L36">        parentPane.widthProperty().addListener((obs, old, newVal) -&gt; updateScale(parentPane));</span>
+<span class="nc" id="L37">        parentPane.heightProperty().addListener((obs, old, newVal) -&gt; updateScale(parentPane));</span>
+
+        // 5. Run the map export logic
+        /*
+        Platform.runLater(() -&gt; {
+            updateScale(parentPane);
+            HelpGridMap helpGridMap = new HelpGridMap(course);
+            helpGridMap.updateGrids();
+            helpGridMap.verifyIdMapping();
+            helpGridMap.printServerData();
+        });
+
+         */
+
+<span class="nc" id="L51">    }</span>
+
+    /**
+     * Adjusts the visual &quot;zoom&quot; so the 1100px world fits into the available screen space.
+     */
+    private void updateScale(Pane parent) {
+<span class="nc" id="L57">        double availableW = parent.getWidth();</span>
+<span class="nc" id="L58">        double availableH = parent.getHeight();</span>
+
+<span class="nc bnc" id="L60" title="All 4 branches missed.">        if (availableW &gt; 0 &amp;&amp; availableH &gt; 0) {</span>
+
+<span class="nc" id="L62">            scale.setX(availableW / 1100.0);</span>
+<span class="nc" id="L63">            scale.setY(availableH / 600.0);</span>
+        }
+<span class="nc" id="L65">    }</span>
+
+    /** Returns the root pane containing the scaled game world. */
+    public Pane getRoot() {
+<span class="nc" id="L69">        return root;</span>
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MessageBuilder.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.shared.messageBuilder</a> &gt; <span class="el_source">MessageBuilder.java</span></div><h1>MessageBuilder.java</h1><pre class="source lang-java linenums">package org.golfit.shared.messageBuilder;
+
+import static org.golfit.shared.protocol.Protocol.DELIMITER;
+import static org.golfit.shared.protocol.Protocol.TERMINATOR;
+
+/**
+ * Builder class for messages.
+ * Has method to encode messages into strings.
+ * Builds messages for sending over the network.
+ */
+<span class="nc" id="L11">public class MessageBuilder {</span>
+
+    /**
+     * Encodes a message into a delimited string for network transmission.
+     *
+     * @param type     the message type constant (e.g. {@code Protocol.SYS_CONNECT})
+     * @param channel  the channel identifier (e.g. {@code Protocol.CH_SYSTEM})
+     * @param senderId the ID of the sender
+     * @param sequence the sequence number for this message
+     * @param payload  the message payload; may be empty but not null
+     * @return the encoded message string terminated by {@link Protocol#TERMINATOR}
+     */
+    public static String buildMessage(String type, String channel, int senderId, int sequence, String payload) {
+<span class="nc" id="L24">        StringBuilder builder = new StringBuilder();</span>
+<span class="nc" id="L25">        builder.append(type).append(DELIMITER);</span>
+<span class="nc" id="L26">        builder.append(channel).append(DELIMITER);</span>
+<span class="nc" id="L27">        builder.append(senderId).append(DELIMITER);</span>
+<span class="nc" id="L28">        builder.append(sequence).append(DELIMITER);</span>
+<span class="nc bnc" id="L29" title="All 2 branches missed.">        if(payload.length() &gt; 0) {</span>
+<span class="nc" id="L30">            builder.append(payload);</span>
+        }
+<span class="nc" id="L32">        builder.append(TERMINATOR);</span>
+<span class="nc" id="L33">        return builder.toString();</span>
+    }
+}
+
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

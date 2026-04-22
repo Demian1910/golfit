@@ -1,0 +1,153 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.handlers</a> &gt; <span class="el_source">SystemHandler.java</span></div><h1>SystemHandler.java</h1><pre class="source lang-java linenums">package org.golfit.client.handlers;
+
+import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.client.cli.ConsoleManager;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.client.gui.Sidebar;
+import org.golfit.shared.constants.Constants;
+import org.golfit.shared.messageParser.MessageParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Collections;
+
+/** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
+public class SystemHandler {
+    private final ClientApi clientApi;
+<span class="nc" id="L17">    private final Logger logger = LoggerFactory.getLogger(SystemHandler.class);</span>
+    private Sidebar sidebar;
+
+    /**
+     * Creates a new client-side SystemHandler.
+     *
+     * @param clientApi the client API for accessing client state
+     */
+<span class="nc" id="L25">    public SystemHandler(ClientApi clientApi) {</span>
+<span class="nc" id="L26">        this.clientApi = clientApi;</span>
+<span class="nc" id="L27">    }</span>
+
+    /** Sets the sidebar reference for legacy direct message display. */
+    public void setSidebar(Sidebar sidebar) {
+<span class="nc" id="L31">        this.sidebar = sidebar;</span>
+<span class="nc" id="L32">    }</span>
+
+
+    /** Handles the SYS_CONNECTED response by extracting the assigned client ID and username from the payload. */
+    public void onConnected(MessageParser.Message message) {
+<span class="nc bnc" id="L37" title="All 4 branches missed.">        if (message.payload != null &amp;&amp; !message.payload.isEmpty()) {</span>
+<span class="nc" id="L38">            String[] parts = message.payload.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">            if (parts.length &gt;= 1) {</span>
+<span class="nc" id="L40">                int assignedId = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L41">                clientApi.setId(assignedId);</span>
+<span class="nc" id="L42">                clientApi.getChannelManager().updateLocalId(assignedId);</span>
+<span class="nc" id="L43">                logger.info(&quot;Connected with ID: &quot; + assignedId);</span>
+            }
+<span class="nc bnc" id="L45" title="All 2 branches missed.">            if (parts.length &gt;= 2) {</span>
+<span class="nc" id="L46">                String assignedUsername = parts[1];</span>
+<span class="nc" id="L47">                clientApi.setUsername(assignedUsername);</span>
+<span class="nc" id="L48">                logger.info(&quot;Connected as: &quot; + assignedUsername);</span>
+            }
+        }
+<span class="nc" id="L51">    }</span>
+
+    /** Handles chat messages*/
+    public void onChatBroadcast(MessageParser.Message message) {
+<span class="nc" id="L55">        String[] parts = message.payload.split(&quot;:&quot;, 2);</span>
+<span class="nc bnc" id="L56" title="All 2 branches missed.">        if (parts.length &lt; 2) return;</span>
+//        String display = &quot;[&quot; + parts[0] + &quot;] &quot; + (parts.length &gt; 1 ? parts[1] : &quot;&quot;);
+//        ConsoleManager.println(display);
+//        if (sidebar != null) sidebar.addMessage(display);
+<span class="nc" id="L60">        EventBus.get().emit(Constants.BROADCAST_MESSAGE, parts);</span>
+<span class="nc" id="L61">    }</span>
+
+    /** Handles an incoming private chat message. */
+    public void onChatPrivate(MessageParser.Message message) {
+<span class="nc" id="L65">       String[] parts = message.payload.split(&quot;:&quot;, 2);</span>
+<span class="nc bnc" id="L66" title="All 2 branches missed.">        if (parts.length &lt; 2) return;</span>
+//        String display = &quot;Whisper from [&quot; + parts[0] + &quot;] &quot; + parts[1];
+//        ConsoleManager.println(display);
+//        if (sidebar != null) sidebar.addMessage(display);
+<span class="nc" id="L70">        EventBus.get().emit(Constants.PRIVATE_MESSAGE, parts);</span>
+<span class="nc" id="L71">    }</span>
+
+    /** Handles an incoming lobby chat message and emits it on the EventBus. */
+    public void onChatLobby(MessageParser.Message message) {
+<span class="nc" id="L75">        String[] parts = message.payload.split(&quot;:&quot;, 2);</span>
+<span class="nc bnc" id="L76" title="All 2 branches missed.">        if (parts.length &lt; 2) return;</span>
+//        String display = &quot;Lobby [&quot; + parts[0] + &quot;] &quot; + parts[1];
+//        ConsoleManager.println(display);
+//        if (sidebar != null) sidebar.addMessage(display);
+<span class="nc" id="L80">        EventBus.get().emit(Constants.LOBBY_MESSAGE, parts);</span>
+<span class="nc" id="L81">    }</span>
+
+    /** Handles the lobby list response from the server. */
+    public void onLobbyList(MessageParser.Message message) throws Exception {
+<span class="nc" id="L85">        String[] lobbies = message.payload.split(&quot;&amp;&quot;);</span>
+<span class="nc" id="L86">        EventBus.get().emit(Constants.LOBBY_LIST, lobbies);</span>
+<span class="nc" id="L87">    }</span>
+
+    /**
+     * Handles the creation of a lobby
+     * @param message The message containing the lobby name in payload
+     */
+    public void onLobbyCreated(MessageParser.Message message) throws Exception {
+<span class="nc" id="L94">        ConsoleManager.println(&quot;Lobby created with id: &quot;+message.payload);</span>
+<span class="nc" id="L95">    }</span>
+
+    /** Handles confirmation that the client has joined a lobby. */
+    public void onLobbyJoined(MessageParser.Message message) {
+<span class="nc" id="L99">        ConsoleManager.println(&quot;Joined lobby with id: &quot;+message.payload);</span>
+<span class="nc" id="L100">        clientApi.setLobbyId(Integer.parseInt(message.payload));</span>
+<span class="nc" id="L101">        EventBus.get().emit(Constants.LOBBY_JOINED, message.payload);</span>
+<span class="nc" id="L102">    }</span>
+
+    /** Handles the leaving of a lobby*/
+    public void onLobbyLeft(MessageParser.Message message) throws Exception {
+<span class="nc" id="L106">        clientApi.setLobbyId(-1);</span>
+<span class="nc" id="L107">        ConsoleManager.println(&quot;Left lobby&quot;);</span>
+<span class="nc" id="L108">        EventBus.get().emit(Constants.LOBBY_LEFT, null);</span>
+<span class="nc" id="L109">    }</span>
+
+    /** Handles a lobby info update with the current player list. */
+    public void onLobbyInfo(MessageParser.Message message) throws Exception {
+<span class="nc" id="L113">        String[] lobbyInfo = message.payload.split(&quot;:&quot;, 2);</span>
+<span class="nc" id="L114">        String lobbyId = lobbyInfo[0];</span>
+<span class="nc" id="L115">        String[] players   = lobbyInfo[1].split(&quot;,&quot;);</span>
+<span class="nc" id="L116">        ConsoleManager.println(&quot;Lobby Update: &quot; + lobbyId + &quot;//&quot; + lobbyInfo[1]);</span>
+<span class="nc" id="L117">        clientApi.setLobbyId(Integer.parseInt(lobbyId));</span>
+<span class="nc" id="L118">        EventBus.get().emit(Constants.LOBBY_INFO, players);</span>
+
+<span class="nc" id="L120">        clientApi.getLobbyPlayers().clear();</span>
+<span class="nc" id="L121">        Collections.addAll(clientApi.getLobbyPlayers(), players);</span>
+<span class="nc" id="L122">    }</span>
+
+    /** Handles the full player list response and emits it on the EventBus. */
+    public void onPlayerList(MessageParser.Message message) throws Exception {
+<span class="nc" id="L126">        String[] players = message.payload.split(&quot;:&quot;);</span>
+<span class="nc" id="L127">        EventBus.get().emit(Constants.PLAYERS_LIST, players);</span>
+<span class="nc" id="L128">    }</span>
+
+    /** Handles a movement update from the server. */
+    public void onMoveUpdate(MessageParser.Message message) {
+<span class="nc" id="L132">        ConsoleManager.println(&quot;Move update&quot;);</span>
+<span class="nc" id="L133">    }</span>
+
+
+    /** Handles a game-start broadcast from the server — fires the GAME_START EventBus event. */
+    public void onGameStart(MessageParser.Message message) {
+<span class="nc" id="L138">        System.out.println(&quot;[DEBUG] [SYSTEM HANDLER] Received SYS_GAME_START! Payload: &quot; + message.payload);</span>
+<span class="nc" id="L139">        EventBus.get().emit(Constants.GAME_START, message.payload);</span>
+<span class="nc" id="L140">    }</span>
+
+    /** Handles a stroke-update broadcast — fires STROKE_UPDATE with &quot;user:strokes,...&quot; payload. */
+    public void onStrokeUpdate(MessageParser.Message message) {
+<span class="nc" id="L144">        EventBus.get().emit(Constants.STROKE_UPDATE, message.payload);</span>
+<span class="nc" id="L145">    }</span>
+
+    /** Handles a game-end broadcast — fires GAME_END with &quot;winner=X;user1:s,...&quot; payload. */
+    public void onGameEnd(MessageParser.Message message) {
+<span class="nc" id="L149">        System.out.println(&quot;[GAME END] &quot; + message.payload);</span>
+<span class="nc" id="L150">        EventBus.get().emit(Constants.GAME_END, message.payload);</span>
+<span class="nc" id="L151">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovementHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.handlers</a> &gt; <span class="el_source">MovementHandler.java</span></div><h1>MovementHandler.java</h1><pre class="source lang-java linenums">package org.golfit.client.handlers;
+
+import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.client.game.BallRender;
+import org.golfit.client.game.Ball;
+import javafx.scene.layout.Pane;
+import javafx.application.Platform;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Handles movement update messages from the server on the client side.
+ * Converts server grid coordinates to pixel positions and manages ball rendering.
+ */
+public class MovementHandler {
+    private final ClientApi clientApi;
+<span class="nc" id="L20">    public Map&lt;Integer, BallRender&gt; players = new HashMap&lt;&gt;();</span>
+    private Pane gamePane;
+
+    private static final long STILL_TIME_THRESHOLD_MS = 150;
+<span class="nc" id="L24">    private final Map&lt;Integer, Long&gt; lastUpdateTime = new ConcurrentHashMap&lt;&gt;();</span>
+<span class="nc" id="L25">    private MessageParser.Message lastMessage = null;</span>
+
+<span class="nc" id="L27">    public MovementHandler(ClientApi clientApi) {</span>
+<span class="nc" id="L28">        this.clientApi = clientApi;</span>
+<span class="nc" id="L29">    }</span>
+
+    public void setGamePane(Pane pane) {
+<span class="nc" id="L32">        this.gamePane = pane;</span>
+<span class="nc" id="L33">        this.players.clear();</span>
+<span class="nc" id="L34">        this.lastUpdateTime.clear();</span>
+        
+<span class="nc bnc" id="L36" title="All 2 branches missed.">        if (lastMessage != null) {</span>
+<span class="nc" id="L37">            onMoveUpdate(lastMessage);</span>
+        }
+<span class="nc" id="L39">    }</span>
+
+    public void onMoveUpdate(MessageParser.Message message) {
+<span class="nc" id="L42">        this.lastMessage = message;</span>
+<span class="nc bnc" id="L43" title="All 2 branches missed.">        if (gamePane == null) return;</span>
+
+<span class="nc" id="L45">        String payload = message.payload;</span>
+<span class="nc bnc" id="L46" title="All 4 branches missed.">        if (payload == null || payload.isEmpty()) return;</span>
+
+<span class="nc bnc" id="L48" title="All 2 branches missed.">        double currentWidth = gamePane.getWidth() &gt; 0 ? gamePane.getWidth() : 1100.0;</span>
+<span class="nc bnc" id="L49" title="All 2 branches missed.">        double currentHeight = gamePane.getHeight() &gt; 0 ? gamePane.getHeight() : 600.0;</span>
+
+<span class="nc" id="L51">        double scaleX = currentWidth / 80.0;</span>
+<span class="nc" id="L52">        double scaleY = currentHeight / 45.0;</span>
+
+<span class="nc" id="L54">        java.util.Set&lt;Integer&gt; receivedIds = new java.util.HashSet&lt;&gt;();</span>
+<span class="nc bnc" id="L55" title="All 2 branches missed.">        String[] playerUpdates = payload.isEmpty() ? new String[0] : payload.split(&quot;;&quot;);</span>
+
+<span class="nc bnc" id="L57" title="All 2 branches missed.">        for (String update : playerUpdates) {</span>
+<span class="nc" id="L58">            String[] parts = update.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L59" title="All 2 branches missed.">            if (parts.length == 2) {</span>
+                try {
+<span class="nc" id="L61">                    int playerId = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L62">                    receivedIds.add(playerId);</span>
+<span class="nc" id="L63">                    String[] coords = parts[1].split(&quot;,&quot;);</span>
+
+<span class="nc" id="L65">                    double gridX = Double.parseDouble(coords[0]);</span>
+<span class="nc" id="L66">                    double gridY = Double.parseDouble(coords[1]);</span>
+
+<span class="nc" id="L68">                    double pixelX = gridX * scaleX;</span>
+<span class="nc" id="L69">                    double pixelY = gridY * scaleY;</span>
+
+<span class="nc" id="L71">                    Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L72">                        BallRender render = players.get(playerId);</span>
+<span class="nc" id="L73">                        boolean genuinelyMoved = true;</span>
+
+<span class="nc bnc" id="L75" title="All 2 branches missed.">                        if (render == null) {</span>
+<span class="nc" id="L76">                            render = new BallRender(gamePane, new Ball(pixelX, pixelY));</span>
+<span class="nc" id="L77">                            players.put(playerId, render);</span>
+                        } else {
+                            // Check if the difference is substantial enough to disrupt &quot;stillness&quot;
+<span class="nc" id="L80">                            double dx = render.getCircle().getCenterX() - pixelX;</span>
+<span class="nc" id="L81">                            double dy = render.getCircle().getCenterY() - pixelY;</span>
+<span class="nc bnc" id="L82" title="All 4 branches missed.">                            if (Math.abs(dx) &lt; 0.1 &amp;&amp; Math.abs(dy) &lt; 0.1) {</span>
+<span class="nc" id="L83">                                genuinelyMoved = false;</span>
+                            } else {
+<span class="nc" id="L85">                                render.updatePosition(new Ball(pixelX, pixelY));</span>
+                            }
+                        }
+
+<span class="nc bnc" id="L89" title="All 4 branches missed.">                        if (genuinelyMoved || !lastUpdateTime.containsKey(playerId)) {</span>
+<span class="nc" id="L90">                            lastUpdateTime.put(playerId, System.currentTimeMillis());</span>
+                        }
+<span class="nc" id="L92">                    });</span>
+<span class="nc" id="L93">                } catch (Exception ignored) {}</span>
+            }
+        }
+
+<span class="nc" id="L97">        Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L98">            players.entrySet().removeIf(entry -&gt; {</span>
+<span class="nc bnc" id="L99" title="All 2 branches missed.">                if (!receivedIds.contains(entry.getKey())) {</span>
+<span class="nc" id="L100">                    gamePane.getChildren().removeAll(entry.getValue().getCircle());</span>
+<span class="nc" id="L101">                    lastUpdateTime.remove(entry.getKey());</span>
+<span class="nc" id="L102">                    return true;</span>
+                }
+<span class="nc" id="L104">                return false;</span>
+            });
+<span class="nc" id="L106">        });</span>
+<span class="nc" id="L107">    }</span>
+
+    /**
+     * Determines if a player's ball has come to a complete physical stop on the map.
+     * &lt;p&gt;
+     * &lt;b&gt;Why we wait for a timeout instead of checking Velocity:&lt;/b&gt;&lt;br&gt;
+     * The client is visually &quot;dumb&quot; and runs no physics logic internally. Sending live velocity
+     * (vx, vy) data continuously over the network strictly to check if a ball has stopped
+     * would drastically inflate bandwidth consumption. Instead, the server automatically 
+     * optimizes the network by completely dropping stationary balls from its physics broadcasts.
+     * Because the server halts updates naturally when a ball stops, the client securely infers
+     * global stillness if the ball's coordinates haven't changed in {@value #STILL_TIME_THRESHOLD_MS}ms.
+     *
+     * @param playerId the server-assigned player ID
+     * @return true if the ball has not visibly moved recently, false otherwise
+     */
+    public boolean isPlayerBallStill(int playerId) {
+<span class="nc" id="L124">        Long lastUpdate = lastUpdateTime.get(playerId);</span>
+<span class="nc bnc" id="L125" title="All 4 branches missed.">        return lastUpdate != null &amp;&amp; (System.currentTimeMillis() - lastUpdate &gt; STILL_TIME_THRESHOLD_MS);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

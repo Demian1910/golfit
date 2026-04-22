@@ -133,13 +133,6 @@ tasks.register('metrics-report') {
                 rename { "spotbugs-report.html" }
             }
         }
-
-        // 2. Archive JaCoCo
-        if (file('build/reports/jacoco/test/html').exists()) {
-            copy {
-                from 'build/reports/jacoco/test/html'
-                into "${archiveDir}/coverage"
-            }
         }
 
         // 3. Archive Javadoc Warnings (Xdoclint)
@@ -151,7 +144,6 @@ tasks.register('metrics-report') {
         println "Saved to: ${archiveDir}"
         println "---------------------------------"
     }
-}
 
 tasks.register('build-cs108') {
     group = 'build'

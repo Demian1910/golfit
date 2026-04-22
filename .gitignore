@@ -16,6 +16,7 @@ toodls/time.csv
 *.Rhistory
 token.txt
 results.csv
+/bin
 
 # Gitlab Token
 toodls/token.txt

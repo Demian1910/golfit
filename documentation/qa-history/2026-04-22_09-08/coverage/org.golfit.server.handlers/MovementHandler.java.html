@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovementHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.server.handlers</a> &gt; <span class="el_source">MovementHandler.java</span></div><h1>MovementHandler.java</h1><pre class="source lang-java linenums">package org.golfit.server.handlers;
+
+import org.golfit.server.serverApi.ServerApi;
+import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.server.ClientHandler.ClientHandler;
+import org.golfit.server.game.ServerGameSimulation;
+
+/**
+ * Handles movement input messages from clients on the server side.
+ * Parses force vectors and applies them to the physics simulation.
+ */
+public class MovementHandler {
+    private final ServerApi serverApi;
+    private final ServerGameSimulation simulation;
+
+    /**
+     * Creates a new MovementHandler.
+     *
+     * @param serverContext the server API for sending responses
+     * @param simulation    the game simulation to apply forces to
+     */
+<span class="nc" id="L22">    public MovementHandler(ServerApi serverContext, ServerGameSimulation simulation) {</span>
+<span class="nc" id="L23">        this.serverApi = serverContext;</span>
+<span class="nc" id="L24">        this.simulation = simulation;</span>
+<span class="nc" id="L25">    }</span>
+
+    /**
+     * Handles a movement input from a client. Parses the {@code &quot;forceX,forceY&quot;} payload
+     * and applies the stroke to the player's ball in the simulation.
+     *
+     * @param clientHandler the client that sent the input
+     * @param message       the parsed message containing the force payload
+     */
+    public void onMoveInput(ClientHandler clientHandler, MessageParser.Message message) {
+<span class="nc" id="L35">        String payload = message.payload;</span>
+<span class="nc bnc" id="L36" title="All 4 branches missed.">        if (payload == null || payload.isEmpty())</span>
+<span class="nc" id="L37">            return;</span>
+
+        // payload expects: &quot;forceX,forceY&quot;
+<span class="nc" id="L40">        String[] parts = payload.split(&quot;,&quot;);</span>
+<span class="nc bnc" id="L41" title="All 2 branches missed.">        if (parts.length == 2) {</span>
+            try {
+<span class="nc" id="L43">                double forceX = Double.parseDouble(parts[0]);</span>
+<span class="nc" id="L44">                double forceY = Double.parseDouble(parts[1]);</span>
+
+                // Always use the authoritative ID from the connected client
+<span class="nc" id="L47">                simulation.strokeBall(clientHandler.getId(), forceX, forceY);</span>
+<span class="nc" id="L48">            } catch (NumberFormatException e) {</span>
+                // ignore invalid format
+<span class="nc" id="L50">            }</span>
+        }
+<span class="nc" id="L52">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

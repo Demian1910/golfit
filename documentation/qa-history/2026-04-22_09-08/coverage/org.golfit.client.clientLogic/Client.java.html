@@ -1,0 +1,194 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="en"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Client.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.clientLogic</a> &gt; <span class="el_source">Client.java</span></div><h1>Client.java</h1><pre class="source lang-java linenums">package org.golfit.client.clientLogic;
+
+import org.golfit.client.cli.ClientCli;
+import org.golfit.client.cli.ConsoleManager;
+import org.golfit.client.handlers.MovementHandler;
+import org.golfit.client.handlers.SystemHandler;
+import org.golfit.client.pingService.PingService;
+import org.golfit.shared.constants.Constants;
+import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.shared.protocol.Protocol;
+import org.golfit.shared.protocol.channelManager.ChannelManager;
+import org.slf4j.Logger;
+
+import java.net.*;
+import java.nio.charset.StandardCharsets;
+import java.util.LinkedHashSet;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+/**
+ * Main client class for the GolfIt network client.
+ *
+ * &lt;p&gt;Manages the lifecycle of a GolfIt client session, including:
+ * &lt;ul&gt;
+ *   &lt;li&gt;UDP socket communication with the server&lt;/li&gt;
+ *   &lt;li&gt;Reliable message delivery via {@link ChannelManager}&lt;/li&gt;
+ *   &lt;li&gt;CLI input processing via {@link ClientCli}&lt;/li&gt;
+ *   &lt;li&gt;Keepalive via {@link PingService}&lt;/li&gt;
+ *   &lt;li&gt;Dispatching incoming messages to the appropriate handlers&lt;/li&gt;
+ * &lt;/ul&gt;
+ *
+ * &lt;p&gt;The client runs three concurrent components:
+ * &lt;ul&gt;
+ *   &lt;li&gt;A scheduled ticker that drives the channel manager's retry logic every 100ms&lt;/li&gt;
+ *   &lt;li&gt;An input thread that reads user commands from the console&lt;/li&gt;
+ *   &lt;li&gt;A receive thread that listens for incoming UDP packets&lt;/li&gt;
+ * &lt;/ul&gt;
+ */
+
+public class Client {
+    /** Public API for the client **/
+    public ClientApi clientApi;
+    /** Service for sending pings **/
+    public PingService pingService;
+    /** CLI interface for user input **/
+    ClientCli clientCli;
+
+    /** Handlers for different message types **/
+    private SystemHandler systemHandler;
+    private MovementHandler movementHandler;
+
+    /** Server hostname and port  **/
+    final private String host;
+
+    /** Server assigned identifier for the client (Default 0) **/
+<span class="nc" id="L57">    volatile int id = 0;</span>
+
+<span class="nc" id="L59">    int lobbyId = 0;</span>
+<span class="nc" id="L60">    LinkedHashSet&lt;String&gt; lobbyPlayers = new LinkedHashSet&lt;&gt;();</span>
+
+    final private int port;
+    DatagramSocket socket;
+
+    /** Username for the client **/
+    String username;
+
+    /** Channel manager for reliable message delivery **/
+    private ChannelManager channelManager;
+
+<span class="nc" id="L71">    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Client.class);</span>
+
+    /**
+     * Constructs a new Client.
+     *
+     * @param host     the server hostname or IP address
+     * @param port     the server port
+     * @param username the desired username; if null, defaults to the OS username
+     */
+<span class="nc" id="L80">    public Client(String host, int port, String username) {</span>
+<span class="nc" id="L81">        this.host = host;</span>
+<span class="nc" id="L82">        this.port = port;</span>
+<span class="nc" id="L83">    }</span>
+
+    /**
+     * Starts the client and initiates a connection to the server.
+     *
+     * @throws Exception if the socket cannot be opened or the connect message fails to send
+     */
+    public void start() throws Exception {
+<span class="nc" id="L91">        System.out.println(&quot;Type /help for a list of commands&quot;);</span>
+<span class="nc" id="L92">        socket = new DatagramSocket();</span>
+<span class="nc" id="L93">        ConsoleManager.init();</span>
+
+<span class="nc" id="L95">        channelManager = new ChannelManager((data) -&gt; {</span>
+<span class="nc" id="L96">            byte[] byteData = data.getBytes(StandardCharsets.UTF_8);</span>
+<span class="nc" id="L97">            DatagramPacket pkg = new DatagramPacket(byteData, byteData.length, InetAddress.getByName(host), port);</span>
+<span class="nc" id="L98">            socket.send(pkg);</span>
+<span class="nc" id="L99">        }, this::dispatch, id);</span>
+
+<span class="nc" id="L101">        clientApi = new ClientApi(channelManager, this);</span>
+
+<span class="nc" id="L103">        pingService = new PingService(clientApi);</span>
+<span class="nc" id="L104">        clientCli = new ClientCli(clientApi);</span>
+<span class="nc" id="L105">        systemHandler = new SystemHandler(clientApi);</span>
+<span class="nc" id="L106">        movementHandler = new MovementHandler(clientApi);</span>
+
+        // initiates ticker for resending messages
+<span class="nc" id="L109">        ScheduledExecutorService ticker = Executors.newSingleThreadScheduledExecutor();</span>
+<span class="nc" id="L110">        ticker.scheduleAtFixedRate(() -&gt; {</span>
+            try {
+<span class="nc" id="L112">                channelManager.tick();</span>
+<span class="nc" id="L113">            } catch (Exception e) {</span>
+<span class="nc" id="L114">                logger.error(e.getMessage());</span>
+<span class="nc" id="L115">            }</span>
+<span class="nc" id="L116">        }, 0, 100, TimeUnit.MILLISECONDS);</span>
+
+<span class="nc" id="L118">        Thread receiveThread = new Thread(() -&gt; {</span>
+            while (true) {
+                try {
+<span class="nc" id="L121">                    byte[] raw = new byte[Constants.MAX_PACKET_SIZE];</span>
+<span class="nc" id="L122">                    DatagramPacket datagramPacket = new DatagramPacket(raw, raw.length);</span>
+<span class="nc" id="L123">                    socket.receive(datagramPacket);</span>
+<span class="nc" id="L124">                    System.arraycopy(datagramPacket.getData(), 0, raw, 0, datagramPacket.getLength());</span>
+<span class="nc" id="L125">                    channelManager</span>
+<span class="nc" id="L126">                            .onPacketReceived(new String(raw, 0, datagramPacket.getLength(), StandardCharsets.UTF_8));</span>
+<span class="nc" id="L127">                } catch (Exception e) {</span>
+<span class="nc bnc" id="L128" title="All 2 branches missed.">                    if (socket.isClosed()) break;</span>
+<span class="nc" id="L129">                    logger.error(e.getMessage());</span>
+<span class="nc" id="L130">                }</span>
+            }
+<span class="nc" id="L132">        });</span>
+<span class="nc" id="L133">        receiveThread.setDaemon(true);</span>
+<span class="nc" id="L134">        receiveThread.start();</span>
+
+<span class="nc" id="L136">        Thread inputThread = new Thread(() -&gt; {</span>
+            while (true) {
+                try {
+<span class="nc" id="L139">                    String line = org.golfit.client.cli.ConsoleManager.readLine(&quot;&gt; &quot;);</span>
+<span class="nc bnc" id="L140" title="All 4 branches missed.">                    if (line != null &amp;&amp; !line.isBlank()) {</span>
+<span class="nc" id="L141">                        clientCli.processCommand(line.trim());</span>
+                    }
+<span class="nc" id="L143">                } catch (org.jline.reader.UserInterruptException | org.jline.reader.EndOfFileException e) {</span>
+<span class="nc" id="L144">                    clientApi.shutdown();</span>
+<span class="nc" id="L145">                    break;</span>
+<span class="nc" id="L146">                } catch (Exception e) {</span>
+<span class="nc" id="L147">                    logger.error(&quot;Input error: &quot; + e.getMessage());</span>
+<span class="nc" id="L148">                }</span>
+            }
+<span class="nc" id="L150">        });</span>
+<span class="nc" id="L151">        inputThread.setDaemon(true);</span>
+<span class="nc" id="L152">        inputThread.start();</span>
+<span class="nc" id="L153">    }</span>
+
+    /** Returns the movement handler for wiring game pane events. */
+    public MovementHandler getMovementHandler() {
+<span class="nc" id="L157">        return movementHandler;</span>
+    }
+
+    /** Returns the system handler for protocol message processing. */
+    public SystemHandler getSystemHandler() {
+<span class="nc" id="L162">        return systemHandler;</span>
+    }
+
+    /** Returns the public client API. */
+    public ClientApi getClientApi() {
+<span class="nc" id="L167">        return clientApi;</span>
+    }
+    /**
+     * Dispatches an incoming parsed message to the appropriate handler.
+     *
+     * @param message the parsed incoming message
+     */
+    private void dispatch(MessageParser.Message message) throws Exception {
+<span class="nc bnc" id="L175" title="All 16 branches missed.">        switch (message.type) {</span>
+<span class="nc" id="L176">            case Protocol.SYS_CONNECTED -&gt; systemHandler.onConnected(message);</span>
+<span class="nc" id="L177">            case Protocol.SYS_PONG -&gt; pingService.onPong(message);</span>
+<span class="nc" id="L178">            case Protocol.SYS_CHAT_BROADCAST -&gt; systemHandler.onChatBroadcast(message);</span>
+<span class="nc" id="L179">            case Protocol.SYS_CHAT_PRIVATE -&gt; systemHandler.onChatPrivate(message);</span>
+<span class="nc" id="L180">            case Protocol.SYS_CHAT_LOBBY -&gt; systemHandler.onChatLobby(message);</span>
+<span class="nc" id="L181">            case Protocol.SYS_LOBBY_LIST -&gt; systemHandler.onLobbyList(message);</span>
+<span class="nc" id="L182">            case Protocol.SYS_LOBBY_CREATED -&gt; systemHandler.onLobbyCreated(message);</span>
+<span class="nc" id="L183">            case Protocol.SYS_LOBBY_JOINED -&gt; systemHandler.onLobbyJoined(message);</span>
+<span class="nc" id="L184">            case Protocol.SYS_LOBBY_INFO -&gt; systemHandler.onLobbyInfo(message);</span>
+<span class="nc" id="L185">            case Protocol.SYS_LOBBY_LEFT -&gt; systemHandler.onLobbyLeft(message);</span>
+<span class="nc" id="L186">            case Protocol.MOVE_UPDATE -&gt; movementHandler.onMoveUpdate(message);</span>
+<span class="nc" id="L187">            case Protocol.SYS_PLAYERS_LIST -&gt; systemHandler.onPlayerList(message);</span>
+<span class="nc" id="L188">            case Protocol.SYS_GAME_START   -&gt; systemHandler.onGameStart(message);</span>
+<span class="nc" id="L189">            case Protocol.SYS_STROKE_UPDATE -&gt; systemHandler.onStrokeUpdate(message);</span>
+<span class="nc" id="L190">            case Protocol.SYS_GAME_END     -&gt; systemHandler.onGameEnd(message);</span>
+        }
+<span class="nc" id="L192">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>
