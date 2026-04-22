@@ -3,6 +3,7 @@
 **/out/
 .vscode
 .idea
+*.class
 
 # Gradle
 **/.gradle/
