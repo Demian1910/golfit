@@ -18,7 +18,7 @@ public class MessageBuilder {
      * @param senderId the ID of the sender
      * @param sequence the sequence number for this message
      * @param payload  the message payload; may be empty but not null
-     * @return the encoded message string terminated by {@link Protocol#TERMINATOR}
+     * @return the encoded message string terminated by {@code Protocol.TERMINATOR}
      */
     public static String buildMessage(String type, String channel, int senderId, int sequence, String payload) {
         StringBuilder builder = new StringBuilder();

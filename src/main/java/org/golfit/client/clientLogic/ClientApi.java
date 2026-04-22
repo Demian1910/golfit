@@ -131,7 +131,8 @@ public class ClientApi implements IClientApi {
     /**
      * Sends movement data to the server.
      *
-     * @param movementData The movement data to be sent
+     * @param forceX the horizontal force component
+     * @param forceY the vertical force component
      * @throws Exception if the movement data cannot be sent
      */
     @Override
