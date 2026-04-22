@@ -180,3 +180,10 @@ Presented M4 Product tasks in exercise session. Group discussion about project p
 
 Discussion about next milestones features: interactive environment, aiming and power shamanism, screen resizing, game layout
 textures, ball bug in water, hole logic position shifted.
+
+## Entry #17 22.04.26
+Tamer wrote unit tests for the project's core components with the help of his teammates. Created 7 test classes with 75 
+tests total covering the protocol layer which Anton helped with (MessageBuilder, MessageParser, Channel, ChannelManager,
+PendingPacket) and the game physics engine which Demian and Constanting helped with sorting out (ServerBall — stroke mechanics, friction,
+speed clamping, position reset, collision), and the EventBus pub/sub system. All tests pass. JaCoCo coverage reports are generated 
+alongside the test results.

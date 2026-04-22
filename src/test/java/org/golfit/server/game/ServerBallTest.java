@@ -1,0 +1,177 @@
+package org.golfit.server.game;
+
+import org.golfit.shared.constants.Constants;
+import org.junit.jupiter.api.Test;
+
+import java.util.Collections;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class ServerBallTest {
+
+    @Test
+    void constructor_setsPosition() {
+        ServerBall ball = new ServerBall(10, 20);
+        assertEquals(10, ball.getPx(), 0.01);
+        assertEquals(20, ball.getPy(), 0.01);
+    }
+
+    @Test
+    void initialState_notMoving() {
+        ServerBall ball = new ServerBall(10, 20);
+        assertFalse(ball.isMoving());
+    }
+
+    @Test
+    void initialState_zeroStrokes() {
+        ServerBall ball = new ServerBall(10, 20);
+        assertEquals(0, ball.getStrokeCount());
+    }
+
+    @Test
+    void initialState_notFinished() {
+        ServerBall ball = new ServerBall(10, 20);
+        assertFalse(ball.isFinished());
+    }
+
+    @Test
+    void stroke_setsVelocity() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(5, 3);
+        assertTrue(ball.isMoving());
+    }
+
+    @Test
+    void stroke_incrementsStrokeCount() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(5, 3);
+        assertEquals(1, ball.getStrokeCount());
+        ball.stroke(2, 1);
+        assertEquals(2, ball.getStrokeCount());
+    }
+
+    @Test
+    void stroke_clampsMaxSpeed() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(1000, 1000);
+        ball.update(0.04, Collections.emptyList());
+        double dx = ball.getPx() - 10;
+        double dy = ball.getPy() - 20;
+        double distPerTick = Math.sqrt(dx * dx + dy * dy);
+        assertTrue(distPerTick < 10, "Ball should not teleport across the map");
+    }
+
+    @Test
+    void stroke_ignoredWhenFinished() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.setFinished(true);
+        ball.stroke(50, 50);
+        assertEquals(0, ball.getStrokeCount());
+        assertFalse(ball.isMoving());
+    }
+
+    @Test
+    void update_ballMovesInVelocityDirection() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(20, 0);
+        double startX = ball.getPx();
+        ball.update(0.04, Collections.emptyList());
+        assertTrue(ball.getPx() > startX);
+    }
+
+    @Test
+    void update_frictionSlowsBall() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(10, 0);
+        ball.update(0.04, Collections.emptyList());
+        double speed1 = ball.getPx();
+        ball.update(0.04, Collections.emptyList());
+        double moved2 = ball.getPx() - speed1;
+        ball.update(0.04, Collections.emptyList());
+        double moved3 = ball.getPx() - speed1 - moved2;
+        assertTrue(moved3 <= moved2, "Ball should decelerate over time");
+    }
+
+    @Test
+    void update_ballStopsBelowThreshold() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(2, 0);
+        for (int i = 0; i < 200; i++) {
+            ball.update(0.04, Collections.emptyList());
+        }
+        assertFalse(ball.isMoving());
+    }
+
+    @Test
+    void update_stationaryBall_doesNotMove() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.update(0.04, Collections.emptyList());
+        assertEquals(10, ball.getPx(), 0.001);
+        assertEquals(20, ball.getPy(), 0.001);
+    }
+
+    @Test
+    void resetToLastPosition_restoresPreStrokePosition() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(30, 0);
+        ball.update(0.04, Collections.emptyList());
+        ball.resetToLastPosition();
+        assertEquals(10, ball.getPx(), 0.01);
+        assertEquals(20, ball.getPy(), 0.01);
+        assertFalse(ball.isMoving());
+    }
+
+    @Test
+    void setFinished_changesState() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.setFinished(true);
+        assertTrue(ball.isFinished());
+    }
+
+    @Test
+    void changeFriction_affectsDeceleration() {
+        ServerBall ball1 = new ServerBall(10, 20);
+        ServerBall ball2 = new ServerBall(10, 20);
+
+        ball1.stroke(20, 0);
+        ball2.stroke(20, 0);
+
+        ball1.changeFriction(Constants.FRICTION_SAND);
+        ball2.changeFriction(Constants.FRICTION_ICE);
+
+        for (int i = 0; i < 10; i++) {
+            ball1.update(0.04, Collections.emptyList());
+            ball2.update(0.04, Collections.emptyList());
+        }
+        assertTrue(ball2.getPx() > ball1.getPx(),
+                "Ice (less friction) should let ball travel further than sand");
+    }
+
+    @Test
+    void reset_restoresDefaultState() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(30, 30);
+        ball.update(0.04, Collections.emptyList());
+        ball.setFinished(true);
+        ball.reset();
+        assertEquals(9.8, ball.getPx(), 0.01);
+        assertEquals(42.4, ball.getPy(), 0.01);
+        assertFalse(ball.isMoving());
+        assertFalse(ball.isFinished());
+        assertEquals(0, ball.getStrokeCount());
+    }
+
+    @Test
+    void multipleStrokes_lastPositionUpdates() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(20, 0);
+        for (int i = 0; i < 200; i++) ball.update(0.04, Collections.emptyList());
+        double stoppedX = ball.getPx();
+
+        ball.stroke(20, 0);
+        ball.update(0.04, Collections.emptyList());
+        ball.resetToLastPosition();
+        assertEquals(stoppedX, ball.getPx(), 0.5);
+    }
+}
