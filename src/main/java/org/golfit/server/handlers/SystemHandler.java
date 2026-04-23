@@ -63,25 +63,9 @@ public class SystemHandler {
         serverApi.sendConnected(clientHandler, payload);
         serverApi.sendLobbyList(clientHandler);
 
-        File csvFile = new File("results.csv");
-        if (csvFile.exists()) {
-            try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
-                StringBuilder sb = new StringBuilder();
-                String line;
-                while ((line = br.readLine()) != null) {
-                    if (!line.isBlank()) {
-                        sb.append(line).append("\n");
-                    }
-                }
-                String csvPayload = sb.toString().trim();
-                if (!csvPayload.isEmpty()) {
-                    serverApi.sendScoreUpdate(clientHandler, csvPayload);
-                }
-            } catch (IOException e) {
-                System.err.println("Failed to read results.csv: " + e.getMessage());
-            }
-        } else {
-            System.out.println("results.csv not found, skipping score history for client " + clientHandler.getId());
+        String history = buildScoreHistory();
+        if (!history.isEmpty()) {
+            serverApi.sendScoreUpdate(clientHandler, history);
         }
     }
     /** Handles a ping from a client by updating their last activity timestamp and responding with a pong. */
@@ -312,55 +296,51 @@ public class SystemHandler {
         Lobby lobby = serverContext.getLobbies().get(lobbyId);
         if (lobby == null) return;
 
-        // Build username → strokes map (resolved from client IDs)
         Map<String, Integer> namedResults = new LinkedHashMap<>();
         for (ClientHandler client : new ArrayList<>(lobby.getClients())) {
             int strokes = strokeResults.getOrDefault(client.getId(), 0);
             namedResults.put(client.getUsername(), strokes);
         }
 
-        // Find winner (fewest strokes; 0 strokes means they never hit — treat as worst)
         String winner = namedResults.entrySet().stream()
                 .filter(e -> e.getValue() > 0)
                 .min(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(namedResults.keySet().stream().findFirst().orElse("Nobody"));
 
-        // Build result strings
+        // Full results table: every player, sorted by strokes ascending
         String resultsList = namedResults.entrySet().stream()
+                .filter(e -> e.getValue() > 0)
+                .sorted(Map.Entry.comparingByValue())
                 .map(e -> e.getKey() + ":" + e.getValue())
                 .collect(Collectors.joining(","));
+
         String payload = "winner=" + winner + ";" + resultsList;
 
-        // Print to terminal
         System.out.println("=== GAME OVER [Lobby " + lobbyId + "] ===");
         System.out.println("Winner: " + winner);
         namedResults.forEach((u, s) -> System.out.println("  " + u + ": " + s + " strokes"));
         System.out.println("========================================");
 
-        // Persist to results.csv
         saveResults(lobbyId, winner, namedResults);
 
-        // Broadcast game-end to all lobby clients
         try {
             serverApi.sendGameEnd(lobby, payload);
         } catch (Exception e) {
             System.err.println("Error sending game end: " + e.getMessage());
         }
 
-        // Reset lobby to open state instead of removing players
         lobby.setStatus(Lobby.LobbyStatus.open);
 
-        try {
-            String csvContent = new String(java.nio.file.Files.readAllBytes(java.nio.file.Path.of("results.csv")));
-            for (ClientHandler client : serverContext.getClients().values()) {
-                serverApi.sendScoreUpdate(client, csvContent);
+        String scorePayload = buildScoreHistory();
+        for (ClientHandler client : serverContext.getClients().values()) {
+            try {
+                serverApi.sendScoreUpdate(client, scorePayload);
+            } catch (Exception e) {
+                System.err.println("Failed to send score update: " + e.getMessage());
             }
-        } catch (Exception e) {
-            System.err.println("Failed to read results.csv for score broadcast: " + e.getMessage());
         }
 
-        // Broadcast updated lobby list to all remaining clients
         serverContext.getClients().values().forEach(client -> {
             try { serverApi.sendLobbyList(client); } catch (Exception ignored) {}
         });
@@ -382,5 +362,36 @@ public class SystemHandler {
         } catch (IOException e) {
             System.err.println("Failed to save results: " + e.getMessage());
         }
+    }
+
+    /**
+     * Builds a score history string from results.csv.
+     */
+    private String buildScoreHistory() {
+        File csvFile = new File("results.csv");
+        if (!csvFile.exists()) return "";
+        StringBuilder scores = new StringBuilder();
+        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+            String line;
+            while ((line = br.readLine()) != null) {
+                line = line.trim();
+                if (line.isEmpty()) continue;
+                // Format: timestamp,lobbyId,winner,player1:strokes|player2:strokes
+                String[] cols = line.split(",", 4);
+                if (cols.length < 4) continue;
+                String winner = cols[2].trim();
+                for (String entry : cols[3].split("\\|")) {
+                    String[] parts = entry.trim().split(":");
+                    if (parts.length < 2) continue;
+                    if (parts[0].trim().equalsIgnoreCase(winner)) {
+                        scores.append(winner).append(":").append(parts[1].trim()).append("\n");
+                        break;
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Failed to read results.csv: " + e.getMessage());
+        }
+        return scores.toString().trim();
     }
 }

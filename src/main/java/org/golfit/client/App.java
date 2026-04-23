@@ -119,9 +119,59 @@ public class App extends Application {
 // — Listen for GAME_END: swap game map → splash, clear key listener —
             EventBus.get().on(Constants.GAME_END, data -> {
                 Platform.runLater(() -> {
-                    primaryStage.getScene().setOnKeyPressed(null); // remove cheat listener
+                    primaryStage.getScene().setOnKeyPressed(null);
+
                     SplashView newSplash = new SplashView();
-                    centerArea.getChildren().setAll(newSplash);
+
+                    // Parse payload: "winner=tosha;tosha:1,Groot:1"
+                    String payload = (String) data;
+                    String[] sections = payload.split(";", 2);
+                    String winner = sections[0].replace("winner=", "").trim();
+
+                    // Build results overlay shown on top of splash
+                    VBox resultsBox = new VBox(10);
+                    resultsBox.setAlignment(javafx.geometry.Pos.CENTER);
+                    resultsBox.setStyle("""
+                -fx-background-color: rgba(0,0,0,0.6);
+                -fx-background-radius: 16;
+                -fx-padding: 28 40 28 40;
+                """);
+                    resultsBox.setMaxWidth(400);
+                    resultsBox.setMaxHeight(javafx.scene.layout.Region.USE_PREF_SIZE);
+
+                    javafx.scene.text.Text winnerText = new javafx.scene.text.Text("🏆 " + winner + " wins!");
+                    winnerText.setFont(javafx.scene.text.Font.font("Apple Chancery",
+                            javafx.scene.text.FontWeight.BOLD, 36));
+                    winnerText.setFill(javafx.scene.paint.Color.web("#fff176"));
+                    resultsBox.getChildren().add(winnerText);
+
+                    // Full results table from payload
+                    if (sections.length > 1 && !sections[1].isBlank()) {
+                        String[] entries = sections[1].split(",");
+                        for (int i = 0; i < entries.length; i++) {
+                            String[] parts = entries[i].trim().split(":");
+                            if (parts.length < 2) continue;
+                            String name = parts[0].trim();
+                            String strokes = parts[1].trim();
+                            String line = String.format("  %d.  %-16s %s strokes", i + 1, name, strokes);
+                            javafx.scene.control.Label row = new javafx.scene.control.Label(line);
+                            row.setFont(javafx.scene.text.Font.font("Courier New",
+                                    javafx.scene.text.FontWeight.NORMAL, 16));
+                            row.setTextFill(i == 0
+                                    ? javafx.scene.paint.Color.web("#fff176")
+                                    : javafx.scene.paint.Color.web("#e8f5e9"));
+                            resultsBox.getChildren().add(row);
+                        }
+                    }
+
+                    // Dismiss overlay on click
+                    resultsBox.setOnMouseClicked(e -> centerArea.getChildren().remove(resultsBox));
+
+                    javafx.scene.control.Label dismiss = new javafx.scene.control.Label("(click to dismiss)");
+                    dismiss.setStyle("-fx-text-fill: rgba(255,255,255,0.5); -fx-font-size: 12px;");
+                    resultsBox.getChildren().add(dismiss);
+
+                    centerArea.getChildren().setAll(newSplash, resultsBox);
                 });
             });
 
