@@ -312,11 +312,16 @@ public class SystemHandler {
         Lobby lobby = serverContext.getLobbies().get(lobbyId);
         if (lobby == null) return;
 
-        // Build username → strokes map (resolved from client IDs)
+        // Build username → strokes map in finish order (so ties are broken by who finished first).
+        // We iterate strokeResults (which is ordered by finish time) and look up the username for each ID.
         Map<String, Integer> namedResults = new LinkedHashMap<>();
-        for (ClientHandler client : new ArrayList<>(lobby.getClients())) {
-            int strokes = strokeResults.getOrDefault(client.getId(), 0);
-            namedResults.put(client.getUsername(), strokes);
+        Map<Integer, String> idToUsername = new HashMap<>();
+        for (ClientHandler client : lobby.getClients()) {
+            idToUsername.put(client.getId(), client.getUsername());
+        }
+        for (Map.Entry<Integer, Integer> entry : strokeResults.entrySet()) {
+            String username = idToUsername.get(entry.getKey());
+            if (username != null) namedResults.put(username, entry.getValue());
         }
 
         // Find winner (fewest strokes; 0 strokes means they never hit — treat as worst)
