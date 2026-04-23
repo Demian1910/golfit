@@ -40,6 +40,15 @@ public class ServerGameSimulation {
         void onStroke(int playerId);
     }
 
+    /** Cheat: instantly moves a player's ball to the hole. */
+    public void cheatTeleport(int playerId) {
+        ServerBall ball = balls.get(playerId);
+        if (ball != null && !ball.isFinished()) {
+            ball.teleportToHole();
+            forceUpdate = true;
+        }
+    }
+
     /** Callback fired when all players in a lobby have finished. */
     @FunctionalInterface
     public interface GameEndListener {

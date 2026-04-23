@@ -206,6 +206,7 @@ public class Server implements ServerContext{
             case Protocol.MOVE_INPUT -> movementHandler.onMoveInput(clientHandler, message);
             case Protocol.SYS_PLAYERS_LIST -> systemHandler.onPlayerList(clientHandler, message);
             case Protocol.SYS_LOBBY_START  -> systemHandler.onLobbyStart(clientHandler, message);
+            case Protocol.SYS_HESOYAM -> systemHandler.onHesoyam(clientHandler, message);
         }
     }
 

@@ -15,6 +15,10 @@ import javafx.scene.effect.DropShadow;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.shared.constants.Constants;
 
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+
 public class SplashView extends StackPane {
 
     private final VBox scoreBoard = new VBox(6);
@@ -82,23 +86,46 @@ public class SplashView extends StackPane {
     private void populateScores(String csv) {
         scoreBoard.getChildren().clear();
 
-        String[] lines = csv.split("\n");
-        int rank = 1;
-        for (String line : lines) {
+        // winner → best (lowest) score across all games
+        Map<String, Integer> bestScores = new LinkedHashMap<>();
+
+        for (String line : csv.split("\n")) {
             line = line.trim();
             if (line.isEmpty()) continue;
 
-            String[] cols = line.split(",");
-            // cols[3] = "username:score"
-            String userScore = cols.length >= 4 ? cols[3] : line;
-            String[] parts   = userScore.split(":");
-            String username  = parts.length >= 1 ? parts[0] : "?";
-            String score     = parts.length >= 2 ? parts[1] : "?";
+            String[] cols = line.split(",", 4);
+            if (cols.length < 4) continue;
 
-            Label row = new Label(String.format("  %d.  %-16s %s strokes", rank++, username, score));
+            String winner = cols[2].trim();
+
+            // Find the winner's score in the players field (pipe-separated)
+            for (String entry : cols[3].split("\\|")) {
+                String[] parts = entry.split(":");
+                if (parts.length < 2) continue;
+                if (!parts[0].trim().equals(winner)) continue;
+                try {
+                    int score = Integer.parseInt(parts[1].trim());
+                    if (score > 0) {
+                        bestScores.merge(winner, score, Math::min);
+                    }
+                } catch (NumberFormatException ignored) {}
+                break;
+            }
+        }
+
+        // Sort ascending (fewest strokes = best)
+        List<Map.Entry<String, Integer>> sorted = bestScores.entrySet().stream()
+                .sorted(Map.Entry.comparingByValue())
+                .toList();
+
+        int rank = 1;
+        for (Map.Entry<String, Integer> entry : sorted) {
+            String text = String.format("  %d.  %-16s %s strokes", rank, entry.getKey(), entry.getValue());
+            Label row = new Label(text);
             row.setFont(Font.font("Courier New", FontWeight.NORMAL, 16));
-            row.setTextFill(Color.web(rank == 2 ? "#fff176" : "#e8f5e9")); // gold for #1
+            row.setTextFill(rank == 1 ? Color.web("#fff176") : Color.web("#e8f5e9"));
             scoreBoard.getChildren().add(row);
+            rank++;
         }
     }
 }

@@ -5,8 +5,7 @@ import org.golfit.shared.constants.MapData;
 
 import java.util.List;
 
-import static org.golfit.shared.constants.Constants.BALL_RADIUS;
-import static org.golfit.shared.constants.Constants.FRICTION_GRASS;
+import static org.golfit.shared.constants.Constants.*;
 
 /**
  * Represents the server-side physical state and behavior of a golf ball.
@@ -45,6 +44,16 @@ public class ServerBall {
 
         this.lastStaticX = this.px;
         this.lastStaticY = this.py;
+        this.vx = 0;
+        this.vy = 0;
+    }
+
+    /**
+     * Teleports the ball to the center of the hole, stopping its movement.
+     */
+    public void teleportToHole() {
+        this.px = HOLE_CENTER_X;
+        this.py = HOLE_CENTER_Y;
         this.vx = 0;
         this.vy = 0;
     }

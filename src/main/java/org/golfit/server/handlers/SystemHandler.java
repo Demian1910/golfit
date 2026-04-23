@@ -351,10 +351,23 @@ public class SystemHandler {
         // Reset lobby to open state instead of removing players
         lobby.setStatus(Lobby.LobbyStatus.open);
 
+        try {
+            String csvContent = new String(java.nio.file.Files.readAllBytes(java.nio.file.Path.of("results.csv")));
+            for (ClientHandler client : serverContext.getClients().values()) {
+                serverApi.sendScoreUpdate(client, csvContent);
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to read results.csv for score broadcast: " + e.getMessage());
+        }
+
         // Broadcast updated lobby list to all remaining clients
         serverContext.getClients().values().forEach(client -> {
             try { serverApi.sendLobbyList(client); } catch (Exception ignored) {}
         });
+    }
+
+    public void onHesoyam(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        gameSimulation.cheatTeleport(clientHandler.getId());
     }
 
     /**

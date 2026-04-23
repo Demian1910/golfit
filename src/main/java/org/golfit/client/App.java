@@ -79,15 +79,9 @@ public class App extends Application {
                         StackPane gameArea = new StackPane();
                         Game game = new Game(gameArea);
 
-                        // GameView now receives the movement handler and local player ID
-                        // so the drag handler can look up the ball's live pixel position.
                         int localId = client.getClientApi().getId();
-                        GameView gameView = new GameView(
-                                client.getMovementHandler(), localId);
+                        GameView gameView = new GameView(client.getMovementHandler(), localId);
 
-                        // The game pane (gameView.getRoot()) is a transparent overlay.
-                        // AimIndicator adds its polygons to that pane at z-index 0,
-                        // so ball circles (added later by MovementHandler) render on top.
                         Pane overlayPane = gameView.getRoot();
                         AimIndicator aimIndicator = new AimIndicator(overlayPane);
                         gameView.setAimIndicator(aimIndicator);
@@ -96,15 +90,36 @@ public class App extends Application {
                         client.getMovementHandler().setGamePane(overlayPane);
 
                         centerArea.getChildren().setAll(gameArea);
+
+                        // --- Cheat code listener ---
+                        final String CHEAT_CODE = "hesoyam";
+                        final StringBuilder keyBuffer = new StringBuilder();
+
+                        primaryStage.getScene().setOnKeyPressed(event -> {
+                            keyBuffer.append(event.getText().toLowerCase());
+                            if (keyBuffer.length() > CHEAT_CODE.length()) {
+                                keyBuffer.delete(0, keyBuffer.length() - CHEAT_CODE.length());
+                            }
+                            if (keyBuffer.toString().equals(CHEAT_CODE)) {
+                                keyBuffer.setLength(0);
+                                try {
+                                    client.getClientApi().sendHesoyam();
+                                } catch (Exception e) {
+                                    System.err.println("Cheat failed: " + e.getMessage());
+                                }
+                            }
+                        });
+
                     } catch (Exception e) {
                         e.printStackTrace();
                     }
                 });
             });
 
-            // — Listen for GAME_END: swap game map → splash —
+// — Listen for GAME_END: swap game map → splash, clear key listener —
             EventBus.get().on(Constants.GAME_END, data -> {
                 Platform.runLater(() -> {
+                    primaryStage.getScene().setOnKeyPressed(null); // remove cheat listener
                     SplashView newSplash = new SplashView();
                     centerArea.getChildren().setAll(newSplash);
                 });

@@ -127,6 +127,17 @@ public class ClientApi implements IClientApi {
         channelManager.send(Protocol.SYS_LOBBY_START, Protocol.CH_SYSTEM, getId(), String.valueOf(getLobbyId()));
     }
 
+    /**
+     * Sends a game-start request to the server for the current lobby.
+     * The server will validate that the lobby has 4 players before broadcasting SYS_GAME_START.
+     * This is a cheat code that instantly teleports the player to the center of the map.
+     *
+     * @throws Exception if sending fails
+     */
+    public void sendHesoyam() throws Exception {
+        channelManager.send(Protocol.SYS_HESOYAM, Protocol.CH_SYSTEM, getId(), "");
+    }
+
 
     /**
      * Sends movement data to the server.
