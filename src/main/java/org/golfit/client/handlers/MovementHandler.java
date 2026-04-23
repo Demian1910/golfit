@@ -20,6 +20,15 @@ public class MovementHandler {
     public Map<Integer, BallRender> players = new HashMap<>();
     private Pane gamePane;
 
+    private static final javafx.scene.paint.Color[] PLAYER_COLORS = {
+            javafx.scene.paint.Color.RED,
+            javafx.scene.paint.Color.BLUE,
+            javafx.scene.paint.Color.GREEN,
+            javafx.scene.paint.Color.GOLD,
+            javafx.scene.paint.Color.PURPLE,
+            javafx.scene.paint.Color.ORANGE
+    };
+
     private static final long STILL_TIME_THRESHOLD_MS = 150;
     private final Map<Integer, Long> lastUpdateTime = new ConcurrentHashMap<>();
     private MessageParser.Message lastMessage = null;
@@ -73,7 +82,8 @@ public class MovementHandler {
                         boolean genuinelyMoved = true;
 
                         if (render == null) {
-                            render = new BallRender(gamePane, new Ball(pixelX, pixelY));
+                            javafx.scene.paint.Color color = PLAYER_COLORS[playerId % PLAYER_COLORS.length];
+                            render = new BallRender(gamePane, new Ball(pixelX, pixelY), color);
                             players.put(playerId, render);
                         } else {
                             // Check if the difference is substantial enough to disrupt "stillness"

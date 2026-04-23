@@ -13,6 +13,10 @@ public class MapData {
     public int terrainType;
     public int formType;
     public int id;
+    public static final double BALL_START_X = 5;
+    public static final double BALL_START_Y = 42;
+    public static final double BALL_SPAWN_SPACING = 1.5;
+
     public static final List<ServerShape> LEVEL_1_OBSTACLES = List.of(
             new ServerShape(0, 1, ServerShape.RECT, 1.0000, 22.0000, 3.0000, 2.0000),
             new ServerShape(1, 1, ServerShape.RECT, 13.0000, 22.0000, 3.0000, 2.0000),

@@ -95,25 +95,34 @@ public class ServerGameSimulation {
      * Adds a new player to the simulation.
      * Automatically converts screen coordinates to grid coordinates.
      */
-    public void addPlayer(int playerId, double startX, double startY) {
-        double gridX = startX / (1100.0 / MapData.COLS);
-        double gridY = startY / (600.0 / MapData.ROWS);
-        balls.put(playerId, new ServerBall(gridX, gridY));
+    public void addPlayer(int playerId, int lobbyId) {
+        balls.put(playerId, new ServerBall(MapData.BALL_START_X, MapData.BALL_START_Y));
+        if (lobbyId != 0) playerToLobby.put(playerId, lobbyId);
         forceUpdate = true;
     }
+
 
     /**
      * Registers a player as belonging to a specific lobby game.
      * Called when a lobby game starts so we can track game-end per lobby.
      */
     public void registerPlayerLobby(int playerId, int lobbyId) {
+        // Count players already in this lobby to compute spawn offset
+        long playerIndex = playerToLobby.values().stream()
+                .filter(id -> id == lobbyId)
+                .count();
+
+        logger.info("Registering player {} in lobby {} at index {}", playerId, lobbyId, playerIndex);
+
+        double startX = MapData.BALL_START_X + (playerIndex % 2) * MapData.BALL_SPAWN_SPACING;
+        double startY = MapData.BALL_START_Y + (playerIndex / 2) * MapData.BALL_SPAWN_SPACING;
+
         playerToLobby.put(playerId, lobbyId);
-        finishedPlayers.remove(playerId); // reset in case of replay
-        finishOrder.remove(Integer.valueOf(playerId)); // reset finish order in case of replay
-        ServerBall ball = balls.get(playerId);
-        if (ball != null) {
-            ball.reset();
-        }
+        finishedPlayers.remove(playerId);
+        finishOrder.remove(Integer.valueOf(playerId));
+
+        // Replace ball with correctly positioned one
+        balls.put(playerId, new ServerBall(startX, startY));
         forceUpdate = true;
     }
 

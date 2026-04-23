@@ -192,7 +192,7 @@ public class Server implements ServerContext{
             case Protocol.SYS_CONNECT -> {
                 systemHandler.onConnect(clientHandler, message);
                 // Assign a temporary spawn position when connected
-                gameSimulation.addPlayer(clientHandler.getId(), 2000,2000);
+                gameSimulation.addPlayer(clientHandler.getId(), 0);
             }
             case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
             case Protocol.SYS_DISCONNECT -> systemHandler.onDisconnect(clientHandler);
