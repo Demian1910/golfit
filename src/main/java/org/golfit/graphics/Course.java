@@ -1,5 +1,8 @@
 package org.golfit.graphics;
 
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
 import javafx.scene.layout.Pane;
 import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
@@ -30,7 +33,7 @@ public class Course {
 
         // --- BACKGROUND ---
         // Covers the full 1100px width (COLS = 80)
-        addObstacle.addRect(0, 0, COLS, ROWS, backgroundColor);
+        addTiledGrass();
 
         // --- PATH 2 START ---
         addObstacle.addWall(1, 22, 3, 2);
@@ -134,6 +137,37 @@ public class Course {
     /** Returns the pane containing all course elements. */
     public Pane getPane() {
         return container;
+    }
+
+    private void addTiledGrass() {
+        try {
+            Image sheet = new Image(
+                    getClass().getResourceAsStream("/images/GolfCourseTiles.png")
+            );
+
+            double paneW = 1100, paneH = 600;
+            double tileW = paneW / COLS;   // one grid cell in pixels
+            double tileH = paneH / ROWS;
+
+            Canvas canvas = new Canvas(paneW, paneH);
+            GraphicsContext gc = canvas.getGraphicsContext2D();
+
+            // Tile the grass across the whole background
+            for (int row = 0; row < ROWS; row++) {
+                for (int col = 0; col < COLS; col++) {
+                    // Draw tile (0,0) from spritesheet = top-left 16x16 grass tile
+                    gc.drawImage(sheet,
+                            16, 0, 16, 16,              // source: tile col=0, row=0
+                            col * tileW, row * tileH,  // dest position
+                            tileW, tileH               // dest size (scaled to grid cell)
+                    );
+                }
+            }
+
+            container.getChildren().add(0, canvas); // add behind everything else
+        } catch (Exception e) {
+            addTiledGrass();
+        }
     }
 
     /** Returns the list of obstacle shapes for grid mapping and collision export. */

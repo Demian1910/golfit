@@ -97,7 +97,7 @@ public class MovementHandler {
         Platform.runLater(() -> {
             players.entrySet().removeIf(entry -> {
                 if (!receivedIds.contains(entry.getKey())) {
-                    gamePane.getChildren().removeAll(entry.getValue().getCircle());
+                    entry.getValue().remove();
                     lastUpdateTime.remove(entry.getKey());
                     return true;
                 }
