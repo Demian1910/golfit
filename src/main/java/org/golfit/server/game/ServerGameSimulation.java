@@ -33,6 +33,8 @@ public class ServerGameSimulation {
     private final Map<Integer, Integer> playerToLobby = new ConcurrentHashMap<>();
     /** Set of playerIds who have finished (ball in hole). */
     private final Set<Integer> finishedPlayers = ConcurrentHashMap.newKeySet();
+    /** Ordered list of playerIds in the order they finished (holed out). Used for tie-breaking. */
+    private final List<Integer> finishOrder = Collections.synchronizedList(new ArrayList<>());
 
     /** Callback fired when a player's ball enters the hole. */
     @FunctionalInterface
@@ -107,6 +109,7 @@ public class ServerGameSimulation {
     public void registerPlayerLobby(int playerId, int lobbyId) {
         playerToLobby.put(playerId, lobbyId);
         finishedPlayers.remove(playerId); // reset in case of replay
+        finishOrder.remove(Integer.valueOf(playerId)); // reset finish order in case of replay
         ServerBall ball = balls.get(playerId);
         if (ball != null) {
             ball.reset();
@@ -121,6 +124,7 @@ public class ServerGameSimulation {
         balls.remove(playerId);
         playerToLobby.remove(playerId);
         finishedPlayers.remove(playerId);
+        finishOrder.remove(Integer.valueOf(playerId));
         forceUpdate = true;
     }
 
@@ -174,6 +178,7 @@ public class ServerGameSimulation {
                 if (Math.sqrt(dx * dx + dy * dy) < HOLE_CAPTURE_RADIUS) {
                     ball.setFinished(true);
                     finishedPlayers.add(playerId);
+                    finishOrder.add(playerId); // record finish order for tie-breaking
                     lobbiesRequiringUpdate.add(lobbyId); // One final broadcast to remove them client-side
                     logger.info("Player {} holed out in {} strokes!", playerId, ball.getStrokeCount());
                     checkGameEnd(playerId);
@@ -251,20 +256,25 @@ public class ServerGameSimulation {
                 .allMatch(e -> finishedPlayers.contains(e.getKey()));
 
         if (allFinished) {
-            // Build results: playerId → strokes
+            // Build results in finish order so tie-breaking always favours the earliest finisher.
             Map<Integer, Integer> results = new LinkedHashMap<>();
-            playerToLobby.forEach((pid, pLobbyId) -> {
-                if (pLobbyId.equals(lobbyId)) {
-                    ServerBall ball = balls.get(pid);
-                    if (ball != null) results.put(pid, ball.getStrokeCount());
+            synchronized (finishOrder) {
+                for (int pid : finishOrder) {
+                    if (lobbyId.equals(playerToLobby.get(pid))) {
+                        ServerBall ball = balls.get(pid);
+                        if (ball != null) results.put(pid, ball.getStrokeCount());
+                    }
                 }
-            });
+            }
 
             gameEndListener.onGameEnd(lobbyId, results);
 
             // Cleanup lobby's tracking data
             playerToLobby.entrySet().removeIf(e -> e.getValue().equals(lobbyId));
-            results.keySet().forEach(finishedPlayers::remove);
+            results.keySet().forEach(pid -> {
+                finishedPlayers.remove(pid);
+                finishOrder.remove(pid);
+            });
         }
     }
 
