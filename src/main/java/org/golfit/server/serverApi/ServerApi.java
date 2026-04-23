@@ -164,6 +164,13 @@ public class ServerApi implements IServerApi{
         }
     }
 
+    /** Broadcasts SYS_SCORE_UPDATE to the specified client. */
+    public void sendScoreUpdate(ClientHandler client, String payload) throws Exception {
+            client.getChannelManager().send(
+                Protocol.SYS_SCORE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+    }
+
+    /** Broadcasts SYS_OBSTACLE_UPDATE to every client in the given lobby. */
     public void sendObstacleChange(Lobby lobby, String payload) throws Exception {
         for (ClientHandler client : lobby.getClients()) {
             client.getChannelManager().send(

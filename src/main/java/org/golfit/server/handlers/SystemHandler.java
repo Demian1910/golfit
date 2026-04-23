@@ -62,6 +62,27 @@ public class SystemHandler {
         String payload = clientHandler.getId() + ":" + username;
         serverApi.sendConnected(clientHandler, payload);
         serverApi.sendLobbyList(clientHandler);
+
+        File csvFile = new File("results.csv");
+        if (csvFile.exists()) {
+            try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {
+                StringBuilder sb = new StringBuilder();
+                String line;
+                while ((line = br.readLine()) != null) {
+                    if (!line.isBlank()) {
+                        sb.append(line).append("\n");
+                    }
+                }
+                String csvPayload = sb.toString().trim();
+                if (!csvPayload.isEmpty()) {
+                    serverApi.sendScoreUpdate(clientHandler, csvPayload);
+                }
+            } catch (IOException e) {
+                System.err.println("Failed to read results.csv: " + e.getMessage());
+            }
+        } else {
+            System.out.println("results.csv not found, skipping score history for client " + clientHandler.getId());
+        }
     }
     /** Handles a ping from a client by updating their last activity timestamp and responding with a pong. */
     public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {

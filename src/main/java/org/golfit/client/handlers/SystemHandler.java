@@ -150,8 +150,26 @@ public class SystemHandler {
         EventBus.get().emit(Constants.GAME_END, message.payload);
     }
 
+    /** Handles an obstacle-update broadcast — fires OBSTACLE_UPDATE with "x,y,..." payload. */
     public void onObstacleUpdate(MessageParser.Message message) {
         System.out.println("[OBSTACLE CHANGE] " + message.payload);
         EventBus.get().emit(Constants.OBSTACLE_UPDATE, message.payload);
+    }
+
+    /** Handles a score-update broadcast — fires SCORE_UPDATE with "user:score,..." payload. */
+    public void onScoreUpdate(MessageParser.Message message) {
+        // Persist the latest scores locally
+//        try {
+//            java.nio.file.Files.writeString(
+//                    java.nio.file.Path.of("results.csv"),
+//                    message.payload,
+//                    java.nio.file.StandardOpenOption.CREATE,
+//                    java.nio.file.StandardOpenOption.TRUNCATE_EXISTING
+//            );
+//        } catch (java.io.IOException e) {
+//            System.err.println("Failed to write local results.csv: " + e.getMessage());
+//        }
+
+        EventBus.get().emit(Constants.SCORE_UPDATE, message.payload);
     }
 }

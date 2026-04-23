@@ -51,6 +51,7 @@ public class Constants {
     public static final String STROKE_UPDATE =  "STROKE_UPDATE"; // EventBus event for stroke count updates
     public static final String GAME_END      =  "GAME_END";      // EventBus event for game-over results
     public static final String OBSTACLE_UPDATE = "OBSTACLE_UPDATE";
+    public static final String SCORE_UPDATE = "SCORE_UPDATE";
 
     /** Golf hole position in grid coordinates (matches Course.java addGolfHole(65, 9) with width=3, height=1) */
     public static final double HOLE_CENTER_X    = 66.5;
