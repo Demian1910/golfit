@@ -296,39 +296,47 @@ public class SystemHandler {
         Lobby lobby = serverContext.getLobbies().get(lobbyId);
         if (lobby == null) return;
 
+        // Build username → strokes map in finish order (so ties are broken by who finished first).
+        // We iterate strokeResults (which is ordered by finish time) and look up the username for each ID.
         Map<String, Integer> namedResults = new LinkedHashMap<>();
-        for (ClientHandler client : new ArrayList<>(lobby.getClients())) {
-            int strokes = strokeResults.getOrDefault(client.getId(), 0);
-            namedResults.put(client.getUsername(), strokes);
+        Map<Integer, String> idToUsername = new HashMap<>();
+        for (ClientHandler client : lobby.getClients()) {
+            idToUsername.put(client.getId(), client.getUsername());
+        }
+        for (Map.Entry<Integer, Integer> entry : strokeResults.entrySet()) {
+            String username = idToUsername.get(entry.getKey());
+            if (username != null) namedResults.put(username, entry.getValue());
         }
 
+        // Find winner (fewest strokes; 0 strokes means they never hit — treat as worst)
         String winner = namedResults.entrySet().stream()
                 .filter(e -> e.getValue() > 0)
                 .min(Map.Entry.comparingByValue())
                 .map(Map.Entry::getKey)
                 .orElse(namedResults.keySet().stream().findFirst().orElse("Nobody"));
 
-        // Full results table: every player, sorted by strokes ascending
+        // Build result strings
         String resultsList = namedResults.entrySet().stream()
-                .filter(e -> e.getValue() > 0)
-                .sorted(Map.Entry.comparingByValue())
                 .map(e -> e.getKey() + ":" + e.getValue())
                 .collect(Collectors.joining(","));
-
         String payload = "winner=" + winner + ";" + resultsList;
 
+        // Print to terminal
         System.out.println("=== GAME OVER [Lobby " + lobbyId + "] ===");
         System.out.println("Winner: " + winner);
         namedResults.forEach((u, s) -> System.out.println("  " + u + ": " + s + " strokes"));
         System.out.println("========================================");
 
+        // Persist to results.csv
         saveResults(lobbyId, winner, namedResults);
 
+        // Broadcast game-end to all lobby clients
         try {
             serverApi.sendGameEnd(lobby, payload);
         } catch (Exception e) {
             System.err.println("Error sending game end: " + e.getMessage());
         }
+
 
         lobby.setStatus(Lobby.LobbyStatus.open);
 

@@ -128,6 +128,14 @@ public class BallRender {
         }
     }
 
+    public void remove() {
+        if (imageView != null) {
+            root.getChildren().remove(imageView);
+        } else {
+            root.getChildren().remove(circle);
+        }
+    }
+
     /** Returns the underlying JavaFX circle node. */
     public Circle getCircle() {
         return circle;
