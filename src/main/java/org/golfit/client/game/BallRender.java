@@ -1,5 +1,9 @@
 package org.golfit.client.game;
 
+import javafx.scene.Group;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.ColorInput;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.Pane;
@@ -16,6 +20,9 @@ public class BallRender {
     public Color ballColor = Color.BLUE;
     private Pane root;
     private double totalDistance = 0;
+    private Color tintColor = Color.WHITE;
+    private Circle tintCircle;
+    private Group ballGroup;
 
     private static final int FRAME_COUNT = 4;
     private static final Image[] FRAMES = loadFrames();
@@ -56,10 +63,16 @@ public class BallRender {
         this.circle.setCenterY(ball.getPy());
 
         if (hasImages()) {
+            tintCircle = new Circle();
+            tintCircle.setFill(Color.WHITE);
+
             imageView = new ImageView(FRAMES[0]);
+            imageView.setBlendMode(BlendMode.MULTIPLY);
+
+            ballGroup = new Group(tintCircle, imageView);
+
             syncImageToCircle(initialPixelRadius, ball.getPx(), ball.getPy());
 
-            // Re-sync once pane has a real width (avoids small-ball-on-start issue)
             root.layoutBoundsProperty().addListener((obs, oldVal, newVal) -> {
                 if (newVal.getWidth() > 0) {
                     double radius = calculatePixelRadius();
@@ -68,10 +81,29 @@ public class BallRender {
                 }
             });
 
-            root.getChildren().add(imageView);
-        } else {
-            root.getChildren().add(circle);
+            root.getChildren().add(ballGroup);
         }
+    }
+
+    public BallRender(Pane root, Ball ball, Color playerColor) {
+        this(root, ball); // call existing constructor
+        changeColor(playerColor);
+    }
+
+    private void applyTint(Color color) {
+        this.tintColor = color;
+        if (imageView == null) return;
+
+        ColorInput colorLayer = new ColorInput(
+                0, 0,
+                imageView.getFitWidth(), imageView.getFitHeight(),
+                color
+        );
+
+        Blend blend = new Blend(BlendMode.SRC_ATOP);
+        blend.setTopInput(colorLayer);
+        blend.setOpacity(0.6);
+        imageView.setEffect(blend);
     }
 
     /**
@@ -92,6 +124,10 @@ public class BallRender {
         imageView.setFitHeight(size);
         imageView.setX(centerX - radius);
         imageView.setY(centerY - radius);
+
+        tintCircle.setRadius(radius);
+        tintCircle.setCenterX(centerX);
+        tintCircle.setCenterY(centerY);
     }
 
     /** Updates the circle's position and radius to match the ball's current pixel coordinates. */
@@ -123,14 +159,16 @@ public class BallRender {
     /** Changes the ball's fill color. */
     public void changeColor(Color newColor) {
         ballColor = newColor;
-        if (imageView == null && this.circle != null) {
-            this.circle.setFill(newColor);
+        if (tintCircle != null) {
+            tintCircle.setFill(newColor);
+        } else if (circle != null) {
+            circle.setFill(newColor);
         }
     }
 
     public void remove() {
-        if (imageView != null) {
-            root.getChildren().remove(imageView);
+        if (ballGroup != null) {
+            root.getChildren().remove(ballGroup);
         } else {
             root.getChildren().remove(circle);
         }
