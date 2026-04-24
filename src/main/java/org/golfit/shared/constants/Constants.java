@@ -53,9 +53,9 @@ public class Constants {
     public static final String OBSTACLE_UPDATE = "OBSTACLE_UPDATE";
     public static final String SCORE_UPDATE = "SCORE_UPDATE";
 
-    /** Golf hole position in grid coordinates (matches Course.java addGolfHole(65, 9) with width=3, height=1) */
-    public static final double HOLE_CENTER_X    = 66.5;
-    public static final double HOLE_CENTER_Y    = 9.5;
+    /** Golf hole position in grid coordinates (matches Course.java addGolfHole(64, 8) with width=2, height=2) */
+    public static final double HOLE_CENTER_X    = 65.0;
+    public static final double HOLE_CENTER_Y    = 9.0;
     public static final double HOLE_CAPTURE_RADIUS = 1.3;
 
 
