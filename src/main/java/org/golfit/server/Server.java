@@ -11,7 +11,7 @@ import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.shared.protocol.Protocol;
 import org.slf4j.Logger;
-
+import org.slf4j.LoggerFactory;
 
 import java.net.DatagramSocket;
 import java.net.DatagramPacket;
@@ -22,46 +22,29 @@ import java.util.concurrent.*;
 /**
  * The GolfIt game server. Listens for UDP packets on a given port,
  * creates a {@link ClientHandler} per unique client address, and dispatches
- * incoming messages to the appropriate handlers (system, movement, chat).
+ * incoming messages to the appropriate handlers.
  */
-public class Server implements ServerContext{
+public class Server implements ServerContext {
+    private static final Logger logger = LoggerFactory.getLogger(Server.class);
+
     private final int sessionId = generateUniqueId();
-    /**
-     * server context
-     */
     private final ServerApi serverApi = new ServerApi(this);
 
-    /**
-     * server handlers
-     */
+    // Handlers
     private final SystemHandler systemHandler = new SystemHandler(serverApi, this);
     private final ServerGameSimulation gameSimulation = new ServerGameSimulation(serverApi);
     private final MovementHandler movementHandler = new MovementHandler(serverApi, gameSimulation);
 
-    /**
-     * Set of saved usernames
-     */
+    // State Tracking
     private final Set<String> usernames = ConcurrentHashMap.newKeySet();
-
-    /** Server port*/
-    private final int port;
-
-    /** Map of connected clients */
     private final Map<String, ClientHandler> clients = new ConcurrentHashMap<>();
-
-    /** Map of active lobbies */
     private final Map<Integer, Lobby> lobbies = new ConcurrentHashMap<>();
 
-    private static final Logger logger = org.slf4j.LoggerFactory.getLogger(Server.class);
-
-    /** Thread pool for handling client requests */
+    private final int port;
     private final ExecutorService threadPool = Executors.newCachedThreadPool();
 
-
-
     /**
-     * Constructs a Server instance with the specified port.
-     * @param port The sets number to bind the server to.
+     * Constructs a Server instance and wires simulation callbacks.
      */
     public Server(int port) {
         this.port = port;
@@ -74,54 +57,47 @@ public class Server implements ServerContext{
             ClientHandler ch = clients.values().stream()
                     .filter(c -> c.getId() == playerId)
                     .findFirst().orElse(null);
+
             if (ch == null) return;
             Lobby lobby = systemHandler.getLobbyForPlayer(ch);
             if (lobby == null) return;
+
             String payload = systemHandler.buildStrokePayload(lobby);
             try {
                 serverApi.sendStrokeUpdate(lobby, payload);
             } catch (Exception e) {
-                System.err.println("Error sending stroke update: " + e.getMessage());
+                logger.error("Error sending stroke update for player {}: {}", playerId, e.getMessage());
             }
         });
 
-        // On game end: delegate to handleGameEnd
+        // On game end: delegate results processing to SystemHandler
         gameSimulation.setGameEndListener(systemHandler::handleGameEnd);
     }
 
     /**
-     * Starts the server main loop.
-     *
-     * <p>This method:
-     * <ol>
-     *   <li>Opens a {@link DatagramSocket} on {@link #port}</li>
-     *   <li>Schedules a cleanup task every 10 seconds to remove timed-out clients</li>
-     *   <li>Enters an infinite receive loop — each incoming packet is routed to its
-     *       {@link ClientHandler}, creating one if this is a new client address</li>
-     * </ol>
-     *
-     * <p>A client is identified by its {@code "ip:port"} string. If a packet arrives
-     * from an unknown address, a new {@link ClientHandler} is created and submitted
-     * to the thread pool.
+     * Starts the server main loop, ticker, and cleanup tasks.
      */
     public void start() {
         try (DatagramSocket socket = new DatagramSocket(port)) {
             ServerInit.serverInit(port);
             System.out.println("Server listening on port " + port);
+
             gameSimulation.start();
             byte[] buffer = new byte[Constants.MAX_PACKET_SIZE];
 
+            // Cleanup task: remove timed-out clients every 10 seconds
             ScheduledExecutorService cleanUp = Executors.newSingleThreadScheduledExecutor();
             cleanUp.scheduleAtFixedRate(() -> {
                 clients.entrySet().removeIf(entry -> {
-                    if(entry.getValue().isTimedOut()) {
+                    ClientHandler handler = entry.getValue();
+                    if (handler.isTimedOut()) {
                         System.out.println("Client timed out: " + entry.getKey());
-                        String timedOutUsername = entry.getValue().getUsername();
+                        String timedOutUsername = handler.getUsername();
                         if (timedOutUsername != null) {
                             serverApi.releaseUsername(timedOutUsername);
                         }
-                        gameSimulation.removePlayer(entry.getValue().getId());
-                        entry.getValue().shutdown();
+                        gameSimulation.removePlayer(handler.getId());
+                        handler.shutdown();
                         return true;
                     }
                     return false;
@@ -144,55 +120,26 @@ public class Server implements ServerContext{
                     threadPool.submit(handler);
                     return handler;
                 });
+
                 clientHandler.queueMessage(new String(raw, StandardCharsets.UTF_8));
             }
         } catch (Exception e) {
-            logger.error("Error: " + e.getMessage());
+            logger.error("Fatal Server Error: {}", e.getMessage());
         }
     }
 
     /**
-     * Generates a unique integer client ID based on timing, memory, and random data.
-     *
-     * <p>The result is always positive and never {@code 0} ({@code ID_INVALID})
-     * or {@code 1} ({@code ID_SERVER}).
-     *
-     * @return a unique positive integer client ID
-     */
-    @Override
-    public int generateUniqueId() {
-        long time = System.nanoTime();
-        long unix = System.currentTimeMillis();
-        long heap = Runtime.getRuntime().totalMemory();
-        long rnd = ThreadLocalRandom.current().nextLong();
-
-        int hash = (int) (time ^ unix ^ heap ^ rnd);
-        hash &= 0x7FFFFFFF;
-        if (hash == 0 || hash == 1)
-            hash = 2;
-        return hash;
-    }
-
-    /**
-     * Dispatches a parsed message from a client to the appropriate handler.
-     *
-     * <p>Routing is based on message type:
-     * <ul>
-     *   <li>{@code SYS_CONNECT} — handled by {@link SystemHandler#onConnect}, assigns username and ID</li>
-     *   <li>{@code SYS_PING} — handled by {@link SystemHandler#onPing}, updates last ping time and sends pong</li>
-     * </ul>
-     *
-     * @param clientKey the {@code "ip:port"} key identifying the sender
-     * @param message   the parsed incoming message
-     * @throws Exception if a handler throws during processing
+     * Dispatches parsed messages to the correct logical handler.
      */
     private void dispatch(String clientKey, MessageParser.Message message) throws Exception {
         ClientHandler clientHandler = clients.get(clientKey);
+        if (clientHandler == null) return;
+
         switch (message.type) {
             case Protocol.SYS_CONNECT -> {
                 systemHandler.onConnect(clientHandler, message);
-                // Assign a temporary spawn position when connected
-                gameSimulation.addPlayer(clientHandler.getId(), 2000,2000);
+                // Initialize player in simulation at lobby 0 (Global/Idle state)
+                gameSimulation.addPlayer(clientHandler.getId(), 0);
             }
             case Protocol.SYS_PING -> systemHandler.onPing(clientHandler, message);
             case Protocol.SYS_DISCONNECT -> systemHandler.onDisconnect(clientHandler);
@@ -205,50 +152,34 @@ public class Server implements ServerContext{
             case Protocol.SYS_LOBBY_LEAVE -> systemHandler.onLobbyLeave(clientHandler, message);
             case Protocol.MOVE_INPUT -> movementHandler.onMoveInput(clientHandler, message);
             case Protocol.SYS_PLAYERS_LIST -> systemHandler.onPlayerList(clientHandler, message);
-            case Protocol.SYS_LOBBY_START  -> systemHandler.onLobbyStart(clientHandler, message);
+            case Protocol.SYS_LOBBY_START -> systemHandler.onLobbyStart(clientHandler, message);
             case Protocol.SYS_HESOYAM -> systemHandler.onHesoyam(clientHandler, message);
+            default -> logger.warn("Unknown protocol type: {}", message.type);
         }
     }
 
-    /**
-     * Returns the map of all currently connected clients.
-     *
-     * @return map of client key ({@code "ip:port"}) to {@link ClientHandler}
-     */
     @Override
-    public Map<String, ClientHandler> getClients() {
-        return clients;
+    public int generateUniqueId() {
+        long time = System.nanoTime();
+        long unix = System.currentTimeMillis();
+        long heap = Runtime.getRuntime().totalMemory();
+        long rnd = ThreadLocalRandom.current().nextLong();
+
+        int hash = (int) (time ^ unix ^ heap ^ rnd);
+        hash &= 0x7FFFFFFF;
+        if (hash == 0 || hash == 1) hash = 2;
+        return hash;
     }
 
-    /**
-     * Returns the map of active lobbies.
-     *
-     * @return map of {@link Lobby} instances
-     */
     @Override
-    public Map<Integer, Lobby> getLobbies() {
-        return lobbies;
-    }
+    public Map<String, ClientHandler> getClients() { return clients; }
 
-    /**
-     * Returns the set of currently claimed usernames.
-     * Used by {@link ServerApi#claimUsername} to check and register new usernames.
-     *
-     * @return the live set of active usernames
-     */
     @Override
-    public Set<String> getUsernameSet() {
-        return usernames;
-    }
+    public Map<Integer, Lobby> getLobbies() { return lobbies; }
 
-    /**
-     * Returns the unique session ID for this server instance.
-     * Used to identify the server in client connections.
-     *
-     * @return the session ID
-     */
     @Override
-    public int getSessionId() {
-        return sessionId;
-    }
+    public Set<String> getUsernameSet() { return usernames; }
+
+    @Override
+    public int getSessionId() { return sessionId; }
 }

@@ -6,10 +6,13 @@ import java.util.List;
 import java.util.Map;
 
 public class MapData {
-    public static final double spawnX = 9.8;
-    public static final double spawnY = 42.8;
+
     public static final int COLS = 80;
     public static final int ROWS = 45;
+    public static final double BALL_START_X = 5;
+    public static final double BALL_START_Y = 42;
+    public static final double BALL_SPAWN_SPACING = 1.5;
+
 
     private static final int[][] MASTER_IDS = new int[][] {
             {95, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 93, 96},
