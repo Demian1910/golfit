@@ -185,12 +185,18 @@ textures, ball bug in water, hole logic position shifted.
 Demian added dynamic aim indicator with cone segments that aims in the direction of the aiming.
 The sections of the cone start with one green and increase in number and change color to red, based on the power of the shot. They also spin based on the direction of the shot. This aiming indicator is only visible from the client aiming on its client, and now shots can only be charged when the considered ball is not moving.
 
-## Entry #18 22.04.26
+## Entry #18 18 20.4.26
+Constantin implemented the logic for the bouncy balls, so that it applies the appropriate friction.
+
+## Entry #19 22.04.26
 Tamer wrote unit tests for the project's core components with the help of his teammates. Created 7 test classes with 75 
 tests total covering the protocol layer which Anton helped with (MessageBuilder, MessageParser, Channel, ChannelManager,
-PendingPacket) and the game physics engine which Demian and Constanting helped with sorting out (ServerBall — stroke mechanics, friction,
+PendingPacket) and the game physics engine which Demian and Constantin helped with sorting out (ServerBall — stroke mechanics, friction,
 speed clamping, position reset, collision), and the EventBus pub/sub system. All tests pass. JaCoCo coverage reports are generated 
 alongside the test results.
 
-## Entry #19 23.04.26
+## Entry #20 23.04.26
 Demian: winner correctly determined, In case of more players finishing with the same stroke count, the one that arrived to the hole first wins.
+
+##Entry #21 24.4.26 
+Constantin implemented the one-time collision on the trees, so that it affects the physics server-side and the rendering client-side appropriately.
