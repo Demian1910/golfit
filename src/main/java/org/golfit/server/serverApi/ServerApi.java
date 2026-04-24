@@ -5,13 +5,14 @@ import org.golfit.server.ServerContext;
 import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.protocol.Protocol;
 
-import java.util.Collection;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-
-/** Implements server-side actions: sending responses to clients, managing usernames, and broadcasting messages. */
-public class ServerApi implements IServerApi{
+/**
+ * Implements server-side actions: sending responses to clients, managing usernames,
+ * and broadcasting messages across lobbies or the entire server.
+ */
+public class ServerApi implements IServerApi {
     private final ServerContext serverContext;
 
     /**
@@ -36,7 +37,7 @@ public class ServerApi implements IServerApi{
         clientHandler.getChannelManager().send(Protocol.SYS_PONG, Protocol.CH_PINGS, Protocol.ID_SERVER, payload);
     }
 
-    /** Removes a client from the server: releases their username, stops their handler, and removes them from the client map. */
+    /** Removes a client from the server, cleans up lobby memberships, and releases the username. */
     public void disconnectClient(ClientHandler clientHandler) {
         // Remove client from any lobby they're in
         for (Lobby lobby : serverContext.getLobbies().values()) {
@@ -52,12 +53,14 @@ public class ServerApi implements IServerApi{
         if (clientHandler.getUsername() != null) {
             serverContext.getUsernameSet().remove(clientHandler.getUsername());
         }
+
         clientHandler.shutdown();
+
         if (clientHandler.getClientKey() != null) {
             serverContext.getClients().remove(clientHandler.getClientKey());
         }
 
-        // Update lobby list for remaining clients
+        // Notify remaining clients of the updated lobby state
         for (ClientHandler client : serverContext.getClients().values()) {
             try {
                 sendLobbyList(client);
@@ -65,13 +68,13 @@ public class ServerApi implements IServerApi{
         }
     }
 
-    /** Creates a lobby and sends a SYS_LOBBY_CREATED confirmation to the requesting client. */
+    /** Sends a lobby creation confirmation. */
     @Override
     public void sendCreateLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_CREATED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
-    /** Sends the list of available lobbies to the requesting client. */
+    /** Sends the list of available lobbies to the client. */
     @Override
     public void sendLobbyList(ClientHandler clientHandler) throws Exception {
         String payload = serverContext.getLobbies().values().stream()
@@ -83,12 +86,13 @@ public class ServerApi implements IServerApi{
                 Protocol.SYS_LOBBY_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload
         );
     }
-    /** Sends a lobby leave confirmation to the client. */
+
+    /** Sends a lobby leave confirmation. */
     public void sendLeaveLobby(ClientHandler clientHandler, String lobbyId) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_LEFT, Protocol.CH_SYSTEM, Protocol.ID_SERVER, lobbyId);
     }
 
-    /** Sends lobby info (player list) to the specified client. */
+    /** Sends specific lobby information (like player lists) to a client. */
     public void sendLobbyInfo(ClientHandler clientHandler, String lobbyId) throws Exception {
         Lobby lobbyContext = serverContext.getLobbies().get(Integer.parseInt(lobbyId));
         if (lobbyContext == null) return;
@@ -96,35 +100,35 @@ public class ServerApi implements IServerApi{
         clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_INFO, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
-    /** Sends a private chat message to the specified client. */
+    /** Sends a private chat message. */
     @Override
     public void sendPrivateChat(ClientHandler clientHandler, int targetId, String data) throws Exception {
-        clientHandler.getChannelManager().send( Protocol.SYS_CHAT_PRIVATE, Protocol.CH_SYSTEM, targetId, data);
+        clientHandler.getChannelManager().send(Protocol.SYS_CHAT_PRIVATE, Protocol.CH_SYSTEM, targetId, data);
     }
 
-    /** Broadcasts a chat message to all connected clients. */
+    /** Broadcasts a chat message to every connected client. */
     @Override
     public void broadcastChat(int senderId, String data) throws Exception {
-        for(ClientHandler client : serverContext.getClients().values()) {
-            client.getChannelManager().send( Protocol.SYS_CHAT_BROADCAST,Protocol.CH_CHAT, senderId, data);
+        for (ClientHandler client : serverContext.getClients().values()) {
+            client.getChannelManager().send(Protocol.SYS_CHAT_BROADCAST, Protocol.CH_CHAT, senderId, data);
         }
     }
 
-    /** Sends a lobby chat message to the specified client. */
+    /** Sends a lobby-specific chat message. */
     @Override
     public void sendLobbyChat(ClientHandler clientHandler, String data) throws Exception {
-        clientHandler.getChannelManager().send(Protocol.SYS_CHAT_LOBBY,Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
+        clientHandler.getChannelManager().send(Protocol.SYS_CHAT_LOBBY, Protocol.CH_SYSTEM, Protocol.ID_SERVER, data);
     }
 
-    /** Broadcasts movement updates to all connected clients. */
+    /** Broadcasts movement updates to all connected clients globally. */
     @Override
     public void broadcastMovement(String payload) throws Exception {
-        for(ClientHandler client : serverContext.getClients().values()) {
+        for (ClientHandler client : serverContext.getClients().values()) {
             client.getChannelManager().send(Protocol.MOVE_UPDATE, Protocol.CH_MOVEMENT, Protocol.ID_SERVER, payload);
         }
     }
 
-    /** Broadcasts movement updates only to clients in the specified lobby. */
+    /** Broadcasts movement updates only to clients within a specific lobby. */
     public void broadcastMovementToLobby(int lobbyId, String payload) throws Exception {
         Lobby lobby = serverContext.getLobbies().get(lobbyId);
         if (lobby == null) return;
@@ -133,63 +137,71 @@ public class ServerApi implements IServerApi{
         }
     }
 
-    /** Sends the full player list to the requesting client. */
+    /** Sends the global player list. */
     public void sendPlayerList(ClientHandler clientHandler, String payload) throws Exception {
         clientHandler.getChannelManager().send(Protocol.SYS_PLAYERS_LIST, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
-    /** Broadcasts SYS_GAME_START to every client in the given lobby. */
+    /** Notifies all lobby members that the game has started. */
     public void sendGameStart(Lobby lobby) throws Exception {
         for (ClientHandler client : lobby.getClients()) {
             client.getChannelManager().send(
-                Protocol.SYS_GAME_START, Protocol.CH_SYSTEM, Protocol.ID_SERVER, String.valueOf(lobby.getId()));
+                    Protocol.SYS_GAME_START, Protocol.CH_SYSTEM, Protocol.ID_SERVER, String.valueOf(lobby.getId()));
         }
     }
 
-    /** Broadcasts SYS_STROKE_UPDATE to every client in the given lobby.
-     *  Payload format: "username1:strokes,username2:strokes,..." */
+    /** Synchronizes stroke counts for all players in a lobby. */
     public void sendStrokeUpdate(Lobby lobby, String payload) throws Exception {
         for (ClientHandler client : lobby.getClients()) {
             client.getChannelManager().send(
-                Protocol.SYS_STROKE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+                    Protocol.SYS_STROKE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
         }
     }
 
-    /** Broadcasts SYS_GAME_END to every client in the given lobby.
-     *  Payload format: "winner=username;username1:2,username2:5" */
+    /** Notifies all lobby members of the final game results. */
     public void sendGameEnd(Lobby lobby, String payload) throws Exception {
         for (ClientHandler client : lobby.getClients()) {
             client.getChannelManager().send(
-                Protocol.SYS_GAME_END, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+                    Protocol.SYS_GAME_END, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
         }
     }
 
-    /** Broadcasts SYS_SCORE_UPDATE to the specified client. */
+    /** Sends historical/total score updates to a specific client. */
     public void sendScoreUpdate(ClientHandler client, String payload) throws Exception {
-            client.getChannelManager().send(
+        client.getChannelManager().send(
                 Protocol.SYS_SCORE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
-    /** Broadcasts SYS_OBSTACLE_UPDATE to every client in the given lobby. */
-    public void sendObstacleChange(Lobby lobby, String payload) throws Exception {
-        for (ClientHandler client : lobby.getClients()) {
-            client.getChannelManager().send(
-                Protocol.SYS_OBSTACLE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+    /** * Broadcasts obstacle changes to a lobby.
+     * Fixed: Parameter type is Lobby to resolve '.getClients()' compiler error.
+     */
+    /** * Broadcasts SYS_OBSTACLE_UPDATE an alle Clients in der angegebenen Lobby-ID.
+     */
+    public void sendObstacleChange(int lobbyId, String payload) throws Exception {
+        // Wir holen uns das Objekt hier lokal, damit der Aufrufer es nicht tun muss
+        Lobby lobby = serverContext.getLobbies().get(lobbyId);
+
+        if (lobby != null) {
+            for (ClientHandler client : lobby.getClients()) {
+                client.getChannelManager().send(
+                        Protocol.SYS_OBSTACLE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
+            }
+        } else {
+            System.err.println("Fehler: ObstacleChange konnte nicht gesendet werden. Lobby " + lobbyId + " nicht gefunden.");
         }
     }
 
-
-    /** Attempts to claim a username. Returns true if the username was available and successfully claimed. */
+    /** Attempts to claim a username in the server context. */
     public boolean claimUsername(String username) {
         return serverContext.getUsernameSet().add(username);
     }
 
-    /** Releases a previously claimed username so it can be used by another client. */
+    /** Releases a username so it can be reclaimed. */
     public void releaseUsername(String username) {
         serverContext.getUsernameSet().remove(username);
     }
 
-    /** Returns the map of all connected clients. */
+    /** Returns the current map of active ClientHandlers. */
     public Map<String, ClientHandler> getClients() {
         return serverContext.getClients();
     }

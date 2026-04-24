@@ -1,7 +1,10 @@
 package org.golfit.graphics;
 
+import javafx.application.Platform;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Scale;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.shared.constants.Constants;
 
 
 /**
@@ -36,6 +39,26 @@ public class Game {
         parentPane.widthProperty().addListener((obs, old, newVal) -> updateScale(parentPane));
         parentPane.heightProperty().addListener((obs, old, newVal) -> updateScale(parentPane));
 
+        EventBus.get().on(Constants.OBSTACLE_UPDATE, data -> {
+            try {
+                // 1. Parse the ID (comes as a String from the network)
+                int id;
+                if (data instanceof Integer) {
+                    id = (Integer) data;
+                } else {
+                    id = Integer.parseInt(data.toString());
+                }
+
+                // 2. Update the UI (Must be wrapped in Platform.runLater)
+                Platform.runLater(() -> {
+                    // This function hides the shape from the screen
+                    AddObstacle.hideObstacle(id);
+                });
+
+            } catch (Exception e) {
+                System.err.println("[GUI] Failed to process obstacle update: " + e.getMessage());
+            }
+        });
         // 5. Run the map export logic
         /*
         Platform.runLater(() -> {
