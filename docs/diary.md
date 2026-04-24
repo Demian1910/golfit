@@ -181,9 +181,16 @@ Presented M4 Product tasks in exercise session. Group discussion about project p
 Discussion about next milestones features: interactive environment, aiming and power shamanism, screen resizing, game layout
 textures, ball bug in water, hole logic position shifted.
 
-## Entry #17 22.04.26
+## Entry #17 17.04.26
+Demian added dynamic aim indicator with cone segments that aims in the direction of the aiming.
+The sections of the cone start with one green and increase in number and change color to red, based on the power of the shot. They also spin based on the direction of the shot. This aiming indicator is only visible from the client aiming on its client, and now shots can only be charged when the considered ball is not moving.
+
+## Entry #18 22.04.26
 Tamer wrote unit tests for the project's core components with the help of his teammates. Created 7 test classes with 75 
 tests total covering the protocol layer which Anton helped with (MessageBuilder, MessageParser, Channel, ChannelManager,
 PendingPacket) and the game physics engine which Demian and Constanting helped with sorting out (ServerBall — stroke mechanics, friction,
 speed clamping, position reset, collision), and the EventBus pub/sub system. All tests pass. JaCoCo coverage reports are generated 
 alongside the test results.
+
+## Entry #19 23.04.26
+Demian: winner correctly determined, In case of more players finishing with the same stroke count, the one that arrived to the hole first wins.
