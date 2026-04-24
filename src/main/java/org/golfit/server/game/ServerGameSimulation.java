@@ -14,8 +14,8 @@ import java.util.concurrent.TimeUnit;
 import static org.golfit.shared.constants.Constants.*;
 
 /**
- * Merged Simulation: Manages isolated physics instances per lobby.
- * Handles movement ticks, terrain friction, obstacle destruction, and spawn offsets.
+ * Manages isolated physics instances per lobby.
+ * Handles movement ticks, terrain friction, obstacle destruction, and staggered spawn offsets.
  */
 public class ServerGameSimulation {
     private static final Logger logger = LoggerFactory.getLogger(ServerGameSimulation.class);
@@ -23,7 +23,7 @@ public class ServerGameSimulation {
     private final ServerApi serverApi;
     private final Map<Integer, ServerBall> balls = new ConcurrentHashMap<>();
 
-    /** Isolated MapData instances per lobby to track destroyed obstacles individually. */
+    // Tracks unique map state (destructible obstacles) per lobby
     private final Map<Integer, MapData> lobbyPhysicsMaps = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService ticker;
@@ -60,27 +60,32 @@ public class ServerGameSimulation {
 
     public void stop() { if (ticker != null) ticker.shutdown(); }
 
-    /** Adds a new player with default spawn logic. */
+    /** Adds a new player with default spawn logic (usually on initial connection). */
     public void addPlayer(int playerId, int lobbyId) {
         balls.put(playerId, new ServerBall(MapData.BALL_START_X, MapData.BALL_START_Y));
         if (lobbyId != 0) playerToLobby.put(playerId, lobbyId);
         forceUpdate = true;
     }
 
-    /** Registers a player in a lobby with staggered spawn offsets. */
+    /** Registers a player into a lobby and applies staggered spawn positions. */
     public void registerPlayerLobby(int playerId, int lobbyId) {
-        long playerIndex = playerToLobby.values().stream()
+        long playerIndexInLobby = playerToLobby.values().stream()
                 .filter(id -> id == lobbyId)
                 .count();
 
-        double startX = MapData.BALL_START_X + (playerIndex % 2) * MapData.BALL_SPAWN_SPACING;
-        double startY = MapData.BALL_START_Y + (playerIndex / 2) * MapData.BALL_SPAWN_SPACING;
+        double startX = MapData.BALL_START_X + (playerIndexInLobby % 2) * MapData.BALL_SPAWN_SPACING;
+        double startY = MapData.BALL_START_Y + (playerIndexInLobby / 2) * MapData.BALL_SPAWN_SPACING;
+
+        logger.info("Registering player {} in lobby {} at staggered pos ({}, {})", playerId, lobbyId, startX, startY);
 
         playerToLobby.put(playerId, lobbyId);
         finishedPlayers.remove(playerId);
         finishOrder.remove(Integer.valueOf(playerId));
 
-        balls.put(playerId, new ServerBall(startX, startY));
+        // Create or reset ball to the new staggered position
+        ServerBall ball = new ServerBall(startX, startY);
+        balls.put(playerId, ball);
+
         forceUpdate = true;
     }
 
@@ -117,6 +122,8 @@ public class ServerGameSimulation {
                 Integer lobbyId = playerToLobby.get(playerId);
 
                 if (lobbyId == null) continue;
+
+                // CRITICAL: Fetch the specific map instance for this lobby
                 MapData lobbyMap = lobbyPhysicsMaps.get(lobbyId);
                 if (lobbyMap == null) continue;
 
@@ -144,7 +151,7 @@ public class ServerGameSimulation {
 
                     if (col >= 0 && col < MapData.COLS && row >= 0 && row < MapData.ROWS) {
                         int terrainType = lobbyMap.SERVER_MAP[row][col];
-                        if (terrainType == 4) { // Water
+                        if (terrainType == 4) { // Water hazard
                             ball.resetToLastPosition();
                             ballNeedsUpdate = true;
                         } else {
@@ -156,7 +163,7 @@ public class ServerGameSimulation {
                     List<MapData.ServerShape> nearby = getNearbyShapes(lobbyMap, ball.getPx(), ball.getPy(), 3.0);
                     ball.update(deltaTime, nearby);
 
-                    // Obstacle Destruction
+                    // Handle Obstacle Destruction
                     List<Integer> toRemove = ball.getPendingRemovals();
                     if (!toRemove.isEmpty()) {
                         for (int shapeId : toRemove) {
@@ -190,6 +197,7 @@ public class ServerGameSimulation {
         }
     }
 
+    /** Retrieves shapes from a specific lobby map instance. */
     public List<MapData.ServerShape> getNearbyShapes(MapData map, double worldX, double worldY, double searchRadius) {
         List<MapData.ServerShape> nearbyShapes = new ArrayList<>();
         Set<Integer> foundIds = new HashSet<>();
@@ -218,7 +226,7 @@ public class ServerGameSimulation {
         for (int r = 0; r < MapData.ROWS; r++) {
             for (int c = 0; c < MapData.COLS; c++) {
                 if (map.SHAPE_ID_MAP[r][c] == shapeId) {
-                    map.SERVER_MAP[r][c] = 0;
+                    map.SERVER_MAP[r][c] = 0; // Back to grass
                     map.SHAPE_ID_MAP[r][c] = -1;
                 }
             }
@@ -235,6 +243,7 @@ public class ServerGameSimulation {
 
     private void checkGameEnd(int finishedPlayerId) {
         if (gameEndListener == null) return;
+
         Integer lobbyId = playerToLobby.get(finishedPlayerId);
         if (lobbyId == null) return;
 
@@ -247,13 +256,15 @@ public class ServerGameSimulation {
             synchronized (finishOrder) {
                 for (int pid : finishOrder) {
                     if (lobbyId.equals(playerToLobby.get(pid))) {
-                        results.put(pid, getStrokeCount(pid));
+                        ServerBall ball = balls.get(pid);
+                        if (ball != null) results.put(pid, ball.getStrokeCount());
                     }
                 }
             }
+
             gameEndListener.onGameEnd(lobbyId, results);
 
-            // Cleanup
+            // Cleanup lobby resources
             lobbyPhysicsMaps.remove(lobbyId);
             playerToLobby.entrySet().removeIf(e -> e.getValue().equals(lobbyId));
             results.keySet().forEach(pid -> {
