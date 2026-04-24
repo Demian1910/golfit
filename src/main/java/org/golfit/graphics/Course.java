@@ -8,6 +8,7 @@ import javafx.scene.paint.Color;
 import javafx.scene.shape.Shape;
 
 import java.util.List;
+import java.util.Random;
 
 /**
  * Defines the mini-golf course layout by placing terrain obstacles (walls, sand, ice, water,
@@ -20,6 +21,7 @@ public class Course {
     private Pane container;
     private Color backgroundColor = Color.rgb(121, 213, 33);
     private AddObstacle addObstacle;
+    int TILE_SIZE = 16;
 
     public Course() {
         container = new Pane();
@@ -146,27 +148,31 @@ public class Course {
             );
 
             double paneW = 1100, paneH = 600;
-            double tileW = paneW / COLS;   // one grid cell in pixels
+            double tileW = paneW / COLS;
             double tileH = paneH / ROWS;
 
             Canvas canvas = new Canvas(paneW, paneH);
             GraphicsContext gc = canvas.getGraphicsContext2D();
 
-            // Tile the grass across the whole background
+            int[] grassCols = {8, 9, 10, 11};
+            int grassRow = 10;
+            Random random = new Random(42);
+
             for (int row = 0; row < ROWS; row++) {
                 for (int col = 0; col < COLS; col++) {
-                    // Draw tile (0,0) from spritesheet = top-left 16x16 grass tile
+                    int tileCol = grassCols[random.nextInt(grassCols.length)];
+                    int padding = 1;
                     gc.drawImage(sheet,
-                            16, 0, 16, 16,              // source: tile col=0, row=0
-                            col * tileW, row * tileH,  // dest position
-                            tileW, tileH               // dest size (scaled to grid cell)
+                            tileCol * TILE_SIZE + padding, grassRow * TILE_SIZE + padding,
+                            TILE_SIZE - padding * 2, TILE_SIZE - padding * 2,  // crop inward
+                            col * tileW, row * tileH, tileW, tileH
                     );
                 }
             }
 
-            container.getChildren().add(0, canvas); // add behind everything else
+            container.getChildren().add(0, canvas);
         } catch (Exception e) {
-            addTiledGrass();
+            e.printStackTrace();
         }
     }
 
