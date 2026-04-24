@@ -195,8 +195,15 @@ PendingPacket) and the game physics engine which Demian and Constantin helped wi
 speed clamping, position reset, collision), and the EventBus pub/sub system. All tests pass. JaCoCo coverage reports are generated 
 alongside the test results.
 
+Anton helped Constantin with the implementation of the interactive environment on communication side.
+
 ## Entry #20 23.04.26
 Demian: winner correctly determined, In case of more players finishing with the same stroke count, the one that arrived to the hole first wins.
 
-##Entry #21 24.4.26 
+Anton changed and updated high scores, such that they are displayed at the end of every game, and the Server is responsible of changing the persistently stored version. 
+Cheat code added. Golf ball animation implemented.
+
+## Entry #21 24.4.26 
 Constantin implemented the one-time collision on the trees, so that it affects the physics server-side and the rendering client-side appropriately.
+
+Anton: grass background improved.
