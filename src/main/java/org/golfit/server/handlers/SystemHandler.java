@@ -30,7 +30,8 @@ public class SystemHandler {
         this.serverContext = serverContext;
     }
 
-    /** * Handles client connection. Releases old username, claims new one,
+    /**
+     * Handles client connection. Releases old username, claims new one,
      * and sends back connection info plus score history.
      */
     public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {

@@ -172,11 +172,7 @@ public class ServerApi implements IServerApi {
                 Protocol.SYS_SCORE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
     }
 
-    /** * Broadcasts obstacle changes to a lobby.
-     * Fixed: Parameter type is Lobby to resolve '.getClients()' compiler error.
-     */
-    /** * Broadcasts SYS_OBSTACLE_UPDATE an alle Clients in der angegebenen Lobby-ID.
-     */
+    /** Broadcasts obstacle changes to all clients in the specified lobby. */
     public void sendObstacleChange(int lobbyId, String payload) throws Exception {
         // Wir holen uns das Objekt hier lokal, damit der Aufrufer es nicht tun muss
         Lobby lobby = serverContext.getLobbies().get(lobbyId);

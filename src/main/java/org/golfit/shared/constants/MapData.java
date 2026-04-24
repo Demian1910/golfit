@@ -5,12 +5,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Defines the static course layout: grid dimensions, spawn positions,
+ * obstacle/terrain tile maps, and server-side shape geometry.
+ */
 public class MapData {
 
+    /** Number of grid columns. */
     public static final int COLS = 80;
+    /** Number of grid rows. */
     public static final int ROWS = 45;
+    /** Ball spawn X position in grid units. */
     public static final double BALL_START_X = 5;
+    /** Ball spawn Y position in grid units. */
     public static final double BALL_START_Y = 42;
+    /** Spacing between multiple ball spawns in grid units. */
     public static final double BALL_SPAWN_SPACING = 1.5;
 
 
@@ -110,11 +119,16 @@ public class MapData {
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+    /** Per-lobby terrain grid (cloned from MASTER_TERRAIN). */
     public final int[][] SERVER_MAP;
+    /** Per-lobby shape ID grid (cloned from MASTER_IDS). */
     public final int[][] SHAPE_ID_MAP;
+    /** Collision shapes for this lobby's course. */
     public List<ServerShape> worldShapes = new ArrayList<>();
+    /** Maps shape ID to the grid cells it occupies. */
     public final Map<Integer, List<int[]>> shapeOccupancy = new HashMap<>();
 
+    /** Creates a new map instance by cloning the master grids and initializing collision shapes. */
     public MapData() {
         // Initialize memory for this lobby
         this.SERVER_MAP = new int[ROWS][COLS];
@@ -231,6 +245,7 @@ public class MapData {
         initializeOccupancy();
     }
 
+    /** Builds the shapeOccupancy map from the SHAPE_ID_MAP grid. */
     private void initializeOccupancy() {
         shapeOccupancy.clear();
         for (int r = 0; r < ROWS; r++) {
@@ -246,7 +261,7 @@ public class MapData {
 
 
 
-    // --- Inner Class for Data Structure ---
+    /** Describes a single collision shape (rectangle, ellipse, or polygon) on the course. */
     public static class ServerShape {
         public static final int RECT = 0;
         public static final int ELLIPSE = 1;
