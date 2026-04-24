@@ -49,10 +49,12 @@ public class Game {
                     id = Integer.parseInt(data.toString());
                 }
 
+                course.hideObstacle(id);
+
                 // 2. Update the UI (Must be wrapped in Platform.runLater)
                 Platform.runLater(() -> {
                     // This function hides the shape from the screen
-                    AddObstacle.hideObstacle(id);
+
                 });
 
             } catch (Exception e) {
@@ -72,6 +74,8 @@ public class Game {
          */
 
     }
+
+
 
     /**
      * Adjusts the visual "zoom" so the 1100px world fits into the available screen space.

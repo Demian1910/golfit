@@ -30,6 +30,7 @@ public class Course {
         container.setMaxSize(1100, 600);
 
         addObstacle = new AddObstacle(container);
+        addObstacle.clearObstacles();
 
         // --- BACKGROUND ---
         // Covers the full 1100px width (COLS = 80)
@@ -167,6 +168,20 @@ public class Course {
             container.getChildren().add(0, canvas); // add behind everything else
         } catch (Exception e) {
             addTiledGrass();
+        }
+    }
+
+    public void hideObstacle(int id) {
+        if (id >= 0 && id < addObstacle.getObstacleList().size()) {
+            Shape shape = addObstacle.getObstacleList().get(id);
+            if (shape != null) {
+                // Toggle visibility so it can be "unhidden" by switches
+                boolean isNowVisible = !shape.isVisible();
+                shape.setVisible(isNowVisible);
+
+                // Log for debugging
+                System.out.println("[GUI] Obstacle " + id + " is now " + (isNowVisible ? "VISIBLE" : "HIDDEN"));
+            }
         }
     }
 

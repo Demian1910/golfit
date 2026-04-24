@@ -26,7 +26,7 @@ public class AddObstacle {
     private static final int SWITCH = 6;
 
 
-    public static List<Shape> obstacles = new ArrayList<>();
+    public final List<Shape> obstacles = new ArrayList<>();
     private final Pane container;
 
     /**
@@ -211,20 +211,26 @@ public class AddObstacle {
     public List<Shape> getObstacleList() {
         return obstacles;
     }
-    public static void hideObstacle(int id) {
-        // Assuming your shapes are stored in a List where index = ID
+    public void hideObstacle(int id) {
         if (id >= 0 && id < obstacles.size()) {
             Shape shape = obstacles.get(id);
             if (shape != null) {
-                shape.setVisible(false);
-                // Optional: Disable its layout so it doesn't interfere with other elements
-                shape.setManaged(false);
-                System.out.println("[GUI] Obstacle " + id + " hidden.");
+                // Toggle visibility so it can be "unhidden" by switches
+                boolean isNowVisible = !shape.isVisible();
+                shape.setVisible(isNowVisible);
+
+                // Log for debugging
+                System.out.println("[GUI] Obstacle " + id + " is now " + (isNowVisible ? "VISIBLE" : "HIDDEN"));
             }
-        } else {
-            System.out.println("[GUI] Warning: Received ID " + id + " out of bounds.");
         }
     }
+
+    public void clearObstacles() {
+        obstacles.clear();
+    }
+
+
+
 
 
 
