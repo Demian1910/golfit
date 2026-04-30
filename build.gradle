@@ -113,9 +113,9 @@ jacocoTestReport {
 
 tasks.register('metrics-report') {
     group = 'verification'
-    description = 'The only task that runs SpotBugs, JaCoCo, and Javadoc for the timeline.'
+    description = 'Runs SpotBugs, JaCoCo, and Javadoc, then archives results.'
 
-    // Explicitly pull in all QA tasks
+    // Ensure JaCoCo and SpotBugs are fully configured before running
     dependsOn test, jacocoTestReport, spotbugsMain, javadoc
 
     doLast {
@@ -126,24 +126,37 @@ tasks.register('metrics-report') {
         archiveDir.mkdirs()
 
         // 1. Archive SpotBugs
-        if (file('build/reports/spotbugs/main.html').exists()) {
+        def spotbugsFile = file('build/reports/spotbugs/main.html')
+        if (spotbugsFile.exists()) {
             copy {
-                from 'build/reports/spotbugs/main.html'
+                from spotbugsFile
                 into archiveDir
                 rename { "spotbugs-report.html" }
             }
         }
+
+        // 2. Archive JaCoCo (Coverage)
+        def jacocoDir = file('build/reports/jacoco/test/html')
+        if (jacocoDir.exists()) {
+            copy {
+                from jacocoDir
+                into "${archiveDir}/coverage"
+            }
         }
 
         // 3. Archive Javadoc Warnings (Xdoclint)
         def lintFile = file("${buildDir}/reports/javadoc-log/javadoc-warnings.txt")
         if (lintFile.exists()) {
-            copy { from lintFile; into archiveDir }
+            copy {
+                from lintFile
+                into archiveDir
+            }
         }
 
-        println "Saved to: ${archiveDir}"
+        println "Saved all reports to: ${archiveDir}"
         println "---------------------------------"
     }
+}y
 
 tasks.register('build-cs108') {
     group = 'build'

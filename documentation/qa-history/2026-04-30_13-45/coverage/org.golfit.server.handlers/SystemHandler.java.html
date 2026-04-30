@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SystemHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.server.handlers</a> &gt; <span class="el_source">SystemHandler.java</span></div><h1>SystemHandler.java</h1><pre class="source lang-java linenums">package org.golfit.server.handlers;
+
+import org.golfit.server.ClientHandler.ClientHandler;
+import org.golfit.server.ServerContext;
+import org.golfit.server.game.ServerGameSimulation;
+import org.golfit.server.serverApi.ServerApi;
+import org.golfit.shared.lobby.Lobby;
+import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.shared.protocol.Protocol;
+import org.golfit.shared.constants.MapData;
+
+import java.io.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
+
+/**
+ * Handles all system-level protocol messages on the server side (connect,
+ * disconnect, chat, lobbies, movement, and scoring).
+ */
+public class SystemHandler {
+
+    private final ServerApi serverApi;
+    private final ServerContext serverContext;
+    private ServerGameSimulation gameSimulation;
+
+<span class="nc" id="L28">    public SystemHandler(ServerApi serverApi, ServerContext serverContext) {</span>
+<span class="nc" id="L29">        this.serverApi = serverApi;</span>
+<span class="nc" id="L30">        this.serverContext = serverContext;</span>
+<span class="nc" id="L31">    }</span>
+
+    /**
+     * Handles client connection. Releases old username, claims new one,
+     * and sends back connection info plus score history.
+     */
+    public void onConnect(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L38">        String previousUsername = clientHandler.getUsername();</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">        if (previousUsername != null) {</span>
+<span class="nc" id="L40">            serverApi.releaseUsername(previousUsername);</span>
+        }
+
+<span class="nc bnc" id="L43" title="All 4 branches missed.">        String username = (message.payload != null &amp;&amp; !message.payload.isEmpty())</span>
+<span class="nc" id="L44">                ? message.payload : &quot;player&quot;;</span>
+
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        if (!serverApi.claimUsername(username)) {</span>
+<span class="nc" id="L47">            String base = username;</span>
+<span class="nc" id="L48">            int counter = 1;</span>
+            do {
+<span class="nc" id="L50">                username = base + &quot;_&quot; + String.format(&quot;%03d&quot;, counter);</span>
+<span class="nc" id="L51">                counter++;</span>
+<span class="nc bnc" id="L52" title="All 2 branches missed.">            } while (!serverApi.claimUsername(username));</span>
+        }
+
+<span class="nc" id="L55">        clientHandler.setUsername(username);</span>
+<span class="nc" id="L56">        System.out.println(&quot;Client &quot; + clientHandler.getId() + &quot; connected with username &quot; + username);</span>
+
+<span class="nc" id="L58">        String payload = clientHandler.getId() + &quot;:&quot; + username;</span>
+<span class="nc" id="L59">        serverApi.sendConnected(clientHandler, payload);</span>
+<span class="nc" id="L60">        serverApi.sendLobbyList(clientHandler);</span>
+
+<span class="nc" id="L62">        String history = buildScoreHistory();</span>
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        if (!history.isEmpty()) {</span>
+<span class="nc" id="L64">            serverApi.sendScoreUpdate(clientHandler, history);</span>
+        }
+<span class="nc" id="L66">    }</span>
+
+    public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L69">        clientHandler.updateLastPing();</span>
+<span class="nc" id="L70">        serverApi.sendPong(clientHandler);</span>
+<span class="nc" id="L71">    }</span>
+
+    public void onChatBroadcast(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L74">        String payload = clientHandler.getUsername() + &quot;:&quot; + message.payload;</span>
+<span class="nc" id="L75">        serverApi.broadcastChat(Protocol.ID_SERVER, payload);</span>
+<span class="nc" id="L76">    }</span>
+
+    public void onChatPrivate(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L79">        String[] parts = message.payload.split(&quot;:&quot;, 2);</span>
+<span class="nc bnc" id="L80" title="All 2 branches missed.">        if (parts.length &lt; 2) return;</span>
+
+<span class="nc" id="L82">        String targetUsername = parts[0];</span>
+<span class="nc" id="L83">        String data = clientHandler.getUsername() + &quot;:&quot; + parts[1];</span>
+
+<span class="nc" id="L85">        serverApi.getClients().values().forEach(client -&gt; {</span>
+<span class="nc bnc" id="L86" title="All 2 branches missed.">            if (client.getUsername().equals(targetUsername)) {</span>
+                try {
+<span class="nc" id="L88">                    serverApi.sendPrivateChat(client, client.getId(), data);</span>
+<span class="nc" id="L89">                } catch (Exception ignored) {}</span>
+            }
+<span class="nc" id="L91">        });</span>
+<span class="nc" id="L92">    }</span>
+
+    public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L95">        String[] parts = message.payload.split(&quot;:&quot;, 2);</span>
+<span class="nc bnc" id="L96" title="All 2 branches missed.">        if (parts.length &lt; 2) return;</span>
+<span class="nc" id="L97">        int lobbyId = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L98">        String payload = clientHandler.getUsername() + &quot;:&quot; + parts[1];</span>
+
+<span class="nc" id="L100">        Lobby lobby = serverContext.getLobbies().get(lobbyId);</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (lobby != null) {</span>
+<span class="nc" id="L102">            lobby.getClients().forEach(client -&gt; {</span>
+<span class="nc" id="L103">                try { serverApi.sendLobbyChat(client, payload); } catch (Exception ignored) {}</span>
+<span class="nc" id="L104">            });</span>
+        }
+<span class="nc" id="L106">    }</span>
+
+    public void onDisconnect(ClientHandler clientHandler) {
+<span class="nc" id="L109">        System.out.println(&quot;Client &quot; + clientHandler.getUsername() + &quot; disconnected&quot;);</span>
+<span class="nc" id="L110">        serverApi.disconnectClient(clientHandler);</span>
+<span class="nc" id="L111">    }</span>
+
+    public void onCreateLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L114">        int lobbyId = serverContext.generateUniqueId();</span>
+<span class="nc" id="L115">        serverContext.getLobbies().put(lobbyId, new Lobby(lobbyId, clientHandler));</span>
+
+<span class="nc" id="L117">        refreshLobbyLists();</span>
+
+<span class="nc" id="L119">        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_JOINED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, String.valueOf(lobbyId));</span>
+<span class="nc" id="L120">        serverApi.sendLobbyInfo(clientHandler, String.valueOf(lobbyId));</span>
+<span class="nc" id="L121">    }</span>
+
+    public void onLobbyList(ClientHandler clientHandler) throws Exception {
+<span class="nc" id="L124">        serverApi.sendLobbyList(clientHandler);</span>
+<span class="nc" id="L125">    }</span>
+
+    public void onLobbyJoin(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L128">        Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));</span>
+<span class="nc bnc" id="L129" title="All 2 branches missed.">        if (lobby == null) return;</span>
+
+<span class="nc" id="L131">        lobby.addClient(clientHandler);</span>
+<span class="nc" id="L132">        clientHandler.getChannelManager().send(Protocol.SYS_LOBBY_JOINED, Protocol.CH_SYSTEM, Protocol.ID_SERVER, message.payload);</span>
+
+<span class="nc" id="L134">        lobby.getClients().forEach(client -&gt; {</span>
+<span class="nc" id="L135">            try { serverApi.sendLobbyInfo(client, message.payload); } catch (Exception ignored) {}</span>
+<span class="nc" id="L136">        });</span>
+<span class="nc" id="L137">        refreshLobbyLists();</span>
+<span class="nc" id="L138">    }</span>
+
+    public void onLobbyLeave(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L141">        Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));</span>
+<span class="nc bnc" id="L142" title="All 2 branches missed.">        if (lobby == null) return;</span>
+
+<span class="nc" id="L144">        lobby.removeClient(clientHandler);</span>
+<span class="nc bnc" id="L145" title="All 2 branches missed.">        if (lobby.getClients().isEmpty()) {</span>
+<span class="nc" id="L146">            serverContext.getLobbies().remove(lobby.getId());</span>
+        } else {
+<span class="nc" id="L148">            lobby.getClients().forEach(client -&gt; {</span>
+<span class="nc" id="L149">                try { serverApi.sendLobbyInfo(client, message.payload); } catch (Exception ignored) {}</span>
+<span class="nc" id="L150">            });</span>
+        }
+<span class="nc" id="L152">        serverApi.sendLeaveLobby(clientHandler, message.payload);</span>
+<span class="nc" id="L153">        refreshLobbyLists();</span>
+<span class="nc" id="L154">    }</span>
+
+    public void onMoveInput(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        // Position updates are handled via the game simulation tick
+<span class="nc" id="L158">    }</span>
+
+    public void onPlayerList(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc" id="L161">        String payload = serverContext.getClients().values().stream()</span>
+<span class="nc" id="L162">                .map(ClientHandler::getUsername)</span>
+<span class="nc" id="L163">                .collect(Collectors.joining(&quot;:&quot;));</span>
+<span class="nc" id="L164">        serverApi.sendPlayerList(clientHandler, payload);</span>
+<span class="nc" id="L165">    }</span>
+
+    public void onLobbyStart(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc bnc" id="L168" title="All 4 branches missed.">        if (message.payload == null || message.payload.isEmpty()) return;</span>
+
+<span class="nc" id="L170">        int lobbyId = Integer.parseInt(message.payload.trim());</span>
+<span class="nc" id="L171">        Lobby lobby = serverContext.getLobbies().get(lobbyId);</span>
+
+<span class="nc bnc" id="L173" title="All 4 branches missed.">        if (lobby == null || lobby.getClients().isEmpty()) return;</span>
+
+<span class="nc" id="L175">        lobby.setStatus(Lobby.LobbyStatus.ongoing);</span>
+<span class="nc" id="L176">        System.out.println(&quot;Game starting in lobby &quot; + lobbyId);</span>
+
+<span class="nc bnc" id="L178" title="All 2 branches missed.">        if (gameSimulation != null) {</span>
+            // physics initialization with unique map instance
+<span class="nc" id="L180">            MapData lobbyMap = new MapData();</span>
+<span class="nc" id="L181">            gameSimulation.initLobbyPhysics(lobbyId, lobbyMap);</span>
+
+<span class="nc bnc" id="L183" title="All 2 branches missed.">            for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc" id="L184">                gameSimulation.registerPlayerLobby(client.getId(), lobbyId);</span>
+<span class="nc" id="L185">            }</span>
+        }
+
+<span class="nc" id="L188">        serverApi.sendGameStart(lobby);</span>
+<span class="nc" id="L189">        refreshLobbyLists();</span>
+<span class="nc" id="L190">    }</span>
+
+    public void handleGameEnd(int lobbyId, Map&lt;Integer, Integer&gt; strokeResults) {
+<span class="nc" id="L193">        Lobby lobby = serverContext.getLobbies().get(lobbyId);</span>
+<span class="nc bnc" id="L194" title="All 2 branches missed.">        if (lobby == null) return;</span>
+
+        // Build username map preserving finish order
+<span class="nc" id="L197">        Map&lt;String, Integer&gt; namedResults = new LinkedHashMap&lt;&gt;();</span>
+<span class="nc" id="L198">        Map&lt;Integer, String&gt; idToUsername = new HashMap&lt;&gt;();</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc" id="L200">            idToUsername.put(client.getId(), client.getUsername());</span>
+<span class="nc" id="L201">        }</span>
+
+<span class="nc bnc" id="L203" title="All 2 branches missed.">        for (Map.Entry&lt;Integer, Integer&gt; entry : strokeResults.entrySet()) {</span>
+<span class="nc" id="L204">            String username = idToUsername.get(entry.getKey());</span>
+<span class="nc bnc" id="L205" title="All 2 branches missed.">            if (username != null) namedResults.put(username, entry.getValue());</span>
+<span class="nc" id="L206">        }</span>
+
+<span class="nc" id="L208">        String winner = namedResults.entrySet().stream()</span>
+<span class="nc bnc" id="L209" title="All 2 branches missed.">                .filter(e -&gt; e.getValue() &gt; 0)</span>
+<span class="nc" id="L210">                .min(Map.Entry.comparingByValue())</span>
+<span class="nc" id="L211">                .map(Map.Entry::getKey)</span>
+<span class="nc" id="L212">                .orElse(&quot;Nobody&quot;);</span>
+
+<span class="nc" id="L214">        String resultsList = namedResults.entrySet().stream()</span>
+<span class="nc" id="L215">                .map(e -&gt; e.getKey() + &quot;:&quot; + e.getValue())</span>
+<span class="nc" id="L216">                .collect(Collectors.joining(&quot;,&quot;));</span>
+<span class="nc" id="L217">        String payload = &quot;winner=&quot; + winner + &quot;;&quot; + resultsList;</span>
+
+<span class="nc" id="L219">        System.out.println(&quot;=== GAME OVER [Lobby &quot; + lobbyId + &quot;] ===&quot;);</span>
+<span class="nc" id="L220">        System.out.println(&quot;Winner: &quot; + winner);</span>
+<span class="nc" id="L221">        saveResults(lobbyId, winner, namedResults);</span>
+
+        try {
+<span class="nc" id="L224">            serverApi.sendGameEnd(lobby, payload);</span>
+<span class="nc" id="L225">        } catch (Exception ignored) {}</span>
+
+<span class="nc" id="L227">        lobby.setStatus(Lobby.LobbyStatus.open);</span>
+
+        // Push updated history to everyone
+<span class="nc" id="L230">        String scorePayload = buildScoreHistory();</span>
+<span class="nc bnc" id="L231" title="All 2 branches missed.">        for (ClientHandler client : serverContext.getClients().values()) {</span>
+<span class="nc" id="L232">            try { serverApi.sendScoreUpdate(client, scorePayload); } catch (Exception ignored) {}</span>
+<span class="nc" id="L233">        }</span>
+
+<span class="nc" id="L235">        refreshLobbyLists();</span>
+<span class="nc" id="L236">    }</span>
+
+    public void onHesoyam(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+<span class="nc bnc" id="L239" title="All 2 branches missed.">        if (gameSimulation != null) {</span>
+<span class="nc" id="L240">            gameSimulation.cheatTeleport(clientHandler.getId());</span>
+        }
+<span class="nc" id="L242">    }</span>
+
+    private void saveResults(int lobbyId, String winner, Map&lt;String, Integer&gt; results) {
+<span class="nc" id="L245">        try (PrintWriter pw = new PrintWriter(new FileWriter(&quot;results.csv&quot;, true))) {</span>
+<span class="nc" id="L246">            String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern(&quot;yyyy-MM-dd HH:mm:ss&quot;));</span>
+<span class="nc" id="L247">            String row = timestamp + &quot;,&quot; + lobbyId + &quot;,&quot; + winner + &quot;,&quot; +</span>
+<span class="nc" id="L248">                    results.entrySet().stream().map(e -&gt; e.getKey() + &quot;:&quot; + e.getValue()).collect(Collectors.joining(&quot;|&quot;));</span>
+<span class="nc" id="L249">            pw.println(row);</span>
+<span class="nc" id="L250">        } catch (IOException e) {</span>
+<span class="nc" id="L251">            System.err.println(&quot;Failed to save results: &quot; + e.getMessage());</span>
+<span class="nc" id="L252">        }</span>
+<span class="nc" id="L253">    }</span>
+
+    private String buildScoreHistory() {
+<span class="nc" id="L256">        File csvFile = new File(&quot;results.csv&quot;);</span>
+<span class="nc bnc" id="L257" title="All 2 branches missed.">        if (!csvFile.exists()) return &quot;&quot;;</span>
+<span class="nc" id="L258">        StringBuilder scores = new StringBuilder();</span>
+<span class="nc" id="L259">        try (BufferedReader br = new BufferedReader(new FileReader(csvFile))) {</span>
+            String line;
+<span class="nc bnc" id="L261" title="All 2 branches missed.">            while ((line = br.readLine()) != null) {</span>
+<span class="nc" id="L262">                line = line.trim();</span>
+<span class="nc bnc" id="L263" title="All 2 branches missed.">                if (line.isEmpty()) continue;</span>
+<span class="nc" id="L264">                String[] cols = line.split(&quot;,&quot;, 4);</span>
+<span class="nc bnc" id="L265" title="All 2 branches missed.">                if (cols.length &lt; 4) continue;</span>
+<span class="nc" id="L266">                String winner = cols[2].trim();</span>
+<span class="nc bnc" id="L267" title="All 2 branches missed.">                for (String entry : cols[3].split(&quot;\\|&quot;)) {</span>
+<span class="nc" id="L268">                    String[] parts = entry.trim().split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L269" title="All 2 branches missed.">                    if (parts.length &lt; 2) continue;</span>
+<span class="nc bnc" id="L270" title="All 2 branches missed.">                    if (parts[0].trim().equalsIgnoreCase(winner)) {</span>
+<span class="nc" id="L271">                        scores.append(winner).append(&quot;:&quot;).append(parts[1].trim()).append(&quot;\n&quot;);</span>
+<span class="nc" id="L272">                        break;</span>
+                    }
+                }
+<span class="nc" id="L275">            }</span>
+<span class="nc" id="L276">        } catch (IOException ignored) {}</span>
+<span class="nc" id="L277">        return scores.toString().trim();</span>
+    }
+
+    private void refreshLobbyLists() {
+<span class="nc" id="L281">        serverContext.getClients().values().forEach(client -&gt; {</span>
+<span class="nc" id="L282">            try { serverApi.sendLobbyList(client); } catch (Exception ignored) {}</span>
+<span class="nc" id="L283">        });</span>
+<span class="nc" id="L284">    }</span>
+
+<span class="nc" id="L286">    public void setGameSimulation(ServerGameSimulation sim) { this.gameSimulation = sim; }</span>
+
+    public Lobby getLobbyForPlayer(ClientHandler clientHandler) {
+<span class="nc bnc" id="L289" title="All 2 branches missed.">        for (Lobby lobby : serverContext.getLobbies().values()) {</span>
+<span class="nc bnc" id="L290" title="All 2 branches missed.">            if (lobby.getClients().contains(clientHandler)) return lobby;</span>
+<span class="nc" id="L291">        }</span>
+<span class="nc" id="L292">        return null;</span>
+    }
+
+    public String buildStrokePayload(Lobby lobby) {
+<span class="nc bnc" id="L296" title="All 2 branches missed.">        if (gameSimulation == null) return &quot;&quot;;</span>
+<span class="nc" id="L297">        StringBuilder sb = new StringBuilder();</span>
+<span class="nc bnc" id="L298" title="All 2 branches missed.">        for (ClientHandler client : lobby.getClients()) {</span>
+<span class="nc bnc" id="L299" title="All 2 branches missed.">            if (sb.length() &gt; 0) sb.append(&quot;,&quot;);</span>
+<span class="nc" id="L300">            sb.append(client.getUsername()).append(&quot;:&quot;).append(gameSimulation.getStrokeCount(client.getId()));</span>
+<span class="nc" id="L301">        }</span>
+<span class="nc" id="L302">        return sb.toString();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

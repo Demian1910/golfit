@@ -1,9 +1,14 @@
 package org.golfit.shared.constants;
 
+import org.golfit.server.game.ServerBall;
+
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
+
+import static org.golfit.shared.constants.Constants.BALL_RADIUS;
 
 /**
  * Defines the static course layout: grid dimensions, spawn positions,
@@ -21,6 +26,8 @@ public class MapData {
     public static final double BALL_START_Y = 42;
     /** Spacing between multiple ball spawns in grid units. */
     public static final double BALL_SPAWN_SPACING = 1.5;
+
+
 
 
     private static final int[][] MASTER_IDS = new int[][] {
@@ -54,7 +61,7 @@ public class MapData {
             {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 58, 58, 58, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 60, 60, 60, 59, 59, 59, 59, 28, 28, 28, 28, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
             {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 57, 57, 57, -1, -1, -1, -1, -1, 86, -1, -1, 92, -1, -1, -1, -1, -1, 60, 60, 60, 59, 59, 59, 59, 28, 28, 28, 28, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
             {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 57, 57, 57, -1, -1, -1, -1, 86, 86, 86, 92, 92, 92, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
-            {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 57, 57, 57, -1, -1, -1, -1, -1, 85, -1, -1, 91, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
+            {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 97, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 57, 57, 57, -1, -1, -1, -1, -1, 85, -1, -1, 91, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
             {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 56, 56, 56, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
             {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 56, 56, 56, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
             {95, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 62, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 31, 56, 56, 56, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, -1, 96},
@@ -104,7 +111,7 @@ public class MapData {
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 1, 1, 1, 3, 3, 3, 3, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
-            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+            {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 7, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 1, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
             {1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 5, 5, 5, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1},
@@ -118,15 +125,14 @@ public class MapData {
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 0, 1, 1, 1, 0, 1, 1, 1, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
             {1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 3, 3, 3, 3, 1, 1, 1, 1, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 4, 3, 3, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1},
-            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}};
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1}
+    };
     /** Per-lobby terrain grid (cloned from MASTER_TERRAIN). */
     public final int[][] SERVER_MAP;
     /** Per-lobby shape ID grid (cloned from MASTER_IDS). */
     public final int[][] SHAPE_ID_MAP;
-    /** Collision shapes for this lobby's course. */
-    public List<ServerShape> worldShapes = new ArrayList<>();
-    /** Maps shape ID to the grid cells it occupies. */
-    public final Map<Integer, List<int[]>> shapeOccupancy = new HashMap<>();
+    public Map<Integer, ServerShape> worldShapes = new ConcurrentHashMap<>();
+
 
     /** Creates a new map instance by cloning the master grids and initializing collision shapes. */
     public MapData() {
@@ -142,7 +148,7 @@ public class MapData {
 
         // 3. PASTE YOUR WORLDSHAPES HERE
         // These are the actual collision objects for Level 1
-        this.worldShapes =  List.of(
+        List<ServerShape> initialShapes =  List.of(
                 new ServerShape(0, 1, -1, ServerShape.RECT, 1.0000, 22.0000, 3.0000, 2.0000),
                 new ServerShape(1, 1, -1, ServerShape.RECT, 13.0000, 22.0000, 3.0000, 2.0000),
                 new ServerShape(2, 2, -1, ServerShape.RECT, 7.0000, 22.0000, 4.0000, 2.0000),
@@ -239,25 +245,18 @@ public class MapData {
                 new ServerShape(93, 1, -1, ServerShape.RECT, 0.0000, 0.0000, 80.0000, 1.0000),
                 new ServerShape(94, 1, -1, ServerShape.RECT, 0.0000, 44.0000, 80.0000, 1.0000),
                 new ServerShape(95, 1, -1, ServerShape.RECT, 0.0000, 0.0000, 1.0000, 45.0000),
-                new ServerShape(96, 1, -1, ServerShape.RECT, 79.0000, 0.0000, 1.0000, 45.0000)
-        );
+                new ServerShape(96, 1, -1, ServerShape.RECT, 79.0000, 0.0000, 1.0000, 45.0000),
+                new ServerShape(97, 7, -1,ServerShape.RECT, 17.0000, 30.0000, 14.0000, 1.0000)); // Bridge
+                // Barrier new ServerShape(98, 1,-1, ServerShape.RECT, 21.0000, 1.0000, 4.0000, 4.0000))
 
-        initializeOccupancy();
-    }
-
-    /** Builds the shapeOccupancy map from the SHAPE_ID_MAP grid. */
-    private void initializeOccupancy() {
-        shapeOccupancy.clear();
-        for (int r = 0; r < ROWS; r++) {
-            for (int c = 0; c < COLS; c++) {
-                int id = SHAPE_ID_MAP[r][c];
-                if (id != -1) {
-                    shapeOccupancy.computeIfAbsent(id, k -> new ArrayList<>())
-                            .add(new int[]{r, c});
-                }
+            // Put them into the map
+            for (ServerShape s : initialShapes) {
+                worldShapes.put(s.id, s);
             }
         }
-    }
+
+
+
 
 
 
@@ -279,6 +278,102 @@ public class MapData {
         public ServerShape(int id, int terrain, int partnerId, int form, double[] points) {
             this.id = id; this.terrainType = terrain; this.partnerId = partnerId;
             this.formType = form; this.points = points;
+        }
+    }
+
+    /**
+     * Toggles the Bridge obstacle (ID 97).
+     * When active, it's a Bridge (Terrain 7). When inactive, it's removed.
+     */
+    /**
+     * Spawns or Despawns the Bridge (ID 97)
+     */
+    public void changeBridge(boolean active, List<ServerBall> lobbyBalls) {
+        int id = 97;
+        // Bridge Dimensions
+        double bx = 17.0;
+        double by = 30.0;
+        double bw = 14.0;
+        double bh = 1.0;
+
+        if (active) {
+            // SPAWN: Put the bridge back
+            worldShapes.put(id, new ServerShape(id, 7, -1, ServerShape.RECT, bx, by, bw, bh));
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, 7, true);
+        } else {
+            // DESPAWN: Check if any balls are currently on the bridge
+            for (ServerBall ball : lobbyBalls) {
+                if (isBallInside(ball, bx, by, bw, bh)) {
+                    // Teleport to the LEFT of the entrance
+                    // 17.0 is the start, so 16.5 is the safe grass area
+                    ball.teleport(bx - 0.5, ball.getPy());
+                }
+            }
+
+            // Remove physics and turn the floor into Water (Terrain 4)
+            worldShapes.remove(id);
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, -1, 4, true);
+        }
+    }
+
+    /**
+     * Spawns or Despawns the Barrier (ID 98)
+     */
+    public void changeBarrier(boolean active, List<ServerBall> balls) {
+        int id = 98;
+        double bx = 21.0, by = 1.0, bw = 4.0, bh = 4.0;
+
+        if (active) {
+            // 1. Add the shape
+            worldShapes.put(id, new ServerShape(id, 1, -1, ServerShape.RECT, bx, by, bw, bh));
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, 1, true);
+
+            // 2. SAFETY SHOVE: If a ball is inside, push it out
+            for (ServerBall ball : balls) {
+                if (isBallInsideRect(ball, bx, by, bw, bh)) {
+                    // Push ball to the left of the barrier
+                    ball.teleport(bx - BALL_RADIUS - 0.1, ball.getPy());
+                }
+            }
+        } else {
+            worldShapes.remove(id);
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, 1, false);
+        }
+    }
+    /**
+     * Helper to check if a ball's bounding box overlaps with a rectangular area.
+     */
+    private boolean isBallInside(ServerBall b, double x, double y, double w, double h) {
+        // We use the ball's current radius (usually 0.35) to ensure
+        // even the edges of the ball are checked.
+        double radius = 0.35;
+        return b.getPx() + radius > x &&
+                b.getPx() - radius < x + w &&
+                b.getPy() + radius > y &&
+                b.getPy() - radius < y + h;
+    }
+
+    private boolean isBallInsideRect(ServerBall b, double x, double y, double w, double h) {
+        return b.getPx() + BALL_RADIUS > x && b.getPx() - BALL_RADIUS < x + w &&
+                b.getPy() + BALL_RADIUS > y && b.getPy() - BALL_RADIUS < y + h;
+    }
+
+    /**
+     * Helper to update the physics grid arrays
+     */
+    private void updateGridArea(int x, int y, int w, int h, int id, int type, boolean active) {
+        for (int r = y; r < y + h; r++) {
+            for (int c = x; c < x + w; c++) {
+                if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
+                    if (active) {
+                        SERVER_MAP[r][c] = type;
+                        SHAPE_ID_MAP[r][c] = id;
+                    } else {
+                        SERVER_MAP[r][c] = 4;   // Set back to empty grass
+                        SHAPE_ID_MAP[r][c] = -1; // No collision ID
+                    }
+                }
+            }
         }
     }
 }

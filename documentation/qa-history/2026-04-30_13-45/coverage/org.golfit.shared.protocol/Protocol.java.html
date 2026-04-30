@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Protocol.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.shared.protocol</a> &gt; <span class="el_source">Protocol.java</span></div><h1>Protocol.java</h1><pre class="source lang-java linenums">package org.golfit.shared.protocol;
+
+import org.golfit.shared.messageParser.MessageParser;
+
+/** Defines all protocol constants including packet types, channel identifiers, special IDs, and functional interfaces. */
+<span class="nc" id="L6">public class Protocol {</span>
+    public static final String SYS_CONNECT        = &quot;SYS_CONNECT&quot;;
+    public static final String SYS_CONNECTED      = &quot;SYS_CONNECTED&quot;;
+    public static final String SYS_DISCONNECT     = &quot;SYS_DISCONNECT&quot;;
+
+    // ping
+    public static final String SYS_PING           = &quot;SYS_PING&quot;;
+    public static final String SYS_PONG           = &quot;SYS_PONG&quot;;
+
+    // lobby
+    public static final String SYS_LOBBY_CREATE   = &quot;SYS_LOBBY_CREATE&quot;;
+    public static final String SYS_LOBBY_CREATED  = &quot;SYS_LOBBY_CREATED&quot;;
+    public static final String SYS_LOBBY_JOIN     = &quot;SYS_LOBBY_JOIN&quot;;
+    public static final String SYS_LOBBY_JOINED   = &quot;SYS_LOBBY_JOINED&quot;;
+    public static final String SYS_LOBBY_LEAVE    = &quot;SYS_LOBBY_LEAVE&quot;;
+    public static final String SYS_LOBBY_LEFT     = &quot;SYS_LOBBY_LEFT&quot;;
+    public static final String SYS_LOBBY_LIST     = &quot;SYS_LOBBY_LIST&quot;;
+    public static final String SYS_LOBBY_INFO     =  &quot;SYS_LOBBY_INFO&quot;;
+    public static final String SYS_PLAYERS_LIST   = &quot;SYS_PLAYERS_LIST&quot;;
+    public static final String SYS_LOBBY_START    = &quot;SYS_LOBBY_START&quot;;
+    public static final String SYS_GAME_START     = &quot;SYS_GAME_START&quot;;
+    public static final String SYS_STROKE_UPDATE  = &quot;SYS_STROKE_UPDATE&quot;;
+    public static final String SYS_GAME_END       = &quot;SYS_GAME_END&quot;;
+    public static final String SYS_OBSTACLE_UPDATE = &quot;SYS_OBSTACLE_UPDATE&quot;;
+    public static final String SYS_SCORE_UPDATE   = &quot;SYS_SCORE_UPDATE&quot;;
+    public static final String SYS_HESOYAM = &quot;SYS_HESOYAM&quot;;
+
+    // chat
+    public static final String SYS_CHAT_BROADCAST = &quot;SYS_CHAT_BROADCAST&quot;;
+    public static final String SYS_CHAT_PRIVATE   = &quot;SYS_CHAT_PRIVATE&quot;;
+    public static final String SYS_CHAT_LOBBY     = &quot;SYS_CHAT_LOBBY&quot;;
+
+    // movement
+    public static final String  MOVE_INPUT         = &quot;MOVE_INPUT&quot;;
+    public static final String  MOVE_UPDATE        = &quot;MOVE_UPDATE&quot;;
+
+    // protocol
+    public static final String SYS_ACK             = &quot;SYS_ACK&quot;;
+
+    // channels
+    public static final String CH_SYSTEM   = &quot;CH_SYSTEM&quot;;
+    public static final String CH_MOVEMENT = &quot;CH_MOVEMENT&quot;;
+    public static final String CH_CHAT     = &quot;CH_CHAT&quot;;
+    public static final String CH_PINGS    = &quot;CH_PINGS&quot;;
+
+    // ids
+    public static final int ID_INVALID   = 0;
+    public static final int ID_SERVER    = 1;
+    public static final int ID_BROADCAST = -1;
+
+    public static final char DELIMITER = '|';
+    public static final char TERMINATOR = '\n';
+    public static final int FIELD_COUNT = 5;
+
+    /** Function that transmits a raw message string over the network. */
+    @FunctionalInterface
+    public interface SendFunction {
+        /**
+         * Sends a raw message string.
+         *
+         * @param data the encoded message to send
+         * @throws Exception if transmission fails
+         */
+        void send(String data) throws Exception;
+    }
+
+    /** Function that dispatches a parsed message to the appropriate handler. */
+    @FunctionalInterface
+    public interface PacketDispatcher {
+        /**
+         * Dispatches a parsed message.
+         *
+         * @param message the parsed incoming message
+         * @throws Exception if handling fails
+         */
+        void dispatch(MessageParser.Message message) throws Exception;
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

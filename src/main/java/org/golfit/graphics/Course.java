@@ -135,6 +135,8 @@ public class Course {
         addObstacle.addWall(0, ROWS - 1, COLS, 1);   // Bottom
         addObstacle.addWall(0, 0, 1, ROWS);          // Left
         addObstacle.addWall(79, 0, 1, ROWS);         // Right
+        addObstacle.addBridge(17, ROWS-15, 14, 1);         // Bridge
+        addObstacle.addBarrier(21, 1, 4, 4);         // Barrier wall
     }
 
     /** Returns the pane containing all course elements. */

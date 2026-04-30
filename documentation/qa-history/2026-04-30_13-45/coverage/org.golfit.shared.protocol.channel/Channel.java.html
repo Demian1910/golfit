@@ -1,0 +1,50 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Channel.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.shared.protocol.channel</a> &gt; <span class="el_source">Channel.java</span></div><h1>Channel.java</h1><pre class="source lang-java linenums">package org.golfit.shared.protocol.channel;
+
+import org.golfit.shared.pendingPacket.PendingPacket;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
+
+/** Tracks per-channel state including sequence numbers and pending acknowledgements for reliable delivery. */
+public class Channel {
+    public final String id;
+    public final boolean reliable;
+
+<span class="fc" id="L13">    private int nextSendSequence = 0;</span>
+<span class="fc" id="L14">    private int nextExpectedSequence = 0;</span>
+
+<span class="fc" id="L16">    public final Map&lt;Integer, PendingPacket&gt; pendingAck = new LinkedHashMap&lt;&gt;();</span>
+
+<span class="fc" id="L18">    public Channel(String id, boolean reliable) {</span>
+<span class="fc" id="L19">        this.id = id;</span>
+<span class="fc" id="L20">        this.reliable = reliable;</span>
+<span class="fc" id="L21">    }</span>
+
+    /** Returns the next send sequence number. Reliable channels increment; unreliable always return 0. */
+    public int nextSequence() {
+<span class="fc bfc" id="L25" title="All 2 branches covered.">        return reliable ? nextSendSequence++ : 0;</span>
+    }
+
+    /** Returns the next expected receive sequence number. */
+    public int nextExpectedSequence() {
+<span class="fc" id="L30">        return nextExpectedSequence;</span>
+    }
+
+    /** Checks if a packet is new based on its sequence number. Advances the expected sequence on match. */
+    public boolean isNewPacket(int seq) {
+<span class="fc bfc" id="L35" title="All 2 branches covered.">        if (!reliable) return true;</span>
+<span class="fc bfc" id="L36" title="All 2 branches covered.">        if (seq &lt; nextExpectedSequence) return false;</span>
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        if (seq == nextExpectedSequence) {</span>
+<span class="fc" id="L38">            nextExpectedSequence++;</span>
+<span class="fc" id="L39">            return true;</span>
+        }
+<span class="fc" id="L41">        return false;</span>
+    }
+    /** Resets all sequence counters and clears pending acknowledgements. */
+    public void reset() {
+<span class="fc" id="L45">        nextSendSequence = 0;</span>
+<span class="fc" id="L46">        nextExpectedSequence = 0;</span>
+<span class="fc" id="L47">        pendingAck.clear();</span>
+<span class="fc" id="L48">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -1,0 +1,142 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>MovementHandler.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.handlers</a> &gt; <span class="el_source">MovementHandler.java</span></div><h1>MovementHandler.java</h1><pre class="source lang-java linenums">package org.golfit.client.handlers;
+
+import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.shared.messageParser.MessageParser;
+import org.golfit.client.game.BallRender;
+import org.golfit.client.game.Ball;
+import javafx.scene.layout.Pane;
+import javafx.application.Platform;
+
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+
+/**
+ * Handles movement update messages from the server on the client side.
+ * Converts server grid coordinates to pixel positions and manages ball rendering.
+ */
+public class MovementHandler {
+    private final ClientApi clientApi;
+
+    /** Thread-safe player render map */
+<span class="nc" id="L24">    public Map&lt;Integer, BallRender&gt; players = new ConcurrentHashMap&lt;&gt;();</span>
+
+    private Pane gamePane;
+
+<span class="nc" id="L28">    private static final javafx.scene.paint.Color[] PLAYER_COLORS = {</span>
+            javafx.scene.paint.Color.RED,
+            javafx.scene.paint.Color.BLUE,
+            javafx.scene.paint.Color.GREEN,
+            javafx.scene.paint.Color.GOLD,
+            javafx.scene.paint.Color.PURPLE,
+            javafx.scene.paint.Color.ORANGE
+    };
+
+    private static final long STILL_TIME_THRESHOLD_MS = 150;
+<span class="nc" id="L38">    private final Map&lt;Integer, Long&gt; lastUpdateTime = new ConcurrentHashMap&lt;&gt;();</span>
+
+<span class="nc" id="L40">    private MessageParser.Message lastMessage = null;</span>
+
+<span class="nc" id="L42">    public MovementHandler(ClientApi clientApi) {</span>
+<span class="nc" id="L43">        this.clientApi = clientApi;</span>
+<span class="nc" id="L44">    }</span>
+
+    public void setGamePane(Pane pane) {
+<span class="nc" id="L47">        this.gamePane = pane;</span>
+<span class="nc" id="L48">        this.players.clear();</span>
+<span class="nc" id="L49">        this.lastUpdateTime.clear();</span>
+
+<span class="nc bnc" id="L51" title="All 2 branches missed.">        if (lastMessage != null) {</span>
+<span class="nc" id="L52">            onMoveUpdate(lastMessage);</span>
+        }
+<span class="nc" id="L54">    }</span>
+
+    public void onMoveUpdate(MessageParser.Message message) {
+<span class="nc" id="L57">        this.lastMessage = message;</span>
+<span class="nc bnc" id="L58" title="All 2 branches missed.">        if (gamePane == null) return;</span>
+
+<span class="nc" id="L60">        String payload = message.payload;</span>
+<span class="nc bnc" id="L61" title="All 4 branches missed.">        if (payload == null || payload.isEmpty()) return;</span>
+
+<span class="nc bnc" id="L63" title="All 2 branches missed.">        double width = gamePane.getWidth() &gt; 0 ? gamePane.getWidth() : 1100.0;</span>
+<span class="nc bnc" id="L64" title="All 2 branches missed.">        double height = gamePane.getHeight() &gt; 0 ? gamePane.getHeight() : 600.0;</span>
+
+<span class="nc" id="L66">        double scaleX = width / 80.0;</span>
+<span class="nc" id="L67">        double scaleY = height / 45.0;</span>
+
+<span class="nc" id="L69">        Map&lt;Integer, double[]&gt; parsedUpdates = new HashMap&lt;&gt;();</span>
+<span class="nc" id="L70">        Set&lt;Integer&gt; receivedIds = new HashSet&lt;&gt;();</span>
+
+<span class="nc bnc" id="L72" title="All 2 branches missed.">        for (String update : payload.split(&quot;;&quot;)) {</span>
+<span class="nc" id="L73">            String[] parts = update.split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L74" title="All 2 branches missed.">            if (parts.length != 2) continue;</span>
+
+            try {
+<span class="nc" id="L77">                int playerId = Integer.parseInt(parts[0]);</span>
+<span class="nc" id="L78">                String[] coords = parts[1].split(&quot;,&quot;);</span>
+
+<span class="nc" id="L80">                double x = Double.parseDouble(coords[0]) * scaleX;</span>
+<span class="nc" id="L81">                double y = Double.parseDouble(coords[1]) * scaleY;</span>
+
+<span class="nc" id="L83">                parsedUpdates.put(playerId, new double[]{x, y});</span>
+<span class="nc" id="L84">                receivedIds.add(playerId);</span>
+
+<span class="nc" id="L86">            } catch (Exception e) {</span>
+<span class="nc" id="L87">                System.err.println(&quot;Failed to parse movement update: &quot; + update);</span>
+<span class="nc" id="L88">            }</span>
+        }
+
+        // 🔥 Single UI update instead of many
+<span class="nc" id="L92">        Platform.runLater(() -&gt; {</span>
+
+            // Update / create players
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            for (var entry : parsedUpdates.entrySet()) {</span>
+<span class="nc" id="L96">                int playerId = entry.getKey();</span>
+<span class="nc" id="L97">                double pixelX = entry.getValue()[0];</span>
+<span class="nc" id="L98">                double pixelY = entry.getValue()[1];</span>
+
+<span class="nc" id="L100">                BallRender render = players.get(playerId);</span>
+<span class="nc" id="L101">                boolean moved = true;</span>
+
+<span class="nc bnc" id="L103" title="All 2 branches missed.">                if (render == null) {</span>
+<span class="nc" id="L104">                    var color = PLAYER_COLORS[playerId % PLAYER_COLORS.length];</span>
+<span class="nc" id="L105">                    render = new BallRender(gamePane, new Ball(pixelX, pixelY), color);</span>
+<span class="nc" id="L106">                    players.put(playerId, render);</span>
+<span class="nc" id="L107">                } else {</span>
+<span class="nc" id="L108">                    double dx = render.getCircle().getCenterX() - pixelX;</span>
+<span class="nc" id="L109">                    double dy = render.getCircle().getCenterY() - pixelY;</span>
+
+<span class="nc bnc" id="L111" title="All 4 branches missed.">                    if (Math.abs(dx) &lt; 0.1 &amp;&amp; Math.abs(dy) &lt; 0.1) {</span>
+<span class="nc" id="L112">                        moved = false;</span>
+                    } else {
+<span class="nc" id="L114">                        render.updatePosition(new Ball(pixelX, pixelY));</span>
+                    }
+                }
+
+<span class="nc bnc" id="L118" title="All 4 branches missed.">                if (moved || !lastUpdateTime.containsKey(playerId)) {</span>
+<span class="nc" id="L119">                    lastUpdateTime.put(playerId, System.currentTimeMillis());</span>
+                }
+<span class="nc" id="L121">            }</span>
+
+            // Remove missing players
+<span class="nc" id="L124">            players.entrySet().removeIf(entry -&gt; {</span>
+<span class="nc bnc" id="L125" title="All 2 branches missed.">                if (receivedIds.contains(entry.getKey())) {</span>
+<span class="nc" id="L126">                    return false;</span>
+                } else {
+<span class="nc" id="L128">                    entry.getValue().remove();</span>
+<span class="nc" id="L129">                    lastUpdateTime.remove(entry.getKey());</span>
+<span class="nc" id="L130">                    return true;</span>
+                }
+            });
+<span class="nc" id="L133">        });</span>
+<span class="nc" id="L134">    }</span>
+
+    public boolean isPlayerBallStill(int playerId) {
+<span class="nc" id="L137">        Long lastUpdate = lastUpdateTime.get(playerId);</span>
+<span class="nc bnc" id="L138" title="All 2 branches missed.">        return lastUpdate != null &amp;&amp;</span>
+<span class="nc bnc" id="L139" title="All 2 branches missed.">                (System.currentTimeMillis() - lastUpdate &gt; STILL_TIME_THRESHOLD_MS);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

@@ -16,16 +16,18 @@ import static org.golfit.shared.constants.Constants.*;
 /**
  * Manages isolated physics instances per lobby.
  * Handles movement ticks, terrain friction, obstacle destruction, and staggered spawn offsets.
+ * * This class serves as the central engine for server-side physics, calculating ball trajectories,
+ * collisions, and dynamic map changes like bridge/barrier toggles.
  */
 public class ServerGameSimulation {
     private static final Logger logger = LoggerFactory.getLogger(ServerGameSimulation.class);
 
     private final ServerApi serverApi;
 
-    /** Active balls per player */
+    /** Active balls per player (PlayerID -> Ball object) */
     private final Map<Integer, ServerBall> balls = new ConcurrentHashMap<>();
 
-    /** Per-lobby physics maps (for destructible environments) */
+    /** Per-lobby physics maps for dynamic/destructible environments */
     private final Map<Integer, MapData> lobbyPhysicsMaps = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService ticker;
@@ -37,11 +39,17 @@ public class ServerGameSimulation {
     private final Set<Integer> finishedPlayers = ConcurrentHashMap.newKeySet();
     private final List<Integer> finishOrder = Collections.synchronizedList(new ArrayList<>());
 
+    /**
+     * Listener interface for stroke events.
+     */
     @FunctionalInterface
     public interface StrokeListener {
         void onStroke(int playerId);
     }
 
+    /**
+     * Listener interface for game completion events.
+     */
     @FunctionalInterface
     public interface GameEndListener {
         void onGameEnd(int lobbyId, Map<Integer, Integer> strokeResults);
@@ -50,12 +58,19 @@ public class ServerGameSimulation {
     private StrokeListener strokeListener;
     private GameEndListener gameEndListener;
 
+    /**
+     * Constructs a new simulation engine.
+     * @param serverApi The API interface for broadcasting state to clients.
+     */
     public ServerGameSimulation(ServerApi serverApi) {
         this.serverApi = serverApi;
     }
 
     // ---------------- LOBBY SETUP ----------------
 
+    /**
+     * Initializes a unique physics map for a specific lobby.
+     */
     public void initLobbyPhysics(int lobbyId, MapData mapInstance) {
         this.lobbyPhysicsMaps.put(lobbyId, mapInstance);
     }
@@ -70,23 +85,35 @@ public class ServerGameSimulation {
 
     // ---------------- LIFECYCLE ----------------
 
+    /**
+     * Starts the physics ticker at the constant TICK_RATE_MS.
+     */
     public void start() {
         ticker = Executors.newSingleThreadScheduledExecutor();
         ticker.scheduleAtFixedRate(this::tick, 0, TICK_RATE_MS, TimeUnit.MILLISECONDS);
     }
 
+    /**
+     * Stops the simulation and shuts down the executor.
+     */
     public void stop() {
         if (ticker != null) ticker.shutdown();
     }
 
     // ---------------- PLAYER MANAGEMENT ----------------
 
+    /**
+     * Adds a player to the simulation at the default start position.
+     */
     public void addPlayer(int playerId, int lobbyId) {
         balls.put(playerId, new ServerBall(MapData.BALL_START_X, MapData.BALL_START_Y));
         if (lobbyId != 0) playerToLobby.put(playerId, lobbyId);
         forceUpdate = true;
     }
 
+    /**
+     * Registers a player to a lobby with staggered spawn coordinates to prevent overlapping.
+     */
     public void registerPlayerLobby(int playerId, int lobbyId) {
         long index = playerToLobby.values().stream()
                 .filter(id -> id == lobbyId)
@@ -95,8 +122,7 @@ public class ServerGameSimulation {
         double startX = MapData.BALL_START_X + (index % 2) * MapData.BALL_SPAWN_SPACING;
         double startY = MapData.BALL_START_Y + (index / 2) * MapData.BALL_SPAWN_SPACING;
 
-        logger.info("Registering player {} in lobby {} at ({}, {})",
-                playerId, lobbyId, startX, startY);
+        logger.info("Registering player {} in lobby {} at ({}, {})", playerId, lobbyId, startX, startY);
 
         playerToLobby.put(playerId, lobbyId);
         finishedPlayers.remove(playerId);
@@ -106,6 +132,9 @@ public class ServerGameSimulation {
         forceUpdate = true;
     }
 
+    /**
+     * Removes a player from the simulation.
+     */
     public void removePlayer(int playerId) {
         balls.remove(playerId);
         playerToLobby.remove(playerId);
@@ -116,6 +145,9 @@ public class ServerGameSimulation {
 
     // ---------------- GAME ACTIONS ----------------
 
+    /**
+     * Applies an impulse force to a player's ball.
+     */
     public void strokeBall(int playerId, double fx, double fy) {
         ServerBall ball = balls.get(playerId);
         if (ball != null && !ball.isFinished()) {
@@ -126,6 +158,9 @@ public class ServerGameSimulation {
         }
     }
 
+    /**
+     * Instantly moves a ball to the hole (cheat/debug tool).
+     */
     public void cheatTeleport(int playerId) {
         ServerBall ball = balls.get(playerId);
         if (ball != null && !ball.isFinished()) {
@@ -141,10 +176,13 @@ public class ServerGameSimulation {
 
     // ---------------- MAIN TICK ----------------
 
+    /**
+     * The core simulation loop. Handles hole detection, terrain friction,
+     * collision resolution, and dynamic obstacle logic.
+     */
     private void tick() {
         try {
             double dt = TICK_RATE_MS / 1000.0;
-
             Map<Integer, StringBuilder> payloads = new HashMap<>();
             Set<Integer> dirtyLobbies = new HashSet<>();
 
@@ -173,14 +211,12 @@ public class ServerGameSimulation {
                     finishOrder.add(playerId);
                     dirtyLobbies.add(lobbyId);
 
-                    logger.info("Player {} finished in {} strokes",
-                            playerId, ball.getStrokeCount());
-
+                    logger.info("Player {} finished in {} strokes", playerId, ball.getStrokeCount());
                     checkGameEnd(playerId);
                     continue;
                 }
 
-                // ---- PHYSICS ----
+                // ---- PHYSICS & TERRAIN ----
                 if (ball.isMoving() || forceUpdate) {
                     int col = (int) ball.getPx();
                     int row = (int) ball.getPy();
@@ -188,7 +224,7 @@ public class ServerGameSimulation {
                     if (col >= 0 && col < MapData.COLS && row >= 0 && row < MapData.ROWS) {
                         int terrain = map.SERVER_MAP[row][col];
 
-                        if (terrain == 4) {
+                        if (terrain == 4) { // Water/Out of Bounds
                             ball.resetToLastPosition();
                             needsUpdate = true;
                         } else {
@@ -196,14 +232,34 @@ public class ServerGameSimulation {
                         }
                     }
 
-                    List<MapData.ServerShape> nearby =
-                            getNearbyShapes(map, ball.getPx(), ball.getPy(), 3.0);
-
+                    List<MapData.ServerShape> nearby = getNearbyShapes(map, ball.getPx(), ball.getPy(), 3.0);
                     ball.update(dt, nearby);
 
-                    // ---- DESTRUCTIBLE OBJECTS ----
+                    // ---- DYNAMIC & DESTRUCTIBLE OBJECTS ----
                     List<Integer> removed = ball.getPendingRemovals();
                     for (int id : removed) {
+                        MapData.ServerShape shape = map.worldShapes.get(id);
+
+                        if (shape != null && shape.terrainType == 6) { // Switch Trigger
+                            List<ServerBall> lobbyBalls = balls.entrySet().stream()
+                                    .filter(e -> lobbyId.equals(playerToLobby.get(e.getKey())))
+                                    .map(Map.Entry::getValue)
+                                    .toList();
+
+                            // Toggle Bridge and Barrier states
+                            map.changeBridge(false, lobbyBalls);
+                            map.changeBarrier(true, lobbyBalls);
+
+                            serverApi.sendObstacleChange(lobbyId, "97");
+                            serverApi.sendObstacleChange(lobbyId, "98");
+
+                            // Revert switch effect after 5 seconds
+                            ticker.schedule(() -> revertSwitchEffect(lobbyId, lobbyBalls), 5, TimeUnit.SECONDS);
+
+                            logger.info("Switch hit! Bridge despawned, Barrier spawned in lobby {}", lobbyId);
+                        }
+
+                        // Clean up the object from the server grid
                         removeShapeFromLobbyGrid(map, id);
                         serverApi.sendObstacleChange(lobbyId, String.valueOf(id));
                         needsUpdate = true;
@@ -220,7 +276,7 @@ public class ServerGameSimulation {
                         .append(";");
             }
 
-            // ---- BROADCAST ----
+            // ---- BROADCAST MOVEMENT ----
             for (var entry : payloads.entrySet()) {
                 if (dirtyLobbies.contains(entry.getKey())) {
                     serverApi.broadcastMovementToLobby(entry.getKey(), entry.getValue().toString());
@@ -234,8 +290,32 @@ public class ServerGameSimulation {
         }
     }
 
+    /**
+     * Resets map obstacles to their original state after a switch trigger expires.
+     */
+    private void revertSwitchEffect(int lobbyId, List<ServerBall> lobbyBalls) {
+        MapData lobbyMap = lobbyPhysicsMaps.get(lobbyId);
+
+        if (lobbyMap != null) {
+            lobbyMap.changeBridge(true, lobbyBalls);
+            lobbyMap.changeBarrier(false, lobbyBalls);
+
+            try {
+                serverApi.sendObstacleChange(lobbyId, "97");
+                serverApi.sendObstacleChange(lobbyId, "98");
+            } catch (Exception e) {
+                System.err.println("Failed to sync revert for lobby " + lobbyId + ": " + e.getMessage());
+            }
+
+            this.forceUpdate = true;
+        }
+    }
+
     // ---------------- HELPERS ----------------
 
+    /**
+     * Maps terrain IDs to physical friction constants.
+     */
     private double getFrictionForTerrain(int t) {
         return switch (t) {
             case 2 -> FRICTION_SAND;
@@ -244,9 +324,10 @@ public class ServerGameSimulation {
         };
     }
 
-    public List<MapData.ServerShape> getNearbyShapes(
-            MapData map, double x, double y, double r) {
-
+    /**
+     * Fetches shapes within a specific radius of a coordinate for collision checking.
+     */
+    public List<MapData.ServerShape> getNearbyShapes(MapData map, double x, double y, double r) {
         List<MapData.ServerShape> shapes = new ArrayList<>();
         Set<Integer> seen = new HashSet<>();
 
@@ -267,6 +348,9 @@ public class ServerGameSimulation {
         return shapes;
     }
 
+    /**
+     * Wipes a specific shape ID from the grid and collision maps.
+     */
     private void removeShapeFromLobbyGrid(MapData map, int id) {
         for (int r = 0; r < MapData.ROWS; r++) {
             for (int c = 0; c < MapData.COLS; c++) {
@@ -280,6 +364,9 @@ public class ServerGameSimulation {
 
     // ---------------- GAME END ----------------
 
+    /**
+     * Checks if all players in a lobby have finished and triggers the end-game listener.
+     */
     private void checkGameEnd(int finishedPlayerId) {
         if (gameEndListener == null) return;
 
@@ -307,7 +394,7 @@ public class ServerGameSimulation {
 
         gameEndListener.onGameEnd(lobbyId, results);
 
-        // cleanup
+        // Cleanup lobby data
         lobbyPhysicsMaps.remove(lobbyId);
         playerToLobby.entrySet().removeIf(e -> e.getValue().equals(lobbyId));
 

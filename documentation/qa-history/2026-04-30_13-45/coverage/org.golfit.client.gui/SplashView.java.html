@@ -1,0 +1,112 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SplashView.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.gui</a> &gt; <span class="el_source">SplashView.java</span></div><h1>SplashView.java</h1><pre class="source lang-java linenums">package org.golfit.client.gui;
+
+import javafx.application.Platform;
+import javafx.geometry.Pos;
+import javafx.scene.control.Label;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.CycleMethod;
+import javafx.scene.paint.LinearGradient;
+import javafx.scene.paint.Stop;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
+import javafx.scene.text.Text;
+import javafx.scene.effect.DropShadow;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.shared.constants.Constants;
+
+import java.util.ArrayList;
+import java.util.List;
+
+public class SplashView extends StackPane {
+
+<span class="nc" id="L23">    private final VBox scoreBoard = new VBox(6);</span>
+
+    // Single source of truth — last payload received from server
+<span class="nc" id="L26">    private static String cachedScorePayload = null;</span>
+
+<span class="nc" id="L28">    public SplashView() {</span>
+<span class="nc" id="L29">        Stop[] stops = new Stop[]{</span>
+<span class="nc" id="L30">                new Stop(0, Color.web(&quot;#1b5e20&quot;)),</span>
+<span class="nc" id="L31">                new Stop(0.5, Color.web(&quot;#2e7d32&quot;)),</span>
+<span class="nc" id="L32">                new Stop(1, Color.web(&quot;#1b5e20&quot;))</span>
+        };
+<span class="nc" id="L34">        LinearGradient grassGradient = new LinearGradient(0, 0, 1, 1, true, CycleMethod.NO_CYCLE, stops);</span>
+<span class="nc" id="L35">        this.setBackground(new Background(new BackgroundFill(grassGradient, null, null)));</span>
+
+<span class="nc" id="L37">        VBox content = new VBox(10);</span>
+<span class="nc" id="L38">        content.setAlignment(Pos.CENTER);</span>
+
+<span class="nc" id="L40">        Text title = new Text(&quot;GolfIt&quot;);</span>
+<span class="nc" id="L41">        title.setFont(Font.font(&quot;Apple Chancery&quot;, FontWeight.BOLD, 100));</span>
+<span class="nc" id="L42">        title.setFill(Color.WHITE);</span>
+<span class="nc" id="L43">        DropShadow titleShadow = new DropShadow();</span>
+<span class="nc" id="L44">        titleShadow.setRadius(20.0);</span>
+<span class="nc" id="L45">        titleShadow.setOffsetX(5.0);</span>
+<span class="nc" id="L46">        titleShadow.setOffsetY(5.0);</span>
+<span class="nc" id="L47">        titleShadow.setColor(Color.color(0, 0, 0, 0.4));</span>
+<span class="nc" id="L48">        title.setEffect(titleShadow);</span>
+
+<span class="nc" id="L50">        Label subtitle = new Label(&quot;by Sultans of Swing&quot;);</span>
+<span class="nc" id="L51">        subtitle.setFont(Font.font(&quot;American Typewriter&quot;, FontWeight.LIGHT, 24));</span>
+<span class="nc" id="L52">        subtitle.setTextFill(Color.web(&quot;#a5d6a7&quot;));</span>
+<span class="nc" id="L53">        subtitle.setStyle(&quot;-fx-font-style: italic;&quot;);</span>
+<span class="nc" id="L54">        DropShadow subShadow = new DropShadow();</span>
+<span class="nc" id="L55">        subShadow.setRadius(5.0);</span>
+<span class="nc" id="L56">        subShadow.setColor(Color.color(0, 0, 0, 0.3));</span>
+<span class="nc" id="L57">        subtitle.setEffect(subShadow);</span>
+
+<span class="nc" id="L59">        Label scoresTitle = new Label(&quot;🏆 High Scores&quot;);</span>
+<span class="nc" id="L60">        scoresTitle.setFont(Font.font(&quot;American Typewriter&quot;, FontWeight.BOLD, 20));</span>
+<span class="nc" id="L61">        scoresTitle.setTextFill(Color.web(&quot;#fff9c4&quot;));</span>
+
+<span class="nc" id="L63">        scoreBoard.setAlignment(Pos.CENTER);</span>
+<span class="nc" id="L64">        scoreBoard.setStyle(&quot;&quot;&quot;</span>
+                -fx-background-color: rgba(0,0,0,0.25);
+                -fx-background-radius: 12;
+                -fx-padding: 14 24 14 24;
+                &quot;&quot;&quot;);
+
+<span class="nc" id="L70">        content.getChildren().addAll(title, subtitle, scoresTitle, scoreBoard);</span>
+
+<span class="nc" id="L72">        StackPane overlay = new StackPane(content);</span>
+<span class="nc" id="L73">        overlay.setStyle(&quot;-fx-background-color: rgba(0,0,0,0.15);&quot;);</span>
+<span class="nc" id="L74">        getChildren().add(overlay);</span>
+
+        // Populate immediately from cache — no race condition possible
+<span class="nc bnc" id="L77" title="All 2 branches missed.">        if (cachedScorePayload != null) {</span>
+<span class="nc" id="L78">            populateBoard(cachedScorePayload);</span>
+        }
+
+        // Update cache and board whenever server sends scores
+<span class="nc" id="L82">        EventBus.get().on(Constants.SCORE_UPDATE, payload -&gt; {</span>
+<span class="nc" id="L83">            String p = ((String) payload).trim();</span>
+<span class="nc" id="L84">            cachedScorePayload = p;  // always update cache, even if this view isn't visible yet</span>
+<span class="nc" id="L85">            Platform.runLater(() -&gt; {</span>
+<span class="nc" id="L86">                scoreBoard.getChildren().clear();</span>
+<span class="nc" id="L87">                populateBoard(p);</span>
+<span class="nc" id="L88">            });</span>
+<span class="nc" id="L89">        });</span>
+<span class="nc" id="L90">    }</span>
+
+    private void populateBoard(String payload) {
+<span class="nc" id="L93">        scoreBoard.getChildren().clear();</span>
+<span class="nc bnc" id="L94" title="All 2 branches missed.">        for (String line : payload.split(&quot;\n&quot;)) {</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">            if (!line.isBlank()) appendScore(line.trim());</span>
+        }
+<span class="nc" id="L97">    }</span>
+
+    private void appendScore(String payload) {
+<span class="nc" id="L100">        String[] parts = payload.trim().split(&quot;:&quot;);</span>
+<span class="nc bnc" id="L101" title="All 2 branches missed.">        if (parts.length &lt; 2) return;</span>
+<span class="nc" id="L102">        String username = parts[0].trim();</span>
+<span class="nc" id="L103">        String strokes  = parts[1].trim();</span>
+<span class="nc" id="L104">        int rank = scoreBoard.getChildren().size() + 1;</span>
+<span class="nc" id="L105">        String text = String.format(&quot;  %d.  %-16s %s strokes&quot;, rank, username, strokes);</span>
+<span class="nc" id="L106">        Label row = new Label(text);</span>
+<span class="nc" id="L107">        row.setFont(Font.font(&quot;Courier New&quot;, FontWeight.NORMAL, 16));</span>
+<span class="nc bnc" id="L108" title="All 2 branches missed.">        row.setTextFill(rank == 1 ? Color.web(&quot;#fff176&quot;) : Color.web(&quot;#e8f5e9&quot;));</span>
+<span class="nc" id="L109">        scoreBoard.getChildren().add(row);</span>
+<span class="nc" id="L110">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

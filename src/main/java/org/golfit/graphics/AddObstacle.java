@@ -24,6 +24,8 @@ public class AddObstacle {
     private static final int WATER = 4;
     private static final int BOUNCE = 5;
     private static final int SWITCH = 6;
+    private static final int BRIDGE = 7;
+    private static final int BARRIER = 8;
 
 
     public final List<Shape> obstacles = new ArrayList<>();
@@ -60,10 +62,24 @@ public class AddObstacle {
         return rect;
     }
 
+
     /** Adds a wall obstacle (brown rectangle) at the given grid position. */
     public void addWall(int col, int row, int width, int height) {
         Rectangle rect = addRect(col, row, width, height, Color.rgb(124, 63, 0));
         rect.setUserData(WALL);
+        obstacles.add(rect);
+    }
+
+    public void addBridge(int col, int row, int width, int height){
+        Rectangle rect = addRect(col, row, width, height, Color.rgb(86,34,34));
+        rect.setUserData(BRIDGE);
+        obstacles.add(rect);
+    }
+
+    public void addBarrier(int col, int row, int width, int height){
+        Rectangle rect = addRect(col, row, width, height, Color.rgb(	139, 0, 0));
+        rect.setUserData(BARRIER);
+        rect.setVisible(false);
         obstacles.add(rect);
     }
 

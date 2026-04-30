@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="de"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>BallRender.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">golfit</a> &gt; <a href="index.source.html" class="el_package">org.golfit.client.game</a> &gt; <span class="el_source">BallRender.java</span></div><h1>BallRender.java</h1><pre class="source lang-java linenums">package org.golfit.client.game;
+
+import javafx.scene.Group;
+import javafx.scene.effect.Blend;
+import javafx.scene.effect.BlendMode;
+import javafx.scene.effect.ColorInput;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.Pane;
+import javafx.scene.paint.Color;
+import javafx.scene.shape.Circle;
+import org.golfit.shared.constants.Constants;
+import org.golfit.shared.constants.MapData;
+
+/** Renders a golf ball as a JavaFX {@link Circle} on the game pane, scaling to grid size. */
+public class BallRender {
+    private Circle circle;
+    private ImageView imageView;
+    private static final double GRID_RADIUS = Constants.BALL_RADIUS;
+<span class="nc" id="L20">    public Color ballColor = Color.BLUE;</span>
+    private Pane root;
+<span class="nc" id="L22">    private double totalDistance = 0;</span>
+<span class="nc" id="L23">    private Color tintColor = Color.WHITE;</span>
+    private Circle tintCircle;
+    private Group ballGroup;
+
+    private static final int FRAME_COUNT = 4;
+<span class="nc" id="L28">    private static final Image[] FRAMES = loadFrames();</span>
+
+    /** Preloads all ball frame images once, shared across all instances. */
+    private static Image[] loadFrames() {
+<span class="nc" id="L32">        Image[] frames = new Image[FRAME_COUNT];</span>
+<span class="nc bnc" id="L33" title="All 2 branches missed.">        for (int i = 0; i &lt; FRAME_COUNT; i++) {</span>
+            try {
+<span class="nc" id="L35">                var stream = BallRender.class.getResourceAsStream(&quot;/images/ball/ball_&quot; + i + &quot;.png&quot;);</span>
+<span class="nc bnc" id="L36" title="All 2 branches missed.">                frames[i] = stream != null ? new Image(stream) : null;</span>
+<span class="nc" id="L37">            } catch (Exception e) {</span>
+<span class="nc" id="L38">                frames[i] = null;</span>
+<span class="nc" id="L39">            }</span>
+        }
+<span class="nc" id="L41">        return frames;</span>
+    }
+
+    /** Returns true if all frames loaded successfully. */
+    private static boolean hasImages() {
+<span class="nc bnc" id="L46" title="All 4 branches missed.">        for (Image f : FRAMES) if (f == null) return false;</span>
+<span class="nc" id="L47">        return true;</span>
+    }
+
+    /**
+     * Creates and renders a ball on the given pane at the ball's position.
+     *
+     * @param root the parent pane to add the circle to
+     * @param ball the ball model with initial pixel coordinates
+     */
+<span class="nc" id="L56">    public BallRender(Pane root, Ball ball) {</span>
+<span class="nc" id="L57">        this.root = root;</span>
+<span class="nc" id="L58">        double initialPixelRadius = calculatePixelRadius();</span>
+
+        // Circle is always kept in sync — used by getCircle() callers
+<span class="nc" id="L61">        this.circle = new Circle(initialPixelRadius, ballColor);</span>
+<span class="nc" id="L62">        this.circle.setCenterX(ball.getPx());</span>
+<span class="nc" id="L63">        this.circle.setCenterY(ball.getPy());</span>
+
+<span class="nc bnc" id="L65" title="All 2 branches missed.">        if (hasImages()) {</span>
+<span class="nc" id="L66">            tintCircle = new Circle();</span>
+<span class="nc" id="L67">            tintCircle.setFill(Color.WHITE);</span>
+
+<span class="nc" id="L69">            imageView = new ImageView(FRAMES[0]);</span>
+<span class="nc" id="L70">            imageView.setBlendMode(BlendMode.MULTIPLY);</span>
+
+<span class="nc" id="L72">            ballGroup = new Group(tintCircle, imageView);</span>
+
+<span class="nc" id="L74">            syncImageToCircle(initialPixelRadius, ball.getPx(), ball.getPy());</span>
+
+<span class="nc" id="L76">            root.layoutBoundsProperty().addListener((obs, oldVal, newVal) -&gt; {</span>
+<span class="nc bnc" id="L77" title="All 2 branches missed.">                if (newVal.getWidth() &gt; 0) {</span>
+<span class="nc" id="L78">                    double radius = calculatePixelRadius();</span>
+<span class="nc" id="L79">                    circle.setRadius(radius);</span>
+<span class="nc" id="L80">                    syncImageToCircle(radius, ball.getPx(), ball.getPy());</span>
+                }
+<span class="nc" id="L82">            });</span>
+
+<span class="nc" id="L84">            root.getChildren().add(ballGroup);</span>
+        }
+<span class="nc" id="L86">    }</span>
+
+    public BallRender(Pane root, Ball ball, Color playerColor) {
+<span class="nc" id="L89">        this(root, ball); // call existing constructor</span>
+<span class="nc" id="L90">        changeColor(playerColor);</span>
+<span class="nc" id="L91">    }</span>
+
+    private void applyTint(Color color) {
+<span class="nc" id="L94">        this.tintColor = color;</span>
+<span class="nc bnc" id="L95" title="All 2 branches missed.">        if (imageView == null) return;</span>
+
+<span class="nc" id="L97">        ColorInput colorLayer = new ColorInput(</span>
+                0, 0,
+<span class="nc" id="L99">                imageView.getFitWidth(), imageView.getFitHeight(),</span>
+                color
+        );
+
+<span class="nc" id="L103">        Blend blend = new Blend(BlendMode.SRC_ATOP);</span>
+<span class="nc" id="L104">        blend.setTopInput(colorLayer);</span>
+<span class="nc" id="L105">        blend.setOpacity(0.6);</span>
+<span class="nc" id="L106">        imageView.setEffect(blend);</span>
+<span class="nc" id="L107">    }</span>
+
+    /**
+     * Calculates how many pixels correspond to 0.5 grid units.
+     */
+    private double calculatePixelRadius() {
+<span class="nc bnc" id="L113" title="All 4 branches missed.">        if (root == null || root.getWidth() &lt;= 0) {</span>
+<span class="nc" id="L114">            return (1100.0 / MapData.COLS) * GRID_RADIUS;</span>
+        }
+<span class="nc" id="L116">        double scaleX = root.getWidth() / MapData.COLS;</span>
+<span class="nc" id="L117">        return scaleX * GRID_RADIUS;</span>
+    }
+
+    /** Positions and sizes the ImageView to match the circle's center and radius. */
+    private void syncImageToCircle(double radius, double centerX, double centerY) {
+<span class="nc" id="L122">        double size = radius * 2;</span>
+<span class="nc" id="L123">        imageView.setFitWidth(size);</span>
+<span class="nc" id="L124">        imageView.setFitHeight(size);</span>
+<span class="nc" id="L125">        imageView.setX(centerX - radius);</span>
+<span class="nc" id="L126">        imageView.setY(centerY - radius);</span>
+
+<span class="nc" id="L128">        tintCircle.setRadius(radius);</span>
+<span class="nc" id="L129">        tintCircle.setCenterX(centerX);</span>
+<span class="nc" id="L130">        tintCircle.setCenterY(centerY);</span>
+<span class="nc" id="L131">    }</span>
+
+    /** Updates the circle's position and radius to match the ball's current pixel coordinates. */
+    public void updatePosition(Ball ball) {
+<span class="nc" id="L135">        double radius = calculatePixelRadius();</span>
+
+<span class="nc" id="L137">        this.circle.setRadius(radius);</span>
+<span class="nc" id="L138">        this.circle.setCenterX(ball.getPx());</span>
+<span class="nc" id="L139">        this.circle.setCenterY(ball.getPy());</span>
+
+<span class="nc bnc" id="L141" title="All 2 branches missed.">        if (imageView != null) {</span>
+<span class="nc" id="L142">            double dx = ball.getPx() - (imageView.getX() + imageView.getFitWidth() / 2);</span>
+<span class="nc" id="L143">            double dy = ball.getPy() - (imageView.getY() + imageView.getFitHeight() / 2);</span>
+<span class="nc" id="L144">            totalDistance += Math.sqrt(dx * dx + dy * dy);</span>
+
+            // Swap frame based on distance traveled
+<span class="nc" id="L147">            int frame = (int)(totalDistance / 4) % FRAME_COUNT;</span>
+<span class="nc" id="L148">            imageView.setImage(FRAMES[frame]);</span>
+
+<span class="nc" id="L150">            syncImageToCircle(radius, ball.getPx(), ball.getPy());</span>
+        }
+<span class="nc" id="L152">    }</span>
+
+    /** Returns the current ball color. */
+    public Color getColor() {
+<span class="nc" id="L156">        return ballColor;</span>
+    }
+
+    /** Changes the ball's fill color. */
+    public void changeColor(Color newColor) {
+<span class="nc" id="L161">        ballColor = newColor;</span>
+<span class="nc bnc" id="L162" title="All 2 branches missed.">        if (tintCircle != null) {</span>
+<span class="nc" id="L163">            tintCircle.setFill(newColor);</span>
+<span class="nc bnc" id="L164" title="All 2 branches missed.">        } else if (circle != null) {</span>
+<span class="nc" id="L165">            circle.setFill(newColor);</span>
+        }
+<span class="nc" id="L167">    }</span>
+
+    public void remove() {
+<span class="nc bnc" id="L170" title="All 2 branches missed.">        if (ballGroup != null) {</span>
+<span class="nc" id="L171">            root.getChildren().remove(ballGroup);</span>
+        } else {
+<span class="nc" id="L173">            root.getChildren().remove(circle);</span>
+        }
+<span class="nc" id="L175">    }</span>
+
+    /** Returns the underlying JavaFX circle node. */
+    public Circle getCircle() {
+<span class="nc" id="L179">        return circle;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.14.202510111229</span></div></body></html>

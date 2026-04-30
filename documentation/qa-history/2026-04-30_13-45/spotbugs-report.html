@@ -1,0 +1,1454 @@
+
+<!DOCTYPE html
+  PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+   <head>
+      <meta charset="UTF-8"/>
+      <title>SpotBugs Report</title>
+      <style type="text/css">
+		.tablerow0 {
+			background: #EEEEEE;
+		}
+
+		.tablerow1 {
+			background: white;
+		}
+
+		.detailrow0 {
+			background: #EEEEEE;
+		}
+
+		.detailrow1 {
+			background: white;
+		}
+
+		.tableheader {
+			background: #b9b9fe;
+			font-size: larger;
+		}
+
+		.tablerow0:hover, .tablerow1:hover {
+			background: #aaffaa;
+		}
+
+		.priority-1 {
+				color: red;
+				font-weight: bold;
+		}
+		.priority-2 {
+				color: orange;
+				font-weight: bold;
+		}
+		.priority-3 {
+				color: green;
+				font-weight: bold;
+		}
+		.priority-4 {
+				color: blue;
+				font-weight: bold;
+		}
+		</style>
+      <script type="text/javascript">
+			function toggleRow(elid) {
+				if (document.getElementById) {
+					element = document.getElementById(elid);
+					if (element) {
+						if (element.style.display == 'none') {
+							element.style.display = 'block';
+							//window.status = 'Toggle on!';
+						} else {
+							element.style.display = 'none';
+							//window.status = 'Toggle off!';
+						}
+					}
+				}
+			}
+		</script>
+   </head>
+   <body>
+      <h1>
+         <a href="https://spotbugs.github.io/">SpotBugs</a> Report</h1>
+      <h2>Project Information</h2>
+      <p>Project: 
+		golfit (spotbugsMain)</p>
+      <p>SpotBugs version: 4.9.8</p>
+      <p>Code analyzed:</p>
+      <ul>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\App.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\cli\ClientCli$1.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\cli\ClientCli.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\cli\Commands.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\cli\ConsoleManager.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\cli\JLineAppender.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\clientLogic\Client.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\clientLogic\ClientApi.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\clientLogic\IClientApi.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\eventBus\EventBus.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\game\AimIndicator.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\game\Ball.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\game\BallRender.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\game\GameView.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\gui\lobby\LobbyMenu.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\gui\Sidebar.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\gui\SplashView.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\handlers\MovementHandler.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\handlers\SystemHandler.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\client\pingService\PingService.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\graphics\AddObstacle.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\graphics\Course.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\graphics\Game.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\graphics\HelpGridMap.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\Main.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\ClientHandler\ClientHandler$ClientState.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\ClientHandler\ClientHandler.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\game\ServerBall.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\game\ServerGameSimulation$GameEndListener.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\game\ServerGameSimulation$StrokeListener.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\game\ServerGameSimulation.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\handlers\MovementHandler.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\handlers\SystemHandler.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\Server.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\serverApi\IServerApi.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\serverApi\ServerApi.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\ServerContext.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\server\ServerInit\ServerInit.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\constants\Constants.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\constants\MapData$ServerShape.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\constants\MapData.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\lobby\Lobby$LobbyStatus.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\lobby\Lobby.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\messageBuilder\MessageBuilder.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\messageParser\MessageParser$Message.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\messageParser\MessageParser.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\pendingPacket\PendingPacket.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\protocol\channel\Channel.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\protocol\channelManager\ChannelManager.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\protocol\Protocol$PacketDispatcher.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\protocol\Protocol$SendFunction.class</li>
+         <li>C:\Users\const\IdeaProjects\Gruppe-4\build\classes\java\main\org\golfit\shared\protocol\Protocol.class</li>
+      </ul>
+      <p>
+         <br/>
+         <br/>
+      </p>
+      <h2>Metrics</h2>
+      <p>3422 lines of code analyzed,
+	in 52 classes, 
+	in 25 packages.</p>
+      <table width="500" cellpadding="5" cellspacing="2">
+         <tr class="tableheader">
+            <th align="left">Metric</th>
+            <th align="right">Total</th>
+            <th align="right">Density*</th>
+         </tr>
+         <tr class="tablerow0">
+            <td>High Priority Warnings</td>
+            <td align="right">10</td>
+            <td align="right">2.92</td>
+         </tr>
+         <tr class="tablerow1">
+            <td>Medium Priority Warnings</td>
+            <td align="right">53</td>
+            <td align="right">15.49</td>
+         </tr>
+         <tr class="$totalClass">
+            <td>
+               <b>Total Warnings</b>
+            </td>
+            <td align="right">
+               <b>63</b>
+            </td>
+            <td align="right">
+               <b>18.41</b>
+            </td>
+         </tr>
+      </table>
+      <p>
+         <i>(* Defects per Thousand lines of non-commenting source statements)</i>
+      </p>
+      <p>
+         <br/>
+         <br/>
+      </p>
+      <h2>Contents</h2>
+      <ul>
+         <li>
+            <a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+         </li>
+         <li>
+            <a href="#Warnings_CORRECTNESS">Correctness Warnings</a>
+         </li>
+         <li>
+            <a href="#Warnings_I18N">Internationalization Warnings</a>
+         </li>
+         <li>
+            <a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+         </li>
+         <li>
+            <a href="#Warnings_MT_CORRECTNESS">Multithreaded correctness Warnings</a>
+         </li>
+         <li>
+            <a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+         </li>
+         <li>
+            <a href="#Warnings_STYLE">Dodgy code Warnings</a>
+         </li>
+         <li>
+            <a href="#Details">Details</a>
+         </li>
+      </ul>
+      <h1>Summary</h1>
+      <table width="500" cellpadding="5" cellspacing="2">
+         <tr class="tableheader">
+            <th align="left">Warning Type</th>
+            <th align="right">Number</th>
+         </tr>
+         <tr class="tablerow0">
+            <td>
+               <a href="#Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+            </td>
+            <td align="right">14</td>
+         </tr>
+         <tr class="tablerow1">
+            <td>
+               <a href="#Warnings_CORRECTNESS">Correctness Warnings</a>
+            </td>
+            <td align="right">1</td>
+         </tr>
+         <tr class="tablerow0">
+            <td>
+               <a href="#Warnings_I18N">Internationalization Warnings</a>
+            </td>
+            <td align="right">2</td>
+         </tr>
+         <tr class="tablerow1">
+            <td>
+               <a href="#Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+            </td>
+            <td align="right">31</td>
+         </tr>
+         <tr class="tablerow0">
+            <td>
+               <a href="#Warnings_MT_CORRECTNESS">Multithreaded correctness Warnings</a>
+            </td>
+            <td align="right">5</td>
+         </tr>
+         <tr class="tablerow1">
+            <td>
+               <a href="#Warnings_PERFORMANCE">Performance Warnings</a>
+            </td>
+            <td align="right">6</td>
+         </tr>
+         <tr class="tablerow0">
+            <td>
+               <a href="#Warnings_STYLE">Dodgy code Warnings</a>
+            </td>
+            <td align="right">4</td>
+         </tr>
+         <tr class="tablerow1">
+            <td>
+               <b>Total</b>
+            </td>
+            <td align="right">
+               <b>63</b>
+            </td>
+         </tr>
+      </table>
+      <h1>Warnings</h1>
+      <p>Click on a warning row to see full context information.</p>
+      <h2>
+         <a name="Warnings_BAD_PRACTICE">Bad practice Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e227');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.client.clientLogic.ClientApi.shutdown() might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e227" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.client.clientLogic.ClientApi<br/>In method org.golfit.client.clientLogic.ClientApi.shutdown()<br/>Exception class java.lang.Exception<br/>At ClientApi.java:[line 203]<br/>At ClientApi.java:[line 203]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e825');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.server.handlers.SystemHandler.handleGameEnd(int, Map) might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e825" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.handleGameEnd(int, Map)<br/>Exception class java.lang.Exception<br/>At SystemHandler.java:[line 232]<br/>At SystemHandler.java:[line 232]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e843');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.server.handlers.SystemHandler.lambda$onChatLobby$0(String, ClientHandler) might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e843" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.lambda$onChatLobby$0(String, ClientHandler)<br/>Exception class java.lang.Exception<br/>At SystemHandler.java:[line 103]<br/>At SystemHandler.java:[line 103]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e861');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.server.handlers.SystemHandler.lambda$onLobbyJoin$0(MessageParser$Message, ClientHandler) might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e861" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.lambda$onLobbyJoin$0(MessageParser$Message, ClientHandler)<br/>Exception class java.lang.Exception<br/>At SystemHandler.java:[line 135]<br/>At SystemHandler.java:[line 135]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e879');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.server.handlers.SystemHandler.lambda$onLobbyLeave$0(MessageParser$Message, ClientHandler) might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e879" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.lambda$onLobbyLeave$0(MessageParser$Message, ClientHandler)<br/>Exception class java.lang.Exception<br/>At SystemHandler.java:[line 149]<br/>At SystemHandler.java:[line 149]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e897');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.server.handlers.SystemHandler.lambda$refreshLobbyLists$0(ClientHandler) might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e897" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.lambda$refreshLobbyLists$0(ClientHandler)<br/>Exception class java.lang.Exception<br/>At SystemHandler.java:[line 282]<br/>At SystemHandler.java:[line 282]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e964');">
+            <td>
+               <span class="priority-1">DE</span>
+            </td>
+            <td>org.golfit.server.serverApi.ServerApi.disconnectClient(ClientHandler) might ignore java.lang.Exception</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e964" style="display: none;">
+                  <a href="#DE_MIGHT_IGNORE">Bug type DE_MIGHT_IGNORE (click for details)</a>
+                  <br/>In class org.golfit.server.serverApi.ServerApi<br/>In method org.golfit.server.serverApi.ServerApi.disconnectClient(ClientHandler)<br/>Exception class java.lang.Exception<br/>At ServerApi.java:[line 67]<br/>At ServerApi.java:[line 67]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e578');">
+            <td>
+               <span class="priority-1">DMI</span>
+            </td>
+            <td>Random object created and used only once in org.golfit.graphics.Course.addTiledGrass()</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e578" style="display: none;">
+                  <a href="#DMI_RANDOM_USED_ONLY_ONCE">Bug type DMI_RANDOM_USED_ONLY_ONCE (click for details)</a>
+                  <br/>In class org.golfit.graphics.Course<br/>In method org.golfit.graphics.Course.addTiledGrass()<br/>Called method java.util.Random.nextInt(int)<br/>At Course.java:[line 166]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e83');">
+            <td>
+               <span class="priority-2">Dm</span>
+            </td>
+            <td>org.golfit.client.App.start(Stage) invokes System.exit(...), which shuts down the entire virtual machine</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e83" style="display: none;">
+                  <a href="#DM_EXIT">Bug type DM_EXIT (click for details)</a>
+                  <br/>In class org.golfit.client.App<br/>In method org.golfit.client.App.start(Stage)<br/>At App.java:[line 38]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e95');">
+            <td>
+               <span class="priority-2">Dm</span>
+            </td>
+            <td>org.golfit.client.App.stop() invokes System.exit(...), which shuts down the entire virtual machine</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e95" style="display: none;">
+                  <a href="#DM_EXIT">Bug type DM_EXIT (click for details)</a>
+                  <br/>In class org.golfit.client.App<br/>In method org.golfit.client.App.stop()<br/>At App.java:[line 223]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e188');">
+            <td>
+               <span class="priority-2">PA</span>
+            </td>
+            <td>Primitive field org.golfit.client.clientLogic.Client.clientApi is public and set from inside the class, which makes it too exposed. Consider making it private to limit external accessibility.</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e188" style="display: none;">
+                  <a href="#PA_PUBLIC_PRIMITIVE_ATTRIBUTE">Bug type PA_PUBLIC_PRIMITIVE_ATTRIBUTE (click for details)</a>
+                  <br/>In class org.golfit.client.clientLogic.Client<br/>Field org.golfit.client.clientLogic.Client.clientApi<br/>At Client.java:[line 101]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e201');">
+            <td>
+               <span class="priority-2">PA</span>
+            </td>
+            <td>Primitive field org.golfit.client.clientLogic.Client.pingService is public and set from inside the class, which makes it too exposed. Consider making it private to limit external accessibility.</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e201" style="display: none;">
+                  <a href="#PA_PUBLIC_PRIMITIVE_ATTRIBUTE">Bug type PA_PUBLIC_PRIMITIVE_ATTRIBUTE (click for details)</a>
+                  <br/>In class org.golfit.client.clientLogic.Client<br/>Field org.golfit.client.clientLogic.Client.pingService<br/>At ClientApi.java:[line 204]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e309');">
+            <td>
+               <span class="priority-2">PA</span>
+            </td>
+            <td>Primitive field org.golfit.client.game.BallRender.ballColor is public and set from inside the class, which makes it too exposed. Consider making it private to limit external accessibility.</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e309" style="display: none;">
+                  <a href="#PA_PUBLIC_PRIMITIVE_ATTRIBUTE">Bug type PA_PUBLIC_PRIMITIVE_ATTRIBUTE (click for details)</a>
+                  <br/>In class org.golfit.client.game.BallRender<br/>Field org.golfit.client.game.BallRender.ballColor<br/>At BallRender.java:[line 20]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e690');">
+            <td>
+               <span class="priority-2">RV</span>
+            </td>
+            <td>Exceptional return value of java.util.concurrent.BlockingQueue.offer(Object) ignored in org.golfit.server.ClientHandler.ClientHandler.queueMessage(String)</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e690" style="display: none;">
+                  <a href="#RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">Bug type RV_RETURN_VALUE_IGNORED_BAD_PRACTICE (click for details)</a>
+                  <br/>In class org.golfit.server.ClientHandler.ClientHandler<br/>In method org.golfit.server.ClientHandler.ClientHandler.queueMessage(String)<br/>Called method java.util.concurrent.BlockingQueue.offer(Object)<br/>At ClientHandler.java:[line 68]</p>
+            </td>
+         </tr>
+      </table>
+      <h2>
+         <a name="Warnings_CORRECTNESS">Correctness Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e245');">
+            <td>
+               <span class="priority-2">SING</span>
+            </td>
+            <td>Class (org.golfit.client.eventBus.EventBus) using singleton design pattern has non-private constructor.</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e245" style="display: none;">
+                  <a href="#SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR">Bug type SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR (click for details)</a>
+                  <br/>In class org.golfit.client.eventBus.EventBus<br/>In method new org.golfit.client.eventBus.EventBus()<br/>At EventBus.java:[lines 13-21]</p>
+            </td>
+         </tr>
+      </table>
+      <h2>
+         <a name="Warnings_I18N">Internationalization Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e915');">
+            <td>
+               <span class="priority-1">Dm</span>
+            </td>
+            <td>Found reliance on default encoding in org.golfit.server.handlers.SystemHandler.buildScoreHistory(): new java.io.FileReader(File)</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e915" style="display: none;">
+                  <a href="#DM_DEFAULT_ENCODING">Bug type DM_DEFAULT_ENCODING (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.buildScoreHistory()<br/>Called method new java.io.FileReader(File)<br/>At SystemHandler.java:[line 259]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e931');">
+            <td>
+               <span class="priority-1">Dm</span>
+            </td>
+            <td>Found reliance on default encoding in org.golfit.server.handlers.SystemHandler.saveResults(int, String, Map): new java.io.FileWriter(String, boolean)</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e931" style="display: none;">
+                  <a href="#DM_DEFAULT_ENCODING">Bug type DM_DEFAULT_ENCODING (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.saveResults(int, String, Map)<br/>Called method new java.io.FileWriter(String, boolean)<br/>At SystemHandler.java:[line 245]</p>
+            </td>
+         </tr>
+      </table>
+      <h2>
+         <a name="Warnings_MALICIOUS_CODE">Malicious code vulnerability Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e156');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.client.clientLogic.Client.getMovementHandler() may expose internal representation by returning Client.movementHandler</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e156" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.client.clientLogic.Client<br/>In method org.golfit.client.clientLogic.Client.getMovementHandler()<br/>Field org.golfit.client.clientLogic.Client.movementHandler<br/>At Client.java:[line 157]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e172');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.client.clientLogic.Client.getSystemHandler() may expose internal representation by returning Client.systemHandler</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e172" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.client.clientLogic.Client<br/>In method org.golfit.client.clientLogic.Client.getSystemHandler()<br/>Field org.golfit.client.clientLogic.Client.systemHandler<br/>At Client.java:[line 162]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e275');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.client.game.BallRender.getCircle() may expose internal representation by returning BallRender.circle</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e275" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.client.game.BallRender<br/>In method org.golfit.client.game.BallRender.getCircle()<br/>Field org.golfit.client.game.BallRender.circle<br/>At BallRender.java:[line 179]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e322');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.client.game.GameView.getRoot() may expose internal representation by returning GameView.root</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e322" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.client.game.GameView<br/>In method org.golfit.client.game.GameView.getRoot()<br/>Field org.golfit.client.game.GameView.root<br/>At GameView.java:[line 104]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e593');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.graphics.Course.getPane() may expose internal representation by returning Course.container</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e593" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.graphics.Course<br/>In method org.golfit.graphics.Course.getPane()<br/>Field org.golfit.graphics.Course.container<br/>At Course.java:[line 144]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e622');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.graphics.Game.getRoot() may expose internal representation by returning Game.root</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e622" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.graphics.Game<br/>In method org.golfit.graphics.Game.getRoot()<br/>Field org.golfit.graphics.Game.root<br/>At Game.java:[line 97]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e705');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.server.Server.getClients() may expose internal representation by returning Server.clients</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e705" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.server.Server<br/>In method org.golfit.server.Server.getClients()<br/>Field org.golfit.server.Server.clients<br/>At Server.java:[line 175]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e721');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.server.Server.getLobbies() may expose internal representation by returning Server.lobbies</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e721" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.server.Server<br/>In method org.golfit.server.Server.getLobbies()<br/>Field org.golfit.server.Server.lobbies<br/>At Server.java:[line 178]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e737');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.server.Server.getUsernameSet() may expose internal representation by returning Server.usernames</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e737" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.server.Server<br/>In method org.golfit.server.Server.getUsernameSet()<br/>Field org.golfit.server.Server.usernames<br/>At Server.java:[line 181]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e982');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.shared.lobby.Lobby.getClients() may expose internal representation by returning Lobby.clients</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e982" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.shared.lobby.Lobby<br/>In method org.golfit.shared.lobby.Lobby.getClients()<br/>Field org.golfit.shared.lobby.Lobby.clients<br/>At Lobby.java:[line 59]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e998');">
+            <td>
+               <span class="priority-2">EI</span>
+            </td>
+            <td>org.golfit.shared.lobby.Lobby.getLobbyHost() may expose internal representation by returning Lobby.lobbyHost</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e998" style="display: none;">
+                  <a href="#EI_EXPOSE_REP">Bug type EI_EXPOSE_REP (click for details)</a>
+                  <br/>In class org.golfit.shared.lobby.Lobby<br/>In method org.golfit.shared.lobby.Lobby.getLobbyHost()<br/>Field org.golfit.shared.lobby.Lobby.lobbyHost<br/>At Lobby.java:[line 114]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e107');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>org.golfit.client.App.start(Stage) may expose internal representation by storing an externally mutable object into App.primaryStage</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e107" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.App<br/>In method org.golfit.client.App.start(Stage)<br/>Field org.golfit.client.App.primaryStage<br/>Local variable named stage<br/>At App.java:[line 45]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e125');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.cli.ClientCli(ClientApi) may expose internal representation by storing an externally mutable object into ClientCli.clientApi</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e125" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.cli.ClientCli<br/>In method new org.golfit.client.cli.ClientCli(ClientApi)<br/>Field org.golfit.client.cli.ClientCli.clientApi<br/>Local variable named clientApi<br/>At ClientCli.java:[line 19]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e257');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.game.AimIndicator(Pane) may expose internal representation by storing an externally mutable object into AimIndicator.pane</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e257" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.game.AimIndicator<br/>In method new org.golfit.client.game.AimIndicator(Pane)<br/>Field org.golfit.client.game.AimIndicator.pane<br/>Local variable named pane<br/>At AimIndicator.java:[line 32]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e291');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.game.BallRender(Pane, Ball) may expose internal representation by storing an externally mutable object into BallRender.root</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e291" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.game.BallRender<br/>In method new org.golfit.client.game.BallRender(Pane, Ball)<br/>Field org.golfit.client.game.BallRender.root<br/>Local variable named root<br/>At BallRender.java:[line 57]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e338');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.game.GameView(MovementHandler, int) may expose internal representation by storing an externally mutable object into GameView.movementHandler</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e338" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.game.GameView<br/>In method new org.golfit.client.game.GameView(MovementHandler, int)<br/>Field org.golfit.client.game.GameView.movementHandler<br/>Local variable named movementHandler<br/>At GameView.java:[line 28]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e356');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.gui.Sidebar(ClientApi) may expose internal representation by storing an externally mutable object into Sidebar.clientApi</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e356" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.gui.Sidebar<br/>In method new org.golfit.client.gui.Sidebar(ClientApi)<br/>Field org.golfit.client.gui.Sidebar.clientApi<br/>Local variable named clientApi<br/>At Sidebar.java:[line 32]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e387');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.gui.lobby.LobbyMenu(ClientApi) may expose internal representation by storing an externally mutable object into LobbyMenu.clientApi</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e387" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.gui.lobby.LobbyMenu<br/>In method new org.golfit.client.gui.lobby.LobbyMenu(ClientApi)<br/>Field org.golfit.client.gui.lobby.LobbyMenu.clientApi<br/>Local variable named clientApi<br/>At LobbyMenu.java:[line 39]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e405');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.handlers.MovementHandler(ClientApi) may expose internal representation by storing an externally mutable object into MovementHandler.clientApi</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e405" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.handlers.MovementHandler<br/>In method new org.golfit.client.handlers.MovementHandler(ClientApi)<br/>Field org.golfit.client.handlers.MovementHandler.clientApi<br/>Local variable named clientApi<br/>At MovementHandler.java:[line 43]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e423');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>org.golfit.client.handlers.MovementHandler.setGamePane(Pane) may expose internal representation by storing an externally mutable object into MovementHandler.gamePane</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e423" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.handlers.MovementHandler<br/>In method org.golfit.client.handlers.MovementHandler.setGamePane(Pane)<br/>Field org.golfit.client.handlers.MovementHandler.gamePane<br/>Local variable named pane<br/>At MovementHandler.java:[line 47]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e441');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.handlers.SystemHandler(ClientApi) may expose internal representation by storing an externally mutable object into SystemHandler.clientApi</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e441" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.handlers.SystemHandler<br/>In method new org.golfit.client.handlers.SystemHandler(ClientApi)<br/>Field org.golfit.client.handlers.SystemHandler.clientApi<br/>Local variable named clientApi<br/>At SystemHandler.java:[line 26]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e459');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>org.golfit.client.handlers.SystemHandler.setSidebar(Sidebar) may expose internal representation by storing an externally mutable object into SystemHandler.sidebar</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e459" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.handlers.SystemHandler<br/>In method org.golfit.client.handlers.SystemHandler.setSidebar(Sidebar)<br/>Field org.golfit.client.handlers.SystemHandler.sidebar<br/>Local variable named sidebar<br/>At SystemHandler.java:[line 31]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e541');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.client.pingService.PingService(ClientApi) may expose internal representation by storing an externally mutable object into PingService.clientApi</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e541" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.client.pingService.PingService<br/>In method new org.golfit.client.pingService.PingService(ClientApi)<br/>Field org.golfit.client.pingService.PingService.clientApi<br/>Local variable named clientApi<br/>At PingService.java:[line 23]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e559');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.graphics.AddObstacle(Pane) may expose internal representation by storing an externally mutable object into AddObstacle.container</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e559" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.graphics.AddObstacle<br/>In method new org.golfit.graphics.AddObstacle(Pane)<br/>Field org.golfit.graphics.AddObstacle.container<br/>Local variable named container<br/>At AddObstacle.java:[line 40]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e654');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.server.ClientHandler.ClientHandler(String, DatagramSocket, InetAddress, int, int, Protocol$PacketDispatcher) may expose internal representation by storing an externally mutable object into ClientHandler.address</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e654" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.server.ClientHandler.ClientHandler<br/>In method new org.golfit.server.ClientHandler.ClientHandler(String, DatagramSocket, InetAddress, int, int, Protocol$PacketDispatcher)<br/>Field org.golfit.server.ClientHandler.ClientHandler.address<br/>Local variable named address<br/>At ClientHandler.java:[line 55]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e672');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.server.ClientHandler.ClientHandler(String, DatagramSocket, InetAddress, int, int, Protocol$PacketDispatcher) may expose internal representation by storing an externally mutable object into ClientHandler.socket</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e672" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.server.ClientHandler.ClientHandler<br/>In method new org.golfit.server.ClientHandler.ClientHandler(String, DatagramSocket, InetAddress, int, int, Protocol$PacketDispatcher)<br/>Field org.golfit.server.ClientHandler.ClientHandler.socket<br/>Local variable named socket<br/>At ClientHandler.java:[line 54]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e807');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.server.handlers.MovementHandler(ServerApi, ServerGameSimulation) may expose internal representation by storing an externally mutable object into MovementHandler.simulation</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e807" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.MovementHandler<br/>In method new org.golfit.server.handlers.MovementHandler(ServerApi, ServerGameSimulation)<br/>Field org.golfit.server.handlers.MovementHandler.simulation<br/>Local variable named simulation<br/>At MovementHandler.java:[line 24]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e946');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>org.golfit.server.handlers.SystemHandler.setGameSimulation(ServerGameSimulation) may expose internal representation by storing an externally mutable object into SystemHandler.gameSimulation</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e946" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.server.handlers.SystemHandler<br/>In method org.golfit.server.handlers.SystemHandler.setGameSimulation(ServerGameSimulation)<br/>Field org.golfit.server.handlers.SystemHandler.gameSimulation<br/>Local variable named sim<br/>At SystemHandler.java:[line 286]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e1014');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>new org.golfit.shared.lobby.Lobby(int, ClientHandler) may expose internal representation by storing an externally mutable object into Lobby.lobbyHost</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e1014" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.shared.lobby.Lobby<br/>In method new org.golfit.shared.lobby.Lobby(int, ClientHandler)<br/>Field org.golfit.shared.lobby.Lobby.lobbyHost<br/>Local variable named lobbyHost<br/>At Lobby.java:[line 37]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e1032');">
+            <td>
+               <span class="priority-2">EI2</span>
+            </td>
+            <td>org.golfit.shared.lobby.Lobby.setLobbyHost(ClientHandler) may expose internal representation by storing an externally mutable object into Lobby.lobbyHost</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e1032" style="display: none;">
+                  <a href="#EI_EXPOSE_REP2">Bug type EI_EXPOSE_REP2 (click for details)</a>
+                  <br/>In class org.golfit.shared.lobby.Lobby<br/>In method org.golfit.shared.lobby.Lobby.setLobbyHost(ClientHandler)<br/>Field org.golfit.shared.lobby.Lobby.lobbyHost<br/>Local variable named lobbyHost<br/>At Lobby.java:[line 103]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e70');">
+            <td>
+               <span class="priority-2">MS</span>
+            </td>
+            <td>org.golfit.Main.currentClient isn't final and cannot be protected from malicious code</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e70" style="display: none;">
+                  <a href="#MS_CANNOT_BE_FINAL">Bug type MS_CANNOT_BE_FINAL (click for details)</a>
+                  <br/>In class org.golfit.Main<br/>Field org.golfit.Main.currentClient<br/>In Main.java</p>
+            </td>
+         </tr>
+      </table>
+      <h2>
+         <a name="Warnings_MT_CORRECTNESS">Multithreaded correctness Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e477');">
+            <td>
+               <span class="priority-2">AT</span>
+            </td>
+            <td>This write of the 64-bit primitive variable "pingSentAt" may not be atomic</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e477" style="display: none;">
+                  <a href="#AT_NONATOMIC_64BIT_PRIMITIVE">Bug type AT_NONATOMIC_64BIT_PRIMITIVE (click for details)</a>
+                  <br/>In class org.golfit.client.pingService.PingService<br/>In method org.golfit.client.pingService.PingService.checkTimeout()<br/>Field org.golfit.client.pingService.PingService.pingSentAt<br/>At PingService.java:[line 78]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e493');">
+            <td>
+               <span class="priority-2">AT</span>
+            </td>
+            <td>This write of the 64-bit primitive variable "pingSentAt" may not be atomic</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e493" style="display: none;">
+                  <a href="#AT_NONATOMIC_64BIT_PRIMITIVE">Bug type AT_NONATOMIC_64BIT_PRIMITIVE (click for details)</a>
+                  <br/>In class org.golfit.client.pingService.PingService<br/>In method org.golfit.client.pingService.PingService.onPong(MessageParser$Message)<br/>Field org.golfit.client.pingService.PingService.pingSentAt<br/>At PingService.java:[line 57]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e509');">
+            <td>
+               <span class="priority-2">AT</span>
+            </td>
+            <td>This write of the 64-bit primitive variable "pingSentAt" may not be atomic</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e509" style="display: none;">
+                  <a href="#AT_NONATOMIC_64BIT_PRIMITIVE">Bug type AT_NONATOMIC_64BIT_PRIMITIVE (click for details)</a>
+                  <br/>In class org.golfit.client.pingService.PingService<br/>In method org.golfit.client.pingService.PingService.sendPing()<br/>Field org.golfit.client.pingService.PingService.pingSentAt<br/>At PingService.java:[line 37]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e525');">
+            <td>
+               <span class="priority-2">AT</span>
+            </td>
+            <td>Operation on the "pingSentAt" shared variable in "PingService" class is not atomic</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e525" style="display: none;">
+                  <a href="#AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE">Bug type AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE (click for details)</a>
+                  <br/>In class org.golfit.client.pingService.PingService<br/>In method org.golfit.client.pingService.PingService.onPong(MessageParser$Message)<br/>Field org.golfit.client.pingService.PingService.pingSentAt<br/>At PingService.java:[line 68]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e638');">
+            <td>
+               <span class="priority-2">AT</span>
+            </td>
+            <td>This write of the 64-bit primitive variable "lastPing" may not be atomic</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e638" style="display: none;">
+                  <a href="#AT_NONATOMIC_64BIT_PRIMITIVE">Bug type AT_NONATOMIC_64BIT_PRIMITIVE (click for details)</a>
+                  <br/>In class org.golfit.server.ClientHandler.ClientHandler<br/>In method org.golfit.server.ClientHandler.ClientHandler.updateLastPing()<br/>Field org.golfit.server.ClientHandler.ClientHandler.lastPing<br/>At ClientHandler.java:[line 119]</p>
+            </td>
+         </tr>
+      </table>
+      <h2>
+         <a name="Warnings_PERFORMANCE">Performance Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e780');">
+            <td>
+               <span class="priority-2">Bx</span>
+            </td>
+            <td>Boxed value is unboxed and then immediately reboxed in org.golfit.server.game.ServerGameSimulation.lambda$checkGameEnd$3(Integer)</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e780" style="display: none;">
+                  <a href="#BX_UNBOXING_IMMEDIATELY_REBOXED">Bug type BX_UNBOXING_IMMEDIATELY_REBOXED (click for details)</a>
+                  <br/>In class org.golfit.server.game.ServerGameSimulation<br/>In method org.golfit.server.game.ServerGameSimulation.lambda$checkGameEnd$3(Integer)<br/>Called method Integer.valueOf(int)<br/>At ServerGameSimulation.java:[line 403]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e754');">
+            <td>
+               <span class="priority-2">SS</span>
+            </td>
+            <td>Unread field: org.golfit.server.game.ServerBall.STOPPING_VELOCITY; should this field be static?</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e754" style="display: none;">
+                  <a href="#SS_SHOULD_BE_STATIC">Bug type SS_SHOULD_BE_STATIC (click for details)</a>
+                  <br/>In class org.golfit.server.game.ServerBall<br/>Field org.golfit.server.game.ServerBall.STOPPING_VELOCITY<br/>At ServerBall.java:[line 31]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e767');">
+            <td>
+               <span class="priority-2">SS</span>
+            </td>
+            <td>Unread field: org.golfit.server.game.ServerBall.radius; should this field be static?</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e767" style="display: none;">
+                  <a href="#SS_SHOULD_BE_STATIC">Bug type SS_SHOULD_BE_STATIC (click for details)</a>
+                  <br/>In class org.golfit.server.game.ServerBall<br/>Field org.golfit.server.game.ServerBall.radius<br/>At ServerBall.java:[line 19]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e143');">
+            <td>
+               <span class="priority-2">UrF</span>
+            </td>
+            <td>Unread field: org.golfit.client.cli.JLineAppender.pattern</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e143" style="display: none;">
+                  <a href="#URF_UNREAD_FIELD">Bug type URF_UNREAD_FIELD (click for details)</a>
+                  <br/>In class org.golfit.client.cli.JLineAppender<br/>Field org.golfit.client.cli.JLineAppender.pattern<br/>At JLineAppender.java:[line 8]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e609');">
+            <td>
+               <span class="priority-2">UrF</span>
+            </td>
+            <td>Unread field: org.golfit.graphics.Course.backgroundColor</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e609" style="display: none;">
+                  <a href="#URF_UNREAD_FIELD">Bug type URF_UNREAD_FIELD (click for details)</a>
+                  <br/>In class org.golfit.graphics.Course<br/>Field org.golfit.graphics.Course.backgroundColor<br/>At Course.java:[line 22]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e1050');">
+            <td>
+               <span class="priority-2">UuF</span>
+            </td>
+            <td>Unused field: org.golfit.shared.lobby.Lobby.playerCount</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e1050" style="display: none;">
+                  <a href="#UUF_UNUSED_FIELD">Bug type UUF_UNUSED_FIELD (click for details)</a>
+                  <br/>In class org.golfit.shared.lobby.Lobby<br/>Field org.golfit.shared.lobby.Lobby.playerCount<br/>In Lobby.java</p>
+            </td>
+         </tr>
+      </table>
+      <h2>
+         <a name="Warnings_STYLE">Dodgy code Warnings</a>
+      </h2>
+      <table class="warningtable" width="100%" cellspacing="0">
+         <tr class="tableheader">
+            <th align="left">Code</th>
+            <th align="left">Warning</th>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e795');">
+            <td>
+               <span class="priority-2">ICAST</span>
+            </td>
+            <td>Integral division result cast to double or float in org.golfit.server.game.ServerGameSimulation.registerPlayerLobby(int, int)</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e795" style="display: none;">
+                  <a href="#ICAST_IDIV_CAST_TO_DOUBLE">Bug type ICAST_IDIV_CAST_TO_DOUBLE (click for details)</a>
+                  <br/>In class org.golfit.server.game.ServerGameSimulation<br/>In method org.golfit.server.game.ServerGameSimulation.registerPlayerLobby(int, int)<br/>At ServerGameSimulation.java:[line 123]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e215');">
+            <td>
+               <span class="priority-2">SF</span>
+            </td>
+            <td>Switch statement found in org.golfit.client.clientLogic.Client.dispatch(MessageParser$Message) where default case is missing</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e215" style="display: none;">
+                  <a href="#SF_SWITCH_NO_DEFAULT">Bug type SF_SWITCH_NO_DEFAULT (click for details)</a>
+                  <br/>In class org.golfit.client.clientLogic.Client<br/>In method org.golfit.client.clientLogic.Client.dispatch(MessageParser$Message)<br/>At Client.java:[lines 175-192]</p>
+            </td>
+         </tr>
+         <tr class="tablerow1" onclick="toggleRow('d1e374');">
+            <td>
+               <span class="priority-2">SF</span>
+            </td>
+            <td>Switch statement found in org.golfit.client.gui.Sidebar.sendMessage() where default case is missing</td>
+         </tr>
+         <tr class="detailrow1">
+            <td/>
+            <td>
+               <p id="d1e374" style="display: none;">
+                  <a href="#SF_SWITCH_NO_DEFAULT">Bug type SF_SWITCH_NO_DEFAULT (click for details)</a>
+                  <br/>In class org.golfit.client.gui.Sidebar<br/>In method org.golfit.client.gui.Sidebar.sendMessage()<br/>At Sidebar.java:[lines 128-145]</p>
+            </td>
+         </tr>
+         <tr class="tablerow0" onclick="toggleRow('d1e1063');">
+            <td>
+               <span class="priority-2">UrF</span>
+            </td>
+            <td>Unread public/protected field: org.golfit.shared.messageParser.MessageParser$Message.senderId</td>
+         </tr>
+         <tr class="detailrow0">
+            <td/>
+            <td>
+               <p id="d1e1063" style="display: none;">
+                  <a href="#URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD">Bug type URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD (click for details)</a>
+                  <br/>In class org.golfit.shared.messageParser.MessageParser$Message<br/>Field org.golfit.shared.messageParser.MessageParser$Message.senderId<br/>At MessageParser.java:[line 61]</p>
+            </td>
+         </tr>
+      </table>
+      <h1>
+         <a name="Details">Details</a>
+      </h1>
+      <h2>
+         <a name="AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE">AT_NONATOMIC_OPERATIONS_ON_SHARED_VARIABLE: Operation on shared variable is not atomic</a>
+      </h2>
+      
+        <p>
+          This write of a variable shared between functions depends on the current value of the variable (either because it's a compound operation - e.g. +=, ++ - or it simply depends on the current value), as such it consists of more than one discrete operation.
+          These operations are not atomic in themselves and need further synchronization.
+          See <a href="https://wiki.sei.cmu.edu/confluence/display/java/VNA02-J.+Ensure+that+compound+operations+on+shared+variables+are+atomic">SEI CERT rule VNA02-J</a>,
+          <a href="https://cwe.mitre.org/data/definitions/366.html">CWE-366: Race Condition within a Thread</a>,
+          <a href="https://cwe.mitre.org/data/definitions/413.html">CWE-413: Improper Resource Locking</a>,
+          <a href="https://cwe.mitre.org/data/definitions/567.html">CWE-567: Unsynchronized Access to Shared Data in a Multithreaded Context</a>, and
+          <a href="https://cwe.mitre.org/data/definitions/667.html">CWE-667: Improper Locking</a>.
+        </p>
+          Simply declaring a variable volatile fails to guarantee the atomicity of compound operations on the variable,
+          but synchronizing the writes on top of declaring the variable volatile for read operations is sufficient.
+        <p>
+          To solve this issue, synchronize compound operations and other write operations depending on the previous value,
+          use read-write locks, or declare the shared variable with an atomic type.
+        </p>
+     
+    <h2>
+         <a name="AT_NONATOMIC_64BIT_PRIMITIVE">AT_NONATOMIC_64BIT_PRIMITIVE: This write of this 64-bit primitive variable may not be atomic</a>
+      </h2>
+      
+        <p>
+          The long and the double are 64-bit primitive types, and depending on the Java Virtual Machine implementation assigning a value to them can be treated as two separate 32-bit writes, and as such it's not atomic.
+          See <a href="https://docs.oracle.com/javase/specs/jls/se8/html/jls-17.html#jls-17.7">JSL 17.7. Non-Atomic Treatment of double and long</a>.
+          See SEI CERT rule <a href="https://wiki.sei.cmu.edu/confluence/display/java/VNA05-J.+Ensure+atomicity+when+reading+and+writing+64-bit+values">VNA05-J. Ensure atomicity when reading and writing 64-bit values</a> and
+          <a href="https://cwe.mitre.org/data/definitions/667.html">CWE-667: Improper Locking</a> for more info.
+
+          This bug can be ignored in platforms which guarantee that 64-bit long and double type read and write operations are atomic.
+        </p>
+        <p>
+          To fix it, declare the variable volatile, change the type of the field to the corresponding atomic type from <code>java.lang.concurrent.atomic</code> or correctly synchronize the code.
+          Declaring the variable volatile may not be enough in some cases: e.g. when the variable is assigned a value which depends on the current value or on the result of nonatomic compound operations.
+        </p>
+     
+    <h2>
+         <a name="BX_UNBOXING_IMMEDIATELY_REBOXED">BX_UNBOXING_IMMEDIATELY_REBOXED: Boxed value is unboxed and then immediately reboxed</a>
+      </h2>
+
+  <p>A boxed value is unboxed and then immediately reboxed.
+</p>
+
+    <h2>
+         <a name="DE_MIGHT_IGNORE">DE_MIGHT_IGNORE: Method might ignore exception</a>
+      </h2>
+
+  <p> This method might ignore an exception.&nbsp; In general, exceptions
+  should be handled or reported in some way, or they should be thrown
+  out of the method.</p>
+  <p>See <a href="https://cwe.mitre.org/data/definitions/754.html">CWE-754: Improper Check for Unusual or Exceptional Conditions</a>.
+</p>
+
+    <h2>
+         <a name="DMI_RANDOM_USED_ONLY_ONCE">DMI_RANDOM_USED_ONLY_ONCE: Random object created and used only once</a>
+      </h2>
+
+<p> This code creates a java.util.Random object, uses it to generate one random number, and then discards
+the Random object. This produces mediocre quality random numbers and is inefficient.
+If possible, rewrite the code so that the Random object is created once and saved, and each time a new random number
+is required invoke a method on the existing Random object to obtain it.
+</p>
+
+<p>If it is important that the generated Random numbers not be guessable, you <em>must</em> not create a new Random for each random
+number; the values are too easily guessable. You should strongly consider using a java.security.SecureRandom instead
+(and avoid allocating a new SecureRandom for each random number needed).
+</p>
+
+    <h2>
+         <a name="DM_EXIT">DM_EXIT: Method invokes System.exit(...)</a>
+      </h2>
+
+  <p> Invoking System.exit shuts down the entire Java virtual machine. This
+   should only been done when it is appropriate. Such calls make it
+   hard or impossible for your code to be invoked by other code.
+   Consider throwing a RuntimeException instead.</p>
+   <p>See <a href="https://cwe.mitre.org/data/definitions/382.html">CWE-382: J2EE Bad Practices: Use of System.exit()</a>.
+</p>
+
+    <h2>
+         <a name="DM_DEFAULT_ENCODING">DM_DEFAULT_ENCODING: Reliance on default encoding</a>
+      </h2>
+
+<p> Found a call to a method which will perform a byte to String (or String to byte) conversion,
+and will assume that the default platform encoding is suitable. This will cause the application
+behavior to vary between platforms. Use an alternative API and specify a charset name or Charset
+object explicitly.</p>
+<p>See <a href="https://cwe.mitre.org/data/definitions/173.html">CWE-173: Improper Handling of Alternate Encoding</a>.
+</p>
+
+      <h2>
+         <a name="EI_EXPOSE_REP">EI_EXPOSE_REP: May expose internal representation by returning reference to mutable object</a>
+      </h2>
+
+  <p> Returning a reference to a mutable object value stored in one of the object's fields
+  exposes the internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Returning a new copy of the object is better approach in many situations.</p>
+  <p>See <a href="https://cwe.mitre.org/data/definitions/374.html">CWE-374: Passing Mutable Objects to an Untrusted Method</a>.
+</p>
+
+    <h2>
+         <a name="EI_EXPOSE_REP2">EI_EXPOSE_REP2: May expose internal representation by incorporating reference to mutable object</a>
+      </h2>
+
+  <p> This code stores a reference to an externally mutable object into the
+  internal representation of the object.&nbsp;
+   If instances
+   are accessed by untrusted code, and unchecked changes to
+   the mutable object would compromise security or other
+   important properties, you will need to do something different.
+  Storing a copy of the object is better approach in many situations.</p>
+  <p>See <a href="https://cwe.mitre.org/data/definitions/374.html">CWE-374: Passing Mutable Objects to an Untrusted Method</a>.
+</p>
+
+    <h2>
+         <a name="ICAST_IDIV_CAST_TO_DOUBLE">ICAST_IDIV_CAST_TO_DOUBLE: Integral division result cast to double or float</a>
+      </h2>
+
+<p>
+This code casts the result of an integral division (e.g., int or long division)
+operation to double or float.
+Doing division on integers truncates the result
+to the integer value closest to zero. The fact that the result
+was cast to double suggests that this precision should have been retained.
+What was probably meant was to cast one or both of the operands to
+double <em>before</em> performing the division.  Here is an example:
+</p>
+<pre><code>int x = 2;
+int y = 5;
+// Wrong: yields result 0.0
+double value1 = x / y;
+
+// Right: yields result 0.4
+double value2 = x / (double) y;
+</code></pre>
+<p>See <a href="https://cwe.mitre.org/data/definitions/192.html">CWE-192: Integer Coercion Error</a>.
+</p>
+
+    <h2>
+         <a name="MS_CANNOT_BE_FINAL">MS_CANNOT_BE_FINAL: Field isn't final and cannot be protected from malicious code</a>
+      </h2>
+
+  <p>
+ A mutable static field could be changed by malicious code or
+        by accident from another package.
+   Unfortunately, the way the field is used doesn't allow
+   any easy fix to this problem.</p>
+
+    <h2>
+         <a name="PA_PUBLIC_PRIMITIVE_ATTRIBUTE">PA_PUBLIC_PRIMITIVE_ATTRIBUTE: Primitive field is public</a>
+      </h2>
+      
+    <p>
+    <a href="https://wiki.sei.cmu.edu/confluence/display/java/OBJ01-J.+Limit+accessibility+of+fields">SEI CERT rule OBJ01-J</a> requires that accessibility to fields must be limited.
+    Otherwise, the values of the fields may be manipulated from outside the class, which may be unexpected or
+    undesired behaviour.
+    In general, requiring that no fields are allowed to be public is overkill and unrealistic. Even
+    the rule mentions that final fields may be public. Besides final fields, there may be other
+    usages for public fields: some public fields may serve as "flags" that affect the behavior of
+    the class. Such flag fields are expected to be read by the current instance (or the current
+    class, in case of static fields), but written by others. If a field is both written by the
+    methods of the current instance (or the current class, in case of static fields) and from the
+    outside, the code is suspicious. Consider making these fields private and provide appropriate
+    setters, if necessary. Please note that constructors, initializers and finalizers are
+    exceptions, if only they write the field inside the class, the field is not considered as
+    written by the class itself.</p>
+    <p>See <a href="https://cwe.mitre.org/data/definitions/766.html">CWE-766: Critical Data Element Declared Public</a>.</p>
+    
+    <h2>
+         <a name="RV_RETURN_VALUE_IGNORED_BAD_PRACTICE">RV_RETURN_VALUE_IGNORED_BAD_PRACTICE: Method ignores exceptional return value</a>
+      </h2>
+
+   <p> This method returns a value that is not checked. The return value should be checked
+since it can indicate an unusual or unexpected function execution. For
+example, the <code>File.delete()</code> method returns false
+if the file could not be successfully deleted (rather than
+throwing an Exception).
+If you don't check the result, you won't notice if the method invocation
+signals unexpected behavior by returning an atypical return value.
+</p>
+<p>See <a href="https://cwe.mitre.org/data/definitions/253.html">CWE-253: Incorrect Check of Function Return Value</a>.
+</p>
+
+    <h2>
+         <a name="SF_SWITCH_NO_DEFAULT">SF_SWITCH_NO_DEFAULT: Switch statement found where default case is missing</a>
+      </h2>
+
+  <p> This method contains a switch statement where default case is missing.
+  Usually you need to provide a default case.</p>
+  <p>Because the analysis only looks at the generated bytecode, this warning can be incorrect triggered if
+the default case is at the end of the switch statement and the switch statement doesn't contain break statements for other
+cases.</p>
+  <p>See <a href="https://cwe.mitre.org/data/definitions/478.html">CWE-478: Missing Default Case in Multiple Condition Expression</a>.
+</p>
+
+    <h2>
+         <a name="SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR">SING_SINGLETON_HAS_NONPRIVATE_CONSTRUCTOR: Class using singleton design pattern has non-private constructor.</a>
+      </h2>
+      
+        <p>
+        This class is using singleton design pattern and has non-private constructor (please note that a default constructor might exist which is not private). Given that, it is possible to create a copy of the object, thus violating the singleton pattern.<br>
+        The easier solution would be making the constructor private.<br><br>
+
+        For more information, see: <a href="https://wiki.sei.cmu.edu/confluence/display/java/MSC07-J.+Prevent+multiple+instantiations+of+singleton+objects">SEI CERT MSC07-J</a>, and
+        <a href="https://cwe.mitre.org/data/definitions/543.html">CWE-543: Use of Singleton Pattern Without Synchronization in a Multithreaded Context</a>.
+        </p>
+    <h2>
+         <a name="SS_SHOULD_BE_STATIC">SS_SHOULD_BE_STATIC: Unread field: should this field be static?</a>
+      </h2>
+
+  <p> This class contains an instance final field that
+   is initialized to a compile-time static value.
+   Consider making the field static.</p>
+
+    <h2>
+         <a name="URF_UNREAD_FIELD">URF_UNREAD_FIELD: Unread field</a>
+      </h2>
+
+  <p> This field is never read.&nbsp; Consider removing it from the class.</p>
+  <p>See <a href="https://cwe.mitre.org/data/definitions/563.html">CWE-563: Assignment to Variable without Use</a>.
+</p>
+
+    <h2>
+         <a name="URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD">URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD: Unread public/protected field</a>
+      </h2>
+
+  <p> This field is never read.&nbsp;
+The field is public or protected, so perhaps
+    it is intended to be used with classes not seen as part of the analysis. If not,
+consider removing it from the class.</p>
+<p>See <a href="https://cwe.mitre.org/data/definitions/563.html">CWE-563: Assignment to Variable without Use</a>.
+</p>
+
+    <h2>
+         <a name="UUF_UNUSED_FIELD">UUF_UNUSED_FIELD: Unused field</a>
+      </h2>
+
+  <p> This field is never used.&nbsp; Consider removing it from the class.</p>
+  <p>See <a href="https://cwe.mitre.org/data/definitions/563.html">CWE-563: Assignment to Variable without Use</a>.
+</p>
+
+    </body>
+</html>
