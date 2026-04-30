@@ -207,3 +207,6 @@ Cheat code added. Golf ball animation implemented.
 Constantin implemented the one-time collision on the trees, so that it affects the physics server-side and the rendering client-side appropriately.
 
 Anton: grass background improved.
+
+## Entry #22 30.4.26
+Constantin implemented the mechanic for the switch, so that the barrier and bridge appear/disappear. Also reallocated trees 
