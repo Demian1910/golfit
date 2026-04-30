@@ -122,7 +122,7 @@ public class Course {
         addObstacle.addWater(17, ROWS - 25, 14, 15);
 
         // Central Forest
-        int[][] trees = {{50, 8}, {54, 12}, {48, 16}, {43, 10}, {45, 8}, {46, 11}, {54, 6}, {56, 15}, {44, 16}};
+        int[][] trees = {{50, 4}, {56, 12}, {48, 16}, {43, 10}, {45, 4}, {46, 11}, {56, 6}, {56, 15}, {44, 16}};
         for (int[] t : trees) addObstacle.addTree(t[0], t[1]);
 
         // 2x3 Forest
@@ -135,8 +135,8 @@ public class Course {
         addObstacle.addWall(0, ROWS - 1, COLS, 1);   // Bottom
         addObstacle.addWall(0, 0, 1, ROWS);          // Left
         addObstacle.addWall(79, 0, 1, ROWS);         // Right
-        addObstacle.addBridge(17, ROWS-15, 14, 1);         // Bridge
-        addObstacle.addBarrier(21, 1, 4, 4);         // Barrier wall
+        addObstacle.addBridge(17, ROWS-15, 14, 2);         // Bridge
+        //addObstacle.addBarrier(21, 1, 4, 4);         // Barrier wall
     }
 
     /** Returns the pane containing all course elements. */

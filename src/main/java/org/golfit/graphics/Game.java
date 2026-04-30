@@ -62,7 +62,7 @@ public class Game {
             }
         });
         // 5. Run the map export logic
-        /*
+
         Platform.runLater(() -> {
             updateScale(parentPane);
             HelpGridMap helpGridMap = new HelpGridMap(course);
@@ -71,7 +71,7 @@ public class Game {
             helpGridMap.printServerData();
         });
 
-         */
+
 
 
     }
