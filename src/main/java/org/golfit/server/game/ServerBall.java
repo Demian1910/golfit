@@ -293,4 +293,12 @@ public class ServerBall {
     public int getStrokeCount() { return strokeCount; }
     public boolean isFinished() { return finished; }
     public void setFinished(boolean finished) { this.finished = finished; }
+
+    public void setVx(int i) {
+        this.vx = i;
+    }
+
+    public void setVy(int i) {
+        this.vy = i;
+    }
 }

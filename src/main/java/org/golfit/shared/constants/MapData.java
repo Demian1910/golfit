@@ -290,29 +290,28 @@ public class MapData {
      */
     public void changeBridge(boolean active, List<ServerBall> lobbyBalls) {
         int id = 97;
-        // Bridge Dimensions
-        double bx = 17.0;
-        double by = 30.0;
-        double bw = 14.0;
-        double bh = 2.0;
+        double bx = 17.0, by = 30.0, bw = 14.0, bh = 2.0;
 
         if (active) {
-            // SPAWN: Put the bridge back
-            // Appear terrain: -1
             worldShapes.put(id, new ServerShape(id, 7, -1, ServerShape.RECT, bx, by, bw, bh));
+            // Use -1 for bridge terrain as requested
             updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, -1, true, -1);
         } else {
-            // DESPAWN: Teleport balls to safety before removing floor
+            // 1. FORCE REMOVE from the worldShapes map immediately
+            worldShapes.remove(id);
+
+            // 2. Clear the grid AND set terrain to Water (4)
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, -1, 4, false, 4);
+
+            // 3. Teleport balls AFTER removing the shape
             for (ServerBall ball : lobbyBalls) {
                 if (isBallInside(ball, bx, by, bw, bh)) {
                     ball.teleport(bx - 0.5, ball.getPy());
+                    // OPTIONAL: Reset velocity so they don't "slide" on the water
+                    ball.setVx(0);
+                    ball.setVy(0);
                 }
             }
-
-            // Remove physics and turn the floor into Water
-            // Disappear terrain: 4
-            worldShapes.remove(id);
-            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, -1, 4, false, 4);
         }
     }
 
