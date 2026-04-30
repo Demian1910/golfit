@@ -156,7 +156,7 @@ tasks.register('metrics-report') {
         println "Saved all reports to: ${archiveDir}"
         println "---------------------------------"
     }
-}y
+}
 
 tasks.register('build-cs108') {
     group = 'build'
