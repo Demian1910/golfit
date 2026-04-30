@@ -294,7 +294,7 @@ public class MapData {
         double bx = 17.0;
         double by = 30.0;
         double bw = 14.0;
-        double bh = 1.0;
+        double bh = 2.0;
 
         if (active) {
             // SPAWN: Put the bridge back
@@ -345,7 +345,7 @@ public class MapData {
     private boolean isBallInside(ServerBall b, double x, double y, double w, double h) {
         // We use the ball's current radius (usually 0.35) to ensure
         // even the edges of the ball are checked.
-        double radius = 0.35;
+        double radius = BALL_RADIUS;
         return b.getPx() + radius > x &&
                 b.getPx() - radius < x + w &&
                 b.getPy() + radius > y &&
