@@ -298,46 +298,45 @@ public class MapData {
 
         if (active) {
             // SPAWN: Put the bridge back
+            // Appear terrain: -1
             worldShapes.put(id, new ServerShape(id, 7, -1, ServerShape.RECT, bx, by, bw, bh));
-            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, 7, true, -1);
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, -1, true, -1);
         } else {
-            // DESPAWN: Check if any balls are currently on the bridge
+            // DESPAWN: Teleport balls to safety before removing floor
             for (ServerBall ball : lobbyBalls) {
                 if (isBallInside(ball, bx, by, bw, bh)) {
-                    // Teleport to the LEFT of the entrance
-                    // 17.0 is the start, so 16.5 is the safe grass area
                     ball.teleport(bx - 0.5, ball.getPy());
                 }
             }
 
-            // Remove physics and turn the floor into Water (Terrain 4)
+            // Remove physics and turn the floor into Water
+            // Disappear terrain: 4
             worldShapes.remove(id);
-            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, -1, 4, true,4);
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, -1, 4, false, 4);
         }
     }
 
-    /**
-     * Spawns or Despawns the Barrier (ID 98)
-     */
     public void changeBarrier(boolean active, List<ServerBall> balls) {
         int id = 98;
         double bx = 21.0, by = 1.0, bw = 4.0, bh = 4.0;
 
         if (active) {
-            // 1. Add the shape
+            // SPAWN: Add the barrier
+            // Appear terrain: 1
             worldShapes.put(id, new ServerShape(id, 1, -1, ServerShape.RECT, bx, by, bw, bh));
             updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, 1, true, 1);
 
-            // 2. SAFETY SHOVE: If a ball is inside, push it out
+            // SAFETY SHOVE
             for (ServerBall ball : balls) {
                 if (isBallInsideRect(ball, bx, by, bw, bh)) {
-                    // Push ball to the left of the barrier
                     ball.teleport(bx - BALL_RADIUS - 0.1, ball.getPy());
                 }
             }
         } else {
+            // DESPAWN: Remove the barrier
+            // Disappear terrain: -1
             worldShapes.remove(id);
-            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, id, 1, false,-1);
+            updateGridArea((int)bx, (int)by, (int)bw, (int)bh, -1, -1, false, -1);
         }
     }
     /**
@@ -365,13 +364,9 @@ public class MapData {
         for (int r = y; r < y + h; r++) {
             for (int c = x; c < x + w; c++) {
                 if (r >= 0 && r < ROWS && c >= 0 && c < COLS) {
-                    if (active) {
-                        SERVER_MAP[r][c] = type;
-                        SHAPE_ID_MAP[r][c] = id;
-                    } else {
-                        SERVER_MAP[r][c] = type2;   // Set back to empty grass
-                        SHAPE_ID_MAP[r][c] = -1; // No collision ID
-                    }
+                    // We use 'type' for the terrain and 'id' for the collision mapping
+                    SERVER_MAP[r][c] = (active) ? type : type2;
+                    SHAPE_ID_MAP[r][c] = (active) ? id : -1;
                 }
             }
         }
