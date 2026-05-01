@@ -208,5 +208,42 @@ Constantin implemented the one-time collision on the trees, so that it affects t
 
 Anton: grass background improved.
 
-## Entry #22 30.4.26
+## Entry #22 25.4.26
+Discussion after meeting with tutors on the last project improvements such as switch mechanic and disappearing and appearing barrier, unique ball colors to be displayed, improvements highscore scrollable list. The following tasks decision for the milestone 6 was decided:
+
+Anton
+* Pachydermatous Librarian | 10 | All external libraries in your project are managed by gradle via maven central
+* Protocol Code | 5 | Final version of human-readable network protocol is defined and implemented
+* Protocol Document | 5 | The final version of the network protocol is current in external documentation
+* Login | 5 | Arbitrarily many clients can still log on to the server
+* Command Line | 5 | Command line parameters are still parsed correctly
+
+Demian
+* Manual | 10 | There is a manual which describes how the game is to be played, in written form
+* High Score | 10 | There is a high score list which is stored persistently, updated and shown when requested
+* Picturesque | 10 | Have a representative screenshot of the game
+* Twitchy | 5 | Have a representative video showing between 20 seconds and 2 minutes of gameplay
+* Archiving | 5 | Repository contains an outreach/ folder with specified content (video max 10 MB)
+* Logo | 5 | The game and/or team has a proper Logo
+
+Constantin
+* QA / QA Report / QA Report (advanced) | 15 each | Detailed analysis of QA measures, methods, and results over time
+* Finish implement the interactive Elements
+
+Tamer
+* Unit-Test | 10 | All unit-tests are meaningful and 'green'
+* Jar reviews of milestone 5
+
+EVERYONE
+Shall We Play A Game | 60 | Present the working final game in the exercise slot by playing the game using the JAR
+Demo! | 60 | Have a bugfree demo of the game in the final presentation
+GUI | 40 | The GUI works without any errors and all client functionality is accessible by it
+Game Logic | 20 | The entire logic of the game as well as all its mechanics are present and the game is fully playable
+
+The remaining bonus tasks will be decided with preference in the following weeks.
+
+## Entry #23 30.4.26
 Constantin implemented the mechanic for the switch, so that the barrier and bridge appear/disappear. Also reallocated trees 
+
+## Entry #24 1.5.26
+Demian implemented unique ball colors: now every golf ball has a unique color (between 6) that is decided when lobby is joined, and the color is displayed next to the player name during the game phase instead of the person emoji.
