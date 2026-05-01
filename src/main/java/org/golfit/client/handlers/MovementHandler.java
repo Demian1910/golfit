@@ -11,6 +11,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.List;
+import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -36,6 +38,8 @@ public class MovementHandler {
 
     private static final long STILL_TIME_THRESHOLD_MS = 150;
     private final Map<Integer, Long> lastUpdateTime = new ConcurrentHashMap<>();
+    
+    private final List<Integer> joinOrder = new ArrayList<>();
 
     private MessageParser.Message lastMessage = null;
 
@@ -47,6 +51,7 @@ public class MovementHandler {
         this.gamePane = pane;
         this.players.clear();
         this.lastUpdateTime.clear();
+        this.joinOrder.clear();
 
         if (lastMessage != null) {
             onMoveUpdate(lastMessage);
@@ -80,6 +85,10 @@ public class MovementHandler {
                 double x = Double.parseDouble(coords[0]) * scaleX;
                 double y = Double.parseDouble(coords[1]) * scaleY;
 
+                if (!joinOrder.contains(playerId)) {
+                    joinOrder.add(playerId);
+                }
+
                 parsedUpdates.put(playerId, new double[]{x, y});
                 receivedIds.add(playerId);
 
@@ -101,7 +110,8 @@ public class MovementHandler {
                 boolean moved = true;
 
                 if (render == null) {
-                    var color = PLAYER_COLORS[playerId % PLAYER_COLORS.length];
+                    int index = joinOrder.indexOf(playerId);
+                    var color = PLAYER_COLORS[index % PLAYER_COLORS.length];
                     render = new BallRender(gamePane, new Ball(pixelX, pixelY), color);
                     players.put(playerId, render);
                 } else {

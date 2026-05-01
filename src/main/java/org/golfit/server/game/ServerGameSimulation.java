@@ -29,6 +29,9 @@ public class ServerGameSimulation {
 
     /** Per-lobby physics maps for dynamic/destructible environments */
     private final Map<Integer, MapData> lobbyPhysicsMaps = new ConcurrentHashMap<>();
+    
+    /** Preserves player join order per lobby to ensure deterministic colors */
+    private final Map<Integer, List<Integer>> lobbyPlayersOrder = new ConcurrentHashMap<>();
 
     private ScheduledExecutorService ticker;
     private static final int TICK_RATE_MS = 40;
@@ -127,6 +130,9 @@ public class ServerGameSimulation {
         playerToLobby.put(playerId, lobbyId);
         finishedPlayers.remove(playerId);
         finishOrder.remove(Integer.valueOf(playerId));
+
+        lobbyPlayersOrder.computeIfAbsent(lobbyId, k -> Collections.synchronizedList(new ArrayList<>()))
+                         .add(playerId);
 
         balls.put(playerId, new ServerBall(startX, startY));
         forceUpdate = true;
@@ -269,11 +275,26 @@ public class ServerGameSimulation {
                 }
 
                 if (needsUpdate) dirtyLobbies.add(lobbyId);
+            }
 
-                payload.append(playerId).append(":")
-                        .append(String.format(Locale.US, "%.2f", ball.getPx())).append(",")
-                        .append(String.format(Locale.US, "%.2f", ball.getPy()))
-                        .append(";");
+            // ---- BUILD ORDERED MOVEMENT PAYLOADS ----
+            for (var entry : lobbyPhysicsMaps.entrySet()) {
+                int lobbyId = entry.getKey();
+                if (!dirtyLobbies.contains(lobbyId)) continue;
+                
+                List<Integer> orderedPlayers = lobbyPlayersOrder.get(lobbyId);
+                if (orderedPlayers == null) continue;
+                
+                StringBuilder payload = payloads.computeIfAbsent(lobbyId, k -> new StringBuilder());
+                for (int playerId : orderedPlayers) {
+                    ServerBall ball = balls.get(playerId);
+                    if (ball != null && !ball.isFinished()) {
+                        payload.append(playerId).append(":")
+                               .append(String.format(Locale.US, "%.2f", ball.getPx())).append(",")
+                               .append(String.format(Locale.US, "%.2f", ball.getPy()))
+                               .append(";");
+                    }
+                }
             }
 
             // ---- BROADCAST MOVEMENT ----
@@ -396,6 +417,7 @@ public class ServerGameSimulation {
 
         // Cleanup lobby data
         lobbyPhysicsMaps.remove(lobbyId);
+        lobbyPlayersOrder.remove(lobbyId);
         playerToLobby.entrySet().removeIf(e -> e.getValue().equals(lobbyId));
 
         results.keySet().forEach(pid -> {

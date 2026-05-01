@@ -65,10 +65,6 @@ public class Game {
 
         Platform.runLater(() -> {
             updateScale(parentPane);
-            HelpGridMap helpGridMap = new HelpGridMap(course);
-            helpGridMap.updateGrids();
-            helpGridMap.verifyIdMapping();
-            helpGridMap.printServerData();
         });
 
 

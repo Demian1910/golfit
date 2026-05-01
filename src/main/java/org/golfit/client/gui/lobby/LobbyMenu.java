@@ -34,6 +34,10 @@ public class LobbyMenu extends VBox {
 
     private final Map<String, Integer> strokesMap = new HashMap<>();
     private final List<String> currentPlayers = new ArrayList<>();
+    
+    private static final String[] PLAYER_EMOJIS = {
+            "🔴", "🔵", "🟢", "🟡", "🟣", "🟠"
+    };
 
     public LobbyMenu(ClientApi clientApi) {
         this.clientApi = clientApi;
@@ -261,9 +265,12 @@ public class LobbyMenu extends VBox {
             }
 
             playerList.getChildren().clear();
-            for (String player : currentPlayers) {
+            for (int i = 0; i < currentPlayers.size(); i++) {
+                String player = currentPlayers.get(i);
                 HBox pRow = new HBox(8);
-                Label playerLabel = new Label("👤 " + player);
+                
+                String emoji = startBtn.isVisible() ? "👤" : PLAYER_EMOJIS[i % PLAYER_EMOJIS.length];
+                Label playerLabel = new Label(emoji + " " + player);
                 playerLabel.setStyle("-fx-text-fill: white;");
 
                 javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
