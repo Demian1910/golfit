@@ -282,11 +282,8 @@ public class MapData {
     }
 
     /**
-     * Toggles the Bridge obstacle (ID 97).
+     * Spawns or despawns the Bridge obstacle (ID 97).
      * When active, it's a Bridge (Terrain 7). When inactive, it's removed.
-     */
-    /**
-     * Spawns or Despawns the Bridge (ID 97)
      */
     public void changeBridge(boolean active, List<ServerBall> lobbyBalls) {
         int id = 97;
