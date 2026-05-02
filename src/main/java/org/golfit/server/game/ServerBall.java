@@ -43,7 +43,8 @@ public class ServerBall {
     /**
      * Creates a new server ball at the given position.
      * Normalizes coordinates to grid units if they are passed as raw pixels.
-     * * @param px Initial X position.
+     *
+     * @param px Initial X position.
      * @param py Initial Y position.
      */
     public ServerBall(double px, double py) {
@@ -56,7 +57,8 @@ public class ServerBall {
         this.vy = 0;
     }
 
-    /** * Teleports the ball to the center of the hole and stops movement.
+    /**
+     * Teleports the ball to the center of the hole and stops movement.
      */
     public void teleportToHole() {
         this.px = HOLE_CENTER_X;
@@ -76,8 +78,10 @@ public class ServerBall {
         this.vy = 0;
     }
 
-    /** * Applies a stroke impulse to the ball and increments stroke count.
-     * * @param initialVx X component of the impulse.
+    /**
+     * Applies a stroke impulse to the ball and increments stroke count.
+     *
+     * @param initialVx X component of the impulse.
      * @param initialVy Y component of the impulse.
      */
     public void stroke(double initialVx, double initialVy) {
@@ -101,8 +105,10 @@ public class ServerBall {
         }
     }
 
-    /** * Advances physics by one tick, performing sub-stepping and collision checks.
-     * * @param deltaTime Time elapsed since last tick (seconds).
+    /**
+     * Advances physics by one tick, performing sub-stepping and collision checks.
+     *
+     * @param deltaTime Time elapsed since last tick (seconds).
      * @param nearbyShapes List of shapes in the ball's immediate vicinity.
      */
     public void update(double deltaTime, List<MapData.ServerShape> nearbyShapes) {
@@ -156,8 +162,10 @@ public class ServerBall {
         }
     }
 
-    /** * Adjusts position to resolve overlap and reflects velocity based on the surface normal.
-     * * @param terrainType The type of terrain hit (used to calculate bounciness).
+    /**
+     * Adjusts position to resolve overlap and reflects velocity based on the surface normal.
+     *
+     * @param terrainType The type of terrain hit (used to calculate bounciness).
      */
     private void resolveCollision(int terrainType) {
         // Push the ball out of the object
@@ -187,7 +195,8 @@ public class ServerBall {
         }
     }
 
-    /** * Returns the IDs of shapes hit during this tick and clears the internal queue.
+    /**
+     * Returns the IDs of shapes hit during this tick and clears the internal queue.
      */
     public List<Integer> getPendingRemovals() {
         List<Integer> out = new ArrayList<>(shapesToRemove);
@@ -264,7 +273,8 @@ public class ServerBall {
         return false;
     }
 
-    /** * Teleports the ball back to the position before the most recent stroke.
+    /**
+     * Teleports the ball back to the position before the most recent stroke.
      */
     public void resetToLastPosition() {
         this.px = lastStaticX;
@@ -273,7 +283,8 @@ public class ServerBall {
         this.vy = 0;
     }
 
-    /** * Fully resets the ball state to the default start position.
+    /**
+     * Fully resets the ball state to the default start position.
      */
     public void reset() {
         this.px = 9.8;
