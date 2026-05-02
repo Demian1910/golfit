@@ -1,6 +1,7 @@
 package org.golfit.server.game;
 
 import org.golfit.shared.constants.Constants;
+import org.golfit.shared.constants.MapData;
 import org.junit.jupiter.api.Test;
 
 import java.util.Collections;
@@ -173,5 +174,94 @@ class ServerBallTest {
         ball.update(0.04, Collections.emptyList());
         ball.resetToLastPosition();
         assertEquals(stoppedX, ball.getPx(), 0.5);
+    }
+
+    @Test
+    void teleportToHole_movesBallToHoleCenterAndStops() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(15, 15);
+        ball.teleportToHole();
+        assertEquals(Constants.HOLE_CENTER_X, ball.getPx(), 0.001);
+        assertEquals(Constants.HOLE_CENTER_Y, ball.getPy(), 0.001);
+        assertFalse(ball.isMoving());
+    }
+
+    @Test
+    void teleport_movesBallAndKillsVelocity() {
+        ServerBall ball = new ServerBall(10, 20);
+        ball.stroke(20, 20);
+        ball.teleport(50.0, 30.0);
+        assertEquals(50.0, ball.getPx(), 0.001);
+        assertEquals(30.0, ball.getPy(), 0.001);
+        assertFalse(ball.isMoving());
+    }
+
+    @Test
+    void setVxSetVy_makeBallMove() {
+        ServerBall ball = new ServerBall(10, 20);
+        assertFalse(ball.isMoving());
+        ball.setVx(3);
+        assertTrue(ball.isMoving());
+        ball.setVx(0);
+        ball.setVy(2);
+        assertTrue(ball.isMoving());
+    }
+
+    @Test
+    void getPendingRemovals_isEmptyByDefault() {
+        ServerBall ball = new ServerBall(10, 20);
+        assertTrue(ball.getPendingRemovals().isEmpty());
+    }
+
+    @Test
+    void checkCollision_rectOverlap_returnsTrue() {
+        ServerBall ball = new ServerBall(10, 10);
+        MapData.ServerShape rect = new MapData.ServerShape(
+                1, 1, -1, MapData.ServerShape.RECT, 9.5, 9.5, 1.0, 1.0);
+        assertTrue(ball.checkCollision(rect));
+    }
+
+    @Test
+    void checkCollision_rectFarAway_returnsFalse() {
+        ServerBall ball = new ServerBall(10, 10);
+        MapData.ServerShape rect = new MapData.ServerShape(
+                1, 1, -1, MapData.ServerShape.RECT, 50.0, 50.0, 1.0, 1.0);
+        assertFalse(ball.checkCollision(rect));
+    }
+
+    @Test
+    void checkCollision_ellipseOverlap_returnsTrue() {
+        ServerBall ball = new ServerBall(10, 10);
+        MapData.ServerShape ellipse = new MapData.ServerShape(
+                2, 1, -1, MapData.ServerShape.ELLIPSE, 9.0, 9.0, 2.0, 2.0);
+        assertTrue(ball.checkCollision(ellipse));
+    }
+
+    @Test
+    void checkCollision_ellipseFarAway_returnsFalse() {
+        ServerBall ball = new ServerBall(10, 10);
+        MapData.ServerShape ellipse = new MapData.ServerShape(
+                2, 1, -1, MapData.ServerShape.ELLIPSE, 40.0, 40.0, 2.0, 2.0);
+        assertFalse(ball.checkCollision(ellipse));
+    }
+
+    @Test
+    void checkCollision_polygonEdgeWithinRadius_returnsTrue() {
+        ServerBall ball = new ServerBall(10, 10);
+        // Polygon edge at y=9.8 — ball center (10,10) is 0.2 from that edge,
+        // well inside the ball's 0.4 radius.
+        double[] pts = {9.5, 9.8, 10.5, 9.8, 10.5, 10.5, 9.5, 10.5};
+        MapData.ServerShape polygon = new MapData.ServerShape(
+                3, 1, -1, MapData.ServerShape.POLYGON, pts);
+        assertTrue(ball.checkCollision(polygon));
+    }
+
+    @Test
+    void checkCollision_polygonFarAway_returnsFalse() {
+        ServerBall ball = new ServerBall(10, 10);
+        double[] pts = {40.0, 40.0, 41.0, 40.0, 41.0, 41.0, 40.0, 41.0};
+        MapData.ServerShape polygon = new MapData.ServerShape(
+                3, 1, -1, MapData.ServerShape.POLYGON, pts);
+        assertFalse(ball.checkCollision(polygon));
     }
 }
