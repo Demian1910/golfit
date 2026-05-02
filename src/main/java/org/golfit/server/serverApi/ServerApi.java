@@ -5,6 +5,8 @@ import org.golfit.server.ServerContext;
 import org.golfit.shared.lobby.Lobby;
 import org.golfit.shared.protocol.Protocol;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -39,15 +41,19 @@ public class ServerApi implements IServerApi {
 
     /** Removes a client from the server, cleans up lobby memberships, and releases the username. */
     public void disconnectClient(ClientHandler clientHandler) {
-        // Remove client from any lobby they're in
+        // Remove client from any lobby they're in. Collect empty lobby IDs first
+        // and drop them after iteration to avoid ConcurrentModificationException.
+        List<Integer> emptyLobbyIds = new ArrayList<>();
         for (Lobby lobby : serverContext.getLobbies().values()) {
             if (lobby.getClients().contains(clientHandler)) {
                 lobby.removeClient(clientHandler);
-                // If lobby is now empty, remove it
                 if (lobby.getClients().isEmpty()) {
-                    serverContext.getLobbies().remove(lobby.getId());
+                    emptyLobbyIds.add(lobby.getId());
                 }
             }
+        }
+        for (Integer id : emptyLobbyIds) {
+            serverContext.getLobbies().remove(id);
         }
 
         if (clientHandler.getUsername() != null) {

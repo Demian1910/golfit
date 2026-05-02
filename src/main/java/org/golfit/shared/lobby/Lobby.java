@@ -97,15 +97,15 @@ public class Lobby {
      * Sets the lobby host, provided the client is already in the lobby.
      *
      * @param lobbyHost the client to promote to host
+     * @return true if the host was updated, false if the client is not in the lobby
      */
-    public void setLobbyHost(ClientHandler lobbyHost) {
+    public boolean setLobbyHost(ClientHandler lobbyHost) {
         if(clients.contains(lobbyHost)) {
             this.lobbyHost = lobbyHost;
+            return true;
         }
-        else{
-            System.err.println("Client doesn't exists!");
-        }
-
+        System.err.println("Client doesn't exists!");
+        return false;
     }
 
     /** Returns the current lobby host, or null if the host is no longer in the lobby. */
