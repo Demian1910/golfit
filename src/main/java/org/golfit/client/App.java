@@ -10,6 +10,7 @@ import org.golfit.client.clientLogic.Client;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.client.game.AimIndicator;
 import org.golfit.client.game.GameView;
+import org.golfit.client.game.GamepadInput;
 import org.golfit.client.gui.Sidebar;
 import org.golfit.client.gui.SplashView;
 import org.golfit.graphics.Game;
@@ -25,6 +26,7 @@ public class App extends Application {
 
     private Client client;
     private Stage primaryStage;
+    private GamepadInput gamepadInput;
 
     /** Center content (Splash → Game → Splash) */
     private StackPane centerArea;
@@ -95,6 +97,13 @@ public class App extends Application {
                         int localId = client.getClientApi().getId();
 
                         GameView gameView = new GameView(client.getMovementHandler(), localId);
+                        try {
+                            gamepadInput = new GamepadInput(gameView);
+                            gamepadInput.start();
+                        } catch (Throwable t) {
+                            System.err.println("Gamepad unavailable, continuing with mouse only: " + t.getMessage());
+                            gamepadInput = null;
+                        }
                         Pane overlayPane = gameView.getRoot();
 
                         AimIndicator aimIndicator = new AimIndicator(overlayPane);
@@ -206,6 +215,10 @@ public class App extends Application {
                     resultsBox.setOnMouseClicked(e ->
                             centerArea.getChildren().remove(resultsBox));
 
+                    if (gamepadInput != null) {
+                        gamepadInput.shutdown();
+                        gamepadInput = null;
+                    }
                     centerArea.getChildren().setAll(splashView, resultsBox);
                 });
             });
@@ -219,6 +232,9 @@ public class App extends Application {
     public void stop() throws Exception {
         if (client != null) {
             client.getClientApi().shutdown();
+        }
+        if (gamepadInput != null) {
+            gamepadInput.shutdown();
         }
         System.exit(0);
     }
