@@ -189,7 +189,7 @@ public class ServerApi implements IServerApi {
                         Protocol.SYS_OBSTACLE_UPDATE, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
             }
         } else {
-            System.err.println("Fehler: ObstacleChange konnte nicht gesendet werden. Lobby " + lobbyId + " nicht gefunden.");
+            System.err.println("Error: ObstacleChange could not be sent. Lobby " + lobbyId + " not found.");
         }
     }
 
