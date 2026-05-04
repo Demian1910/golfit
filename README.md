@@ -1,6 +1,6 @@
 # GOLFIT
 
-GOLFIT is a multiplayer video game centered around the experience of minigolf. Developed by a team of four students for the Programming project at the University of Basel, it aims to provide a fun golf game, with interactive environment.
+GolfIt is a multiplayer video game centered around the experience of minigolf. Developed by a team of four students for the Programming project at the University of Basel, it aims to provide a fun golf game, with interactive environment.
 
 ## Project Overview
 The game is built on a client-server architecture where communication is handled through a custom-made network protocol.
@@ -8,10 +8,13 @@ The game is built on a client-server architecture where communication is handled
 * **Client**: Provides a JavaFX-based Graphical User Interface (GUI), handles user input, and implements latency prediction.
 
 ## Key Features
-* **Multiplayer Gameplay**: Support for up to 4 players per lobby.
+* **Multiplayer Gameplay**: Support for up to 6 players per lobby.
 * **Lobby & Chat**: Users can create/join lobbies and communicate via a real-time text chat.
 * **Reliable Networking**: A custom UDP-based protocol with reliable delivery for system and chat messages.
-* **Ball physics**: Includes shot power (0-100%), angle (0-360°), friction-based deceleration, and wall bounces.
+* **Game physics**: Friction-based deceleration, wall bounces and interactive elements such as trees, wall and bridge..
+* **Dynamic Aim Indicator**: Visual cone-shaped power and direction indicator for intuitive stroke control.
+* **Deterministic Player Colors**: Automatic and unique golf ball color assignment based on lobby join order.
+* **Competitive Logic**: Game state tracking with stroke counts and finish-time tie-breakers.
 
 ## Technology Stack
 * **Language**: Java 25.
@@ -30,18 +33,19 @@ java -jar build/libs/golfit-0.0.1-ALPHA.jar server <port>
 ```
 **To start a Client:**
 ```bash
-java -jar build/libs/golfit-0.0.1-ALPHA.jar client <adress>:<port> <name>
+java -jar build/libs/golfit-0.0.1-ALPHA.jar client <address>:<port> <name>
 ```
 
 ## Project Documentation
 Detailed information about project design and progress can be found in the following documents:
-* [**Requirement Analysis**](docs/requirementAnalysis.md): Comprehensive analysis of functional and non-functional requirements.
 * [**Network Protocol**](docs/networkProtocol.md): Technical specifications of the custom communication protocol.
+* [**Outreach**](docs/MS6_Outreach): Folder containing game's trailer and picture.
 * [**Project Diary**](docs/diary.md): Chronological record of milestones and task assignments.
+
 
 ## Contributors
 GOLFIT was developed by:
 * Anton Bilokon a.bilokon@stud.unibas.ch
-* Demian Piodi d.piodi@stud.unibas.com
+* Demian Piodi d.piodi@stud.unibas.ch
 * Tamer Erata t.erata@stud.unibas.ch
 * Constantin Chau c.chau@stud.unibas.ch

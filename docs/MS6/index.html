@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GolfIt - Multiplayer Minigolf</title>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&display=swap" rel="stylesheet">
+    <style>
+        /* CSS variables for golf theme */
+        :root {
+            --primary-color: #27ae60;
+            /* Golf Green */
+            --bg-color: #f4f6f8;
+            /* Light Gray */
+            --text-color: #2c3e50;
+            /* Dark Blue/Gray */
+            --card-bg: #ffffff;
+            /* White */
+            --accent-color: #3498db;
+            /* Sky Blue */
+            --border-color: #e0e6ed;
+        }
+
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
+
+        /* Navbar */
+        nav {
+            padding: 20px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: var(--primary-color);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            box-sizing: border-box;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        nav .logo {
+            font-size: 24px;
+            font-weight: 800;
+            color: #ffffff;
+            letter-spacing: 2px;
+        }
+
+        nav ul {
+            list-style: none;
+            display: flex;
+            gap: 30px;
+            margin: 0;
+        }
+
+        nav ul li a {
+            color: #ffffff;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        nav ul li a:hover {
+            text-decoration: underline;
+        }
+
+        /* Hero Section */
+        .hero {
+            height: auto;
+            min-height: 80vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            background-color: var(--card-bg);
+            padding: 100px 20px;
+            margin-top: 60px;
+            /* Offset for navbar */
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            max-width: 600px;
+            margin-bottom: 40px;
+            color: var(--text-color);
+        }
+
+        /* Container for content */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 80px 20px;
+        }
+
+        /* Sections */
+        .section-title {
+            font-size: 2.5rem;
+            margin-bottom: 40px;
+            text-align: center;
+            position: relative;
+        }
+
+        .section-title::after {
+            content: '';
+            width: 60px;
+            height: 4px;
+            background: var(--primary-color);
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-radius: 2px;
+        }
+
+        /* Grid for Media */
+        .media-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            max-width: 800px;
+            margin: 0 auto 80px auto;
+        }
+
+        .media-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .placeholder-box {
+            width: 100%;
+            height: 300px;
+            background: #e0e6ed;
+            border-radius: 4px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #7f8c8d;
+            font-weight: 600;
+            font-size: 1.2rem;
+            border: 2px dashed #bdc3c7;
+            margin-bottom: 20px;
+        }
+
+        /* Cards Grid for Features */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+        }
+
+        .feature-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            padding: 30px;
+            border-radius: 8px;
+        }
+
+        .feature-card h3 {
+            color: var(--primary-color);
+            margin-top: 0;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 10px;
+        }
+
+        /* Terminal/Install section */
+        .install-section {
+            background: var(--card-bg);
+            border-radius: 8px;
+            padding: 40px;
+            border: 1px solid var(--border-color);
+            margin-top: 60px;
+        }
+
+        .code-block {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 4px;
+            font-family: monospace;
+            color: #333;
+            overflow-x: auto;
+            margin-bottom: 20px;
+            border: 1px solid var(--border-color);
+        }
+
+        .code-block span.comment {
+            color: #7f8c8d;
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 40px;
+            background: var(--primary-color);
+            color: #ffffff;
+            margin-top: 80px;
+        }
+
+        footer h2 {
+            margin-bottom: 10px;
+        }
+
+        footer p {
+            margin: 5px 0;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .media-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            nav {
+                flex-direction: column;
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav>
+        <div class="logo">GOLFIT</div>
+        <ul>
+            <li><a href="#about">About</a></li>
+            <li><a href="#media">Media</a></li>
+            <li><a href="#features">Features</a></li>
+            <li><a href="#install">Install</a></li>
+        </ul>
+    </nav>
+
+    <header class="hero">
+        <h1>Welcome to GOLFIT</h1>
+        <p>A multiplayer video game centered around the experience of minigolf. Developed by a team of four students at
+            the University of Basel.</p>
+        <a href="#install"
+            style="background: var(--primary-color); color: #ffffff; padding: 15px 30px; text-decoration: none; border-radius: 4px; font-weight: 800; display: inline-block;">Get
+            Started</a>
+    </header>
+
+    <div class="container" id="about">
+        <h2 class="section-title">About The Game</h2>
+        <p
+            style="text-align: center; max-width: 800px; margin: 0 auto 60px auto; color: var(--text-color); font-size: 1.1rem;">
+            GolfIt is built on a client-server architecture where communication is handled through a custom-made network
+            protocol. It provides a fun golf game with an interactive environment, aiming to bring friends together for
+            competitive minigolf action.
+        </p>
+
+        <div id="media" class="media-grid">
+            <div class="media-card">
+                <h3>Gameplay Screenshot</h3>
+                <div class="placeholder-box">
+                    <!-- Replace the below string with an <img> tag when the photo is ready -->
+                    [ Representative Image Placeholder ]
+                </div>
+                <p>A glimpse into the interactive and vibrant world of GOLFIT.</p>
+            </div>
+        </div>
+
+        <h2 class="section-title" id="features">Key Features</h2>
+        <div class="features-grid">
+            <div class="feature-card">
+                <h3>Multiplayer Action</h3>
+                <p>Support for up to 6 players per lobby. Create or join lobbies and communicate via a real-time text
+                    chat.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Dynamic Physics</h3>
+                <p>Friction-based deceleration, wall bounces, and interactive elements such as trees, walls, and
+                    bridges.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Competitive Logic</h3>
+                <p>Game state tracking with stroke counts and finish-time tie-breakers. Automatic and unique golf ball
+                    color assignment.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Aim Indicator</h3>
+                <p>Visual cone-shaped power and direction indicator for intuitive stroke control.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Custom Networking</h3>
+                <p>A custom UDP-based protocol with reliable delivery for system and chat messages.</p>
+            </div>
+            <div class="feature-card">
+                <h3>Modern Tech Stack</h3>
+                <p>Powered by Java 25, JavaFX for the GUI, and Gradle as the build system.</p>
+            </div>
+        </div>
+
+        <div class="install-section" id="install">
+            <h2 class="section-title" style="margin-bottom: 20px;">Installation & Setup</h2>
+            <p style="color: var(--text-color); margin-bottom: 30px;">
+                Get started by downloading the source code from our repository. The project is executed through the
+                <code>Main</code> class,
+                which accepts specific arguments for the server or client roles. Make sure you have Java 25 installed.
+            </p>
+
+            <div style="text-align: center; margin-bottom: 40px;">
+                <a href="golfit-source.zip" download
+                    style="background: var(--primary-color); color: #ffffff; padding: 12px 24px; text-decoration: none; border-radius: 4px; font-weight: 600; display: inline-block;">Download
+                    Game Source (.zip)</a>
+            </div>
+
+            <h3>1. Download & Extract</h3>
+            <div class="code-block">
+                <span class="comment"># Download the zip file using the button above and extract it.</span><br>
+                <span class="comment"># Then, open your terminal and navigate into the extracted folder.</span><br>
+                cd golfit-source
+            </div>
+
+            <h3>2. Compile the Game</h3>
+            <div class="code-block">
+                <span class="comment"># Use the Gradle wrapper to build the project and generate the
+                    executable</span><br>
+                ./gradlew build-cs108
+            </div>
+
+            <h3>3. Start the Server</h3>
+            <div class="code-block">
+                <span class="comment"># Run this command in your terminal to start the game server</span><br>
+                java -jar build/libs/golfit-0.0.1-ALPHA.jar server &lt;port&gt;
+            </div>
+
+            <h3>4. Start the Client</h3>
+            <div class="code-block">
+                <span class="comment"># Open a new terminal window to connect as a player</span><br>
+                java -jar build/libs/golfit-0.0.1-ALPHA.jar client &lt;address&gt;:&lt;port&gt; &lt;name&gt;
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <h2 style="color: #ffffff; letter-spacing: 2px;">GOLFIT</h2>
+        <p style="color: #ffffff;">Developed by Anton Bilokon, Demian Piodi, Tamer Erata, and Constantin Chau</p>
+        <p style="color: #ffffff; font-size: 0.9em; margin-top: 20px;">University of Basel - Programming Project FS26
+        </p>
+    </footer>
+
+    <script>
+        // Simple smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                document.querySelector(this.getAttribute('href')).scrollIntoView({
+                    behavior: 'smooth'
+                });
+            });
+        });
+    </script>
+</body>
+
+</html>
