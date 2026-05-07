@@ -23,3 +23,5 @@ toodls/token.txt
 
 # Documentation
 documentation/qa-history/
+
+*.yml

@@ -38,9 +38,9 @@ java -jar build/libs/golfit-0.0.1-ALPHA.jar client <address>:<port> <name>
 
 ## Project Documentation
 Detailed information about project design and progress can be found in the following documents:
-* [**Network Protocol**](docs/networkProtocol.md): Technical specifications of the custom communication protocol.
-* [**Outreach**](docs/MS6_Outreach): Folder containing game's trailer and picture.
-* [**Project Diary**](docs/diary.md): Chronological record of milestones and task assignments.
+* [**Network Protocol**](../docs/networkProtocol.md): Technical specifications of the custom communication protocol.
+* [**Outreach**](.): Folder containing game's trailer and picture.
+* [**Project Diary**](../docs/diary.md): Chronological record of milestones and task assignments.
 
 
 ## Contributors
