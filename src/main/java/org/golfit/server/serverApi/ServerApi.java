@@ -39,14 +39,22 @@ public class ServerApi implements IServerApi {
         clientHandler.getChannelManager().send(Protocol.SYS_PONG, Protocol.CH_PINGS, Protocol.ID_SERVER, payload);
     }
 
-    /** Removes a client from the server, cleans up lobby memberships, and releases the username. */
+    /**
+     * Removes a client from the server, cleans up lobby memberships, and releases the username.
+     * Notifies remaining lobby members with a fresh {@code LOBBY_INFO} so their player lists
+     * update immediately, then broadcasts an updated {@code LOBBY_LIST} to everyone.
+     */
     public void disconnectClient(ClientHandler clientHandler) {
-        // Remove client from any lobby they're in. Collect empty lobby IDs first
-        // and drop them after iteration to avoid ConcurrentModificationException.
         List<Integer> emptyLobbyIds = new ArrayList<>();
         for (Lobby lobby : serverContext.getLobbies().values()) {
             if (lobby.getClients().contains(clientHandler)) {
                 lobby.removeClient(clientHandler);
+                // Push updated player list to everyone still in this lobby
+                for (ClientHandler remaining : lobby.getClients()) {
+                    try {
+                        sendLobbyInfo(remaining, String.valueOf(lobby.getId()));
+                    } catch (Exception ignored) {}
+                }
                 if (lobby.getClients().isEmpty()) {
                     emptyLobbyIds.add(lobby.getId());
                 }
@@ -66,7 +74,7 @@ public class ServerApi implements IServerApi {
             serverContext.getClients().remove(clientHandler.getClientKey());
         }
 
-        // Notify remaining clients of the updated lobby state
+        // Notify all remaining clients of the updated lobby list
         for (ClientHandler client : serverContext.getClients().values()) {
             try {
                 sendLobbyList(client);
@@ -190,6 +198,26 @@ public class ServerApi implements IServerApi {
             }
         } else {
             System.err.println("Error: ObstacleChange could not be sent. Lobby " + lobbyId + " not found.");
+        }
+    }
+
+    /**
+     * Broadcasts each player's chosen color to all members of a lobby.
+     * Payload format: {@code "playerId:colorHex;playerId:colorHex;..."} — only players with a
+     * custom color are included; players using the default are omitted.
+     */
+    public void broadcastPlayerColors(Lobby lobby) throws Exception {
+        StringBuilder sb = new StringBuilder();
+        for (ClientHandler client : lobby.getClients()) {
+            if (client.getColorHex() != null) {
+                if (sb.length() > 0) sb.append(";");
+                sb.append(client.getId()).append(":").append(client.getColorHex());
+            }
+        }
+        String payload = sb.toString();
+        for (ClientHandler client : lobby.getClients()) {
+            client.getChannelManager().send(
+                    Protocol.SYS_PLAYER_COLOR, Protocol.CH_SYSTEM, Protocol.ID_SERVER, payload);
         }
     }
 

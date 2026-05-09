@@ -118,12 +118,16 @@ public class Lobby {
         return null;
     }
 
-    /** Returns a string representation of the lobby for info updates: {@code "lobbyId:player1,player2,..."}. */
+    /**
+     * Returns a string representation of the lobby for info updates.
+     * Format: {@code "lobbyId:player1[#colorHex1],player2[#colorHex2],..."}
+     * The {@code #colorHex} suffix is omitted when a player has no custom color.
+     */
     public String getLobbyContext() {
-        String clientString = clients.stream().map(ClientHandler::getUsername).collect(Collectors.joining(","));
-        return getId() + ":" +
-                clientString;
-
+        String clientString = clients.stream()
+                .map(c -> c.getColorHex() != null ? c.getUsername() + "#" + c.getColorHex() : c.getUsername())
+                .collect(Collectors.joining(","));
+        return getId() + ":" + clientString;
     }
     /** Returns a summary string for lobby list display: {@code "lobbyId:hostName:playerCount:status"}. */
     public String getLobbyListContext() {

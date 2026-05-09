@@ -196,6 +196,22 @@ public class ClientApi implements IClientApi {
         return channelManager;
     }
 
+    /**
+     * Sends the player's preferred ball color to the server.
+     * The server stores the choice and broadcasts updated color state to all lobby members.
+     *
+     * @param color the preferred color, or {@code null} to revert to the server-assigned default
+     */
+    @Override
+    public void sendColorPreference(javafx.scene.paint.Color color) throws Exception {
+        String payload = color == null ? "DEFAULT"
+                : String.format("%02X%02X%02X",
+                        (int)(color.getRed()   * 255),
+                        (int)(color.getGreen() * 255),
+                        (int)(color.getBlue()  * 255));
+        channelManager.send(Protocol.SYS_PLAYER_COLOR, Protocol.CH_SYSTEM, getId(), payload);
+    }
+
     /** Sends a disconnect message to the server, stops the ping service, and closes the socket. */
     public void shutdown(){
         try {

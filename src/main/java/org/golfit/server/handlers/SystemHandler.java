@@ -25,6 +25,12 @@ public class SystemHandler {
     private final ServerContext serverContext;
     private ServerGameSimulation gameSimulation;
 
+    /**
+     * Creates a new server-side SystemHandler.
+     *
+     * @param serverApi     the server API for sending responses and managing state
+     * @param serverContext the shared context providing access to clients and lobbies
+     */
     public SystemHandler(ServerApi serverApi, ServerContext serverContext) {
         this.serverApi = serverApi;
         this.serverContext = serverContext;
@@ -65,16 +71,19 @@ public class SystemHandler {
         }
     }
 
+    /** Responds to a ping by refreshing the client's last-seen timestamp and sending a pong. */
     public void onPing(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         clientHandler.updateLastPing();
         serverApi.sendPong(clientHandler);
     }
 
+    /** Broadcasts a chat message from the sender to all connected clients. */
     public void onChatBroadcast(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String payload = clientHandler.getUsername() + ":" + message.payload;
         serverApi.broadcastChat(Protocol.ID_SERVER, payload);
     }
 
+    /** Routes a private message to the named target player. Silently ignores unknown targets. */
     public void onChatPrivate(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
@@ -91,6 +100,7 @@ public class SystemHandler {
         });
     }
 
+    /** Relays a chat message to every member of the sender's lobby. */
     public void onChatLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String[] parts = message.payload.split(":", 2);
         if (parts.length < 2) return;
@@ -105,11 +115,13 @@ public class SystemHandler {
         }
     }
 
+    /** Cleans up after a client disconnects: removes them from lobbies and releases their username. */
     public void onDisconnect(ClientHandler clientHandler) {
         System.out.println("Client " + clientHandler.getUsername() + " disconnected");
         serverApi.disconnectClient(clientHandler);
     }
 
+    /** Creates a new lobby with the requesting client as host, then broadcasts the updated lobby list. */
     public void onCreateLobby(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         int lobbyId = serverContext.generateUniqueId();
         serverContext.getLobbies().put(lobbyId, new Lobby(lobbyId, clientHandler));
@@ -120,10 +132,12 @@ public class SystemHandler {
         serverApi.sendLobbyInfo(clientHandler, String.valueOf(lobbyId));
     }
 
+    /** Sends the current lobby list to the requesting client. */
     public void onLobbyList(ClientHandler clientHandler) throws Exception {
         serverApi.sendLobbyList(clientHandler);
     }
 
+    /** Adds the client to the requested lobby and notifies all members with an updated player list. */
     public void onLobbyJoin(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));
         if (lobby == null) return;
@@ -137,6 +151,7 @@ public class SystemHandler {
         refreshLobbyLists();
     }
 
+    /** Removes the client from a lobby, notifies remaining members, and confirms the leave to the client. */
     public void onLobbyLeave(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         Lobby lobby = serverContext.getLobbies().get(Integer.parseInt(message.payload));
         if (lobby == null) return;
@@ -153,10 +168,12 @@ public class SystemHandler {
         refreshLobbyLists();
     }
 
+    /** Handles a movement-input packet; actual physics are driven by the game simulation tick. */
     public void onMoveInput(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         // Position updates are handled via the game simulation tick
     }
 
+    /** Sends the list of all currently connected players to the requesting client. */
     public void onPlayerList(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         String payload = serverContext.getClients().values().stream()
                 .map(ClientHandler::getUsername)
@@ -164,6 +181,7 @@ public class SystemHandler {
         serverApi.sendPlayerList(clientHandler, payload);
     }
 
+    /** Starts the game in the specified lobby: initialises physics, registers players, and broadcasts SYS_GAME_START. */
     public void onLobbyStart(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         if (message.payload == null || message.payload.isEmpty()) return;
 
@@ -189,6 +207,13 @@ public class SystemHandler {
         refreshLobbyLists();
     }
 
+    /**
+     * Concludes a game for the given lobby: determines the winner, persists results,
+     * broadcasts the outcome, and pushes the updated score history to all clients.
+     *
+     * @param lobbyId       the ID of the lobby whose game just finished
+     * @param strokeResults map of player ID → total stroke count
+     */
     public void handleGameEnd(int lobbyId, Map<Integer, Integer> strokeResults) {
         Lobby lobby = serverContext.getLobbies().get(lobbyId);
         if (lobby == null) return;
@@ -235,12 +260,34 @@ public class SystemHandler {
         refreshLobbyLists();
     }
 
+    /**
+     * Handles a color-preference packet from a client.
+     * Stores the choice, then pushes updated {@code LOBBY_INFO} and {@code SYS_PLAYER_COLOR}
+     * to all members of the sender's lobby so every client sees the same colors.
+     */
+    public void onPlayerColor(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
+        String hex = (message.payload == null || message.payload.isBlank()
+                || "DEFAULT".equals(message.payload)) ? null : message.payload;
+        clientHandler.setColorHex(hex);
+
+        Lobby lobby = getLobbyForPlayer(clientHandler);
+        if (lobby == null) return;
+
+        String lobbyId = String.valueOf(lobby.getId());
+        for (ClientHandler member : lobby.getClients()) {
+            serverApi.sendLobbyInfo(member, lobbyId);
+        }
+        serverApi.broadcastPlayerColors(lobby);
+    }
+
+    /** Handles the cheat-code packet by instantly teleporting the requesting player to the hole. */
     public void onHesoyam(ClientHandler clientHandler, MessageParser.Message message) throws Exception {
         if (gameSimulation != null) {
             gameSimulation.cheatTeleport(clientHandler.getId());
         }
     }
 
+    /** Appends a CSV row for the finished game to {@code results.csv}. */
     private void saveResults(int lobbyId, String winner, Map<String, Integer> results) {
         try (PrintWriter pw = new PrintWriter(new FileWriter("results.csv", true))) {
             String timestamp = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"));
@@ -252,6 +299,7 @@ public class SystemHandler {
         }
     }
 
+    /** Reads {@code results.csv} and returns a newline-separated {@code "winner:strokes"} history string. */
     private String buildScoreHistory() {
         File csvFile = new File("results.csv");
         if (!csvFile.exists()) return "";
@@ -277,14 +325,17 @@ public class SystemHandler {
         return scores.toString().trim();
     }
 
+    /** Pushes an updated lobby list to every connected client. */
     private void refreshLobbyLists() {
         serverContext.getClients().values().forEach(client -> {
             try { serverApi.sendLobbyList(client); } catch (Exception ignored) {}
         });
     }
 
+    /** Wires in the physics simulation so lobby-start and game-end events can drive it. */
     public void setGameSimulation(ServerGameSimulation sim) { this.gameSimulation = sim; }
 
+    /** Returns the lobby that currently contains the given client, or {@code null} if not in any lobby. */
     public Lobby getLobbyForPlayer(ClientHandler clientHandler) {
         for (Lobby lobby : serverContext.getLobbies().values()) {
             if (lobby.getClients().contains(clientHandler)) return lobby;
@@ -292,6 +343,7 @@ public class SystemHandler {
         return null;
     }
 
+    /** Builds the {@code "username:strokes,..."} payload for a stroke-update broadcast. */
     public String buildStrokePayload(Lobby lobby) {
         if (gameSimulation == null) return "";
         StringBuilder sb = new StringBuilder();

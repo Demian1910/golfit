@@ -10,7 +10,10 @@ import javafx.scene.layout.Priority;
 import javafx.scene.layout.VBox;
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.eventBus.EventBus;
+import org.golfit.client.gui.settings.ClientPreferences;
+import org.golfit.client.gui.settings.SettingsMenu;
 import org.golfit.shared.constants.Constants;
+import javafx.scene.paint.Color;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -78,6 +81,7 @@ public class LobbyMenu extends VBox {
         });
         EventBus.get().on(Constants.LOBBY_LEFT, data -> {
              strokesMap.clear();
+             ClientPreferences.clearLobbyColors();
              showLobbyListView();
         });
 
@@ -114,6 +118,9 @@ public class LobbyMenu extends VBox {
                 updatePlayers(currentPlayers.toArray(new String[0]));
             });
         });
+
+        EventBus.get().on(Constants.BALL_COLOR_CHANGED, data ->
+                updatePlayers(currentPlayers.toArray(new String[0])));
     }
 
     /** Enables or disables the leave button based on lobby membership. */
@@ -256,6 +263,14 @@ public class LobbyMenu extends VBox {
         });
     }
 
+    /** Returns the emoji matching one of the 6 preset ball colors, or the first emoji as fallback. */
+    private String emojiForColor(javafx.scene.paint.Color color) {
+        for (int i = 0; i < SettingsMenu.PRESET_COLORS.length; i++) {
+            if (SettingsMenu.PRESET_COLORS[i].equals(color)) return PLAYER_EMOJIS[i];
+        }
+        return PLAYER_EMOJIS[0];
+    }
+
     /** Updates the player list display with current usernames and stroke counts. */
     public void updatePlayers(String[] players) {
         javafx.application.Platform.runLater(() -> {
@@ -268,9 +283,15 @@ public class LobbyMenu extends VBox {
             for (int i = 0; i < currentPlayers.size(); i++) {
                 String player = currentPlayers.get(i);
                 HBox pRow = new HBox(8);
-                
-                String emoji = startBtn.isVisible() ? "👤" : PLAYER_EMOJIS[i % PLAYER_EMOJIS.length];
-                Label playerLabel = new Label(emoji + " " + player);
+
+                Color serverColor = ClientPreferences.getLobbyColor(player);
+                String emoji = serverColor != null
+                        ? emojiForColor(serverColor)
+                        : PLAYER_EMOJIS[i % PLAYER_EMOJIS.length];
+
+                String displayName = player.equals(clientApi.getUsername())
+                        ? player + " (you)" : player;
+                Label playerLabel = new Label(emoji + " " + displayName);
                 playerLabel.setStyle("-fx-text-fill: white;");
 
                 javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();

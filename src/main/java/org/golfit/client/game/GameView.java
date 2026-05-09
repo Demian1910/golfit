@@ -4,6 +4,7 @@ import javafx.scene.input.MouseEvent;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Background;
 import org.golfit.client.handlers.MovementHandler;
+import org.golfit.client.sound.SoundManager;
 import org.golfit.shared.constants.MapData;
 
 /**
@@ -94,6 +95,7 @@ public class GameView {
         try {
             if (org.golfit.Main.currentClient != null
                     && (Math.abs(fx) > 0.1 || Math.abs(fy) > 0.1)) {
+                SoundManager.playShot();
                 org.golfit.Main.currentClient.clientApi.sendMovement(fx, fy);
             }
         } catch (Exception ex) {

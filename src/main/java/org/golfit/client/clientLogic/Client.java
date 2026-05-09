@@ -189,7 +189,8 @@ public class Client {
             case Protocol.SYS_STROKE_UPDATE -> systemHandler.onStrokeUpdate(message);
             case Protocol.SYS_GAME_END     -> systemHandler.onGameEnd(message);
             case Protocol.SYS_OBSTACLE_UPDATE -> systemHandler.onObstacleUpdate(message);
-            case Protocol.SYS_SCORE_UPDATE -> systemHandler.onScoreUpdate(message);
+            case Protocol.SYS_SCORE_UPDATE  -> systemHandler.onScoreUpdate(message);
+            case Protocol.SYS_PLAYER_COLOR  -> systemHandler.onPlayerColors(message);
         }
     }
 }

@@ -31,4 +31,7 @@ public interface IClientApi {
 
     /** Sends a chat message to the current lobby. */
     void sendLobbyChat(String data) throws Exception;
+
+    /** Sends the player's preferred ball color to the server. Pass {@code null} to revert to default. */
+    void sendColorPreference(javafx.scene.paint.Color color) throws Exception;
 }

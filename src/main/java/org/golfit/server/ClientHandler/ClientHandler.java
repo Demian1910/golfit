@@ -24,6 +24,7 @@ public class ClientHandler implements Runnable {
     private final int Id;
     private final String key;
     private String username;
+    private String colorHex = null;
     private ClientState clientState =  ClientState.IN_MENU;
 
     private Protocol.PacketDispatcher dispatcher;
@@ -126,6 +127,12 @@ public class ClientHandler implements Runnable {
     public String getUsername() {
         return username;
     }
+
+    /** Returns the client's chosen ball color as a 6-char hex string, or {@code null} if using default. */
+    public String getColorHex() { return colorHex; }
+
+    /** Sets the client's chosen ball color. Pass {@code null} to revert to the server-assigned default. */
+    public void setColorHex(String colorHex) { this.colorHex = colorHex; }
     /** Interrupts this handler's processing thread. */
     public void shutdown() {
         thread.interrupt();

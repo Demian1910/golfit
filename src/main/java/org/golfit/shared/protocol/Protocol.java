@@ -28,7 +28,8 @@ public class Protocol {
     public static final String SYS_GAME_END       = "SYS_GAME_END";
     public static final String SYS_OBSTACLE_UPDATE = "SYS_OBSTACLE_UPDATE";
     public static final String SYS_SCORE_UPDATE   = "SYS_SCORE_UPDATE";
-    public static final String SYS_HESOYAM = "SYS_HESOYAM";
+    public static final String SYS_HESOYAM        = "SYS_HESOYAM";
+    public static final String SYS_PLAYER_COLOR   = "SYS_PLAYER_COLOR";
 
     // chat
     public static final String SYS_CHAT_BROADCAST = "SYS_CHAT_BROADCAST";
