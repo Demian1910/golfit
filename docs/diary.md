@@ -247,3 +247,13 @@ Constantin implemented the mechanic for the switch, so that the barrier and brid
 
 ## Entry #24 1.5.26
 Demian implemented unique ball colors: now every golf ball has a unique color (between 6) that is decided when lobby is joined, and the color is displayed next to the player name during the game phase instead of the person emoji.
+
+## Entry #25 09.05.26
+Tamer added a settings menu, sound effects and also fixed some stuff along the way.
+
+Settings are now accessible via a gear button in the sidebar, opens a small popup where you can change your username, toggle sound on/off with a volume slider, and pick a ball color from 6 presets that match the actual in-game ball colors.
+
+Sound was added from scratch, no audio files just generated programmatically. There's a shot sound, a little jingle when you sink the ball, and sounds for game start and end.
+
+Ball colors are now synced across all clients through a new SYS_PLAYER_COLOR packet so both screens show the same colors during a demo which was kind of needed. Also fixed a bug where if someone disconnected while in a lobby the remaining players sidebar wouldn't update.
+Javadocs added to all new and touched files and wrote some unit tests for the new stuff.
