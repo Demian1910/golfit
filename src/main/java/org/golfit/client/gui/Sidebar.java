@@ -11,6 +11,7 @@ import javafx.stage.Stage;
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.client.gui.lobby.LobbyMenu;
+import org.golfit.client.gui.settings.SettingsMenu;
 import org.golfit.shared.constants.Constants;
 
 /**
@@ -44,7 +45,6 @@ public class Sidebar extends VBox {
                 openPlayerWindow((String[]) data);
             });
         });
-
         Button playerButton = new Button("Players");
         playerButton.setPrefHeight(25);
         playerButton.setMaxHeight(Double.MAX_VALUE);
@@ -56,6 +56,13 @@ public class Sidebar extends VBox {
             }
         });
 
+        SettingsMenu settingsMenu = new SettingsMenu(clientApi);
+        Button settingsButton = new Button("⚙");
+        settingsButton.setPrefHeight(25);
+        settingsButton.setMaxHeight(Double.MAX_VALUE);
+        settingsButton.setOnAction(e ->
+                settingsMenu.open(getScene() != null ? getScene().getWindow() : null));
+
         setPrefWidth(250);
         setPadding(new Insets(10));
         setSpacing(8);
@@ -64,6 +71,8 @@ public class Sidebar extends VBox {
         // Whoami — username display
         usernameLabel = new Label(clientApi.getUsername());
         usernameLabel.setStyle("-fx-text-fill: white; -fx-font-size: 13px;");
+        EventBus.get().on(Constants.USERNAME_CHANGED, data ->
+                Platform.runLater(() -> usernameLabel.setText((String) data)));
 
         // Title
         Label title = new Label("Chat");
@@ -101,7 +110,11 @@ public class Sidebar extends VBox {
         sendButton.setMaxWidth(Double.MAX_VALUE);
         sendButton.setOnAction(e -> sendMessage());
 
-        getChildren().addAll(playerButton,usernameLabel, title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
+        HBox topButtons = new HBox(6, playerButton, settingsButton);
+        HBox.setHgrow(playerButton, Priority.ALWAYS);
+        playerButton.setMaxWidth(Double.MAX_VALUE);
+
+        getChildren().addAll(topButtons, usernameLabel, title, chatMode, targetLabel, targetField, chatMessages, messageInput, sendButton, lobbyMenu);
     }
 
     /** Toggles the target username field visibility based on the selected chat mode. */

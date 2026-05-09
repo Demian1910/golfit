@@ -1,11 +1,15 @@
 package org.golfit.client.handlers;
 
 import org.golfit.client.clientLogic.ClientApi;
+import org.golfit.client.eventBus.EventBus;
+import org.golfit.client.gui.settings.ClientPreferences;
+import org.golfit.shared.constants.Constants;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.client.game.BallRender;
 import org.golfit.client.game.Ball;
 import javafx.scene.layout.Pane;
 import javafx.application.Platform;
+import javafx.scene.paint.Color;
 
 import java.util.HashMap;
 import java.util.HashSet;
@@ -45,6 +49,13 @@ public class MovementHandler {
 
     public MovementHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
+        EventBus.get().on(Constants.BALL_COLOR_CHANGED, data -> {
+            Color newColor = (Color) data;
+            Platform.runLater(() -> {
+                BallRender myRender = players.get(clientApi.getId());
+                if (myRender != null) myRender.changeColor(newColor);
+            });
+        });
     }
 
     public void setGamePane(Pane pane) {
@@ -112,6 +123,10 @@ public class MovementHandler {
                 if (render == null) {
                     int index = joinOrder.indexOf(playerId);
                     var color = PLAYER_COLORS[index % PLAYER_COLORS.length];
+                    if (playerId == clientApi.getId()
+                            && ClientPreferences.getPreferredBallColor() != null) {
+                        color = ClientPreferences.getPreferredBallColor();
+                    }
                     render = new BallRender(gamePane, new Ball(pixelX, pixelY), color);
                     players.put(playerId, render);
                 } else {
