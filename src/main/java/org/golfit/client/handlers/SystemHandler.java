@@ -4,12 +4,16 @@ import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.cli.ConsoleManager;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.client.gui.Sidebar;
+import org.golfit.client.gui.settings.ClientPreferences;
 import org.golfit.shared.constants.Constants;
 import org.golfit.shared.messageParser.MessageParser;
+import javafx.scene.paint.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
 /** Handles system-level protocol responses on the client side (connection confirmations, chat, lobbies, movement updates). */
 public class SystemHandler {
@@ -108,17 +112,58 @@ public class SystemHandler {
         EventBus.get().emit(Constants.LOBBY_LEFT, null);
     }
 
-    /** Handles a lobby info update with the current player list. */
+    /**
+     * Handles a lobby info update. Parses the extended format
+     * {@code "lobbyId:player1[#colorHex1],player2[#colorHex2],..."},
+     * updates the lobby color registry, and emits {@link Constants#LOBBY_INFO} with plain names.
+     */
     public void onLobbyInfo(MessageParser.Message message) throws Exception {
         String[] lobbyInfo = message.payload.split(":", 2);
         String lobbyId = lobbyInfo[0];
-        String[] players   = lobbyInfo[1].split(",");
+        String[] entries = lobbyInfo[1].split(",");
+
+        String[] playerNames = new String[entries.length];
+        for (int i = 0; i < entries.length; i++) {
+            String entry = entries[i];
+            if (entry.contains("#")) {
+                String[] parts = entry.split("#", 2);
+                playerNames[i] = parts[0];
+                try {
+                    ClientPreferences.setLobbyColor(parts[0], Color.web("#" + parts[1]));
+                } catch (Exception ignored) {}
+            } else {
+                playerNames[i] = entry;
+                ClientPreferences.removeLobbyColor(entry);
+            }
+        }
+
         ConsoleManager.println("Lobby Update: " + lobbyId + "//" + lobbyInfo[1]);
         clientApi.setLobbyId(Integer.parseInt(lobbyId));
-        EventBus.get().emit(Constants.LOBBY_INFO, players);
+        EventBus.get().emit(Constants.LOBBY_INFO, playerNames);
 
         clientApi.getLobbyPlayers().clear();
-        Collections.addAll(clientApi.getLobbyPlayers(), players);
+        Collections.addAll(clientApi.getLobbyPlayers(), playerNames);
+    }
+
+    /**
+     * Handles a {@code SYS_PLAYER_COLOR} broadcast from the server.
+     * Parses {@code "playerId:colorHex;..."} and emits {@link Constants#PLAYER_COLORS_UPDATE}
+     * with a {@code Map<Integer, Color>} for {@link org.golfit.client.handlers.MovementHandler}.
+     */
+    public void onPlayerColors(MessageParser.Message message) {
+        Map<Integer, Color> colorMap = new HashMap<>();
+        if (message.payload != null && !message.payload.isBlank()) {
+            for (String entry : message.payload.split(";")) {
+                String[] parts = entry.split(":", 2);
+                if (parts.length == 2) {
+                    try {
+                        int id = Integer.parseInt(parts[0]);
+                        colorMap.put(id, Color.web("#" + parts[1]));
+                    } catch (Exception ignored) {}
+                }
+            }
+        }
+        EventBus.get().emit(Constants.PLAYER_COLORS_UPDATE, colorMap);
     }
 
     /** Handles the full player list response and emits it on the EventBus. */

@@ -1,6 +1,7 @@
 package org.golfit.client.gui.settings;
 
 import javafx.geometry.Insets;
+import javafx.geometry.Pos;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.layout.*;
@@ -8,12 +9,19 @@ import javafx.scene.paint.Color;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import javafx.stage.Window;
+import javafx.util.StringConverter;
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.eventBus.EventBus;
 import org.golfit.shared.constants.Constants;
 
 /** Settings popup window: change username, sound toggle, ball color picker. */
 public class SettingsMenu {
+
+    /** Must stay in sync with {@code MovementHandler.PLAYER_COLORS} and {@code LobbyMenu.PLAYER_EMOJIS}. */
+    public static final Color[]  PRESET_COLORS = {
+            Color.RED, Color.BLUE, Color.GREEN, Color.GOLD, Color.PURPLE, Color.ORANGE
+    };
+    public static final String[] PRESET_EMOJIS = {"🔴", "🔵", "🟢", "🟡", "🟣", "🟠"};
 
     private final ClientApi clientApi;
 
@@ -65,44 +73,73 @@ public class SettingsMenu {
 
         root.getChildren().addAll(usernameField, applyUsername, usernameStatus, divider());
 
-        // ── Sound Toggle ─────────────────────────────────────────────
+        // ── Sound ────────────────────────────────────────────────────
         root.getChildren().add(header("Sound"));
 
         ToggleButton soundToggle = new ToggleButton(
                 ClientPreferences.isSoundEnabled() ? "Sound: ON" : "Sound: OFF");
         soundToggle.setSelected(ClientPreferences.isSoundEnabled());
         soundToggle.setMaxWidth(Double.MAX_VALUE);
+
+        Label volumeLabel = new Label("Volume");
+        volumeLabel.setStyle("-fx-text-fill: white; -fx-font-size: 12px;");
+
+        Slider volumeSlider = new Slider(0, 100, ClientPreferences.getVolume() * 100);
+        volumeSlider.setShowTickLabels(true);
+        volumeSlider.setShowTickMarks(true);
+        volumeSlider.setMajorTickUnit(25);
+        volumeSlider.setMaxWidth(Double.MAX_VALUE);
+        volumeSlider.setDisable(!ClientPreferences.isSoundEnabled());
+        volumeSlider.setLabelFormatter(new StringConverter<>() {
+            @Override public String toString(Double v) {
+                return v.intValue() == 0 ? "0" : v.intValue() == 100 ? "100" : "";
+            }
+            @Override public Double fromString(String s) { return Double.parseDouble(s); }
+        });
+        volumeSlider.valueProperty().addListener((obs, oldV, newV) ->
+                ClientPreferences.setVolume(newV.floatValue() / 100f));
+
         soundToggle.setOnAction(e -> {
             boolean enabled = soundToggle.isSelected();
             ClientPreferences.setSoundEnabled(enabled);
             soundToggle.setText(enabled ? "Sound: ON" : "Sound: OFF");
+            volumeSlider.setDisable(!enabled);
             EventBus.get().emit(Constants.SOUND_TOGGLE, enabled);
         });
 
-        root.getChildren().addAll(soundToggle, divider());
+        root.getChildren().addAll(soundToggle, volumeLabel, volumeSlider, divider());
 
         // ── Ball Color ───────────────────────────────────────────────
         root.getChildren().add(header("Ball Color"));
 
-        Color initialColor = ClientPreferences.getPreferredBallColor() != null
-                ? ClientPreferences.getPreferredBallColor()
-                : Color.WHITE;
+        ToggleGroup colorGroup = new ToggleGroup();
+        HBox swatchRow = new HBox(6);
+        swatchRow.setAlignment(Pos.CENTER_LEFT);
 
-        ColorPicker colorPicker = new ColorPicker(initialColor);
-        colorPicker.setMaxWidth(Double.MAX_VALUE);
+        Color current = ClientPreferences.getPreferredBallColor();
+        for (int i = 0; i < PRESET_COLORS.length; i++) {
+            final Color c = PRESET_COLORS[i];
+            ToggleButton swatch = new ToggleButton(PRESET_EMOJIS[i]);
+            swatch.setToggleGroup(colorGroup);
+            swatch.setPrefSize(38, 32);
+            swatch.setSelected(c.equals(current));
+            swatch.setOnAction(e -> {
+                ClientPreferences.setPreferredBallColor(c);
+                EventBus.get().emit(Constants.BALL_COLOR_CHANGED, c);
+                try { clientApi.sendColorPreference(c); } catch (Exception ignored) {}
+            });
+            swatchRow.getChildren().add(swatch);
+        }
 
-        Label colorStatus = statusLabel("");
-
-        Button applyColor = new Button("Apply Color");
-        applyColor.setMaxWidth(Double.MAX_VALUE);
-        applyColor.setOnAction(e -> {
-            Color chosen = colorPicker.getValue();
-            ClientPreferences.setPreferredBallColor(chosen);
-            EventBus.get().emit(Constants.BALL_COLOR_CHANGED, chosen);
-            colorStatus.setText("Color applied.");
+        Button resetColor = new Button("Default");
+        resetColor.setOnAction(e -> {
+            colorGroup.selectToggle(null);
+            ClientPreferences.setPreferredBallColor(null);
+            EventBus.get().emit(Constants.BALL_COLOR_CHANGED, null);
+            try { clientApi.sendColorPreference(null); } catch (Exception ignored) {}
         });
 
-        root.getChildren().addAll(colorPicker, applyColor, colorStatus, divider());
+        root.getChildren().addAll(swatchRow, resetColor, divider());
 
         // ── Close ────────────────────────────────────────────────────
         Button closeButton = new Button("Close");
@@ -110,7 +147,7 @@ public class SettingsMenu {
         closeButton.setOnAction(e -> popup.close());
         root.getChildren().add(closeButton);
 
-        popup.setScene(new Scene(root, 280, 420));
+        popup.setScene(new Scene(root, 280, 460));
         popup.show();
     }
 

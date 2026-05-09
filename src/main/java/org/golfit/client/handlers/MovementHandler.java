@@ -2,7 +2,7 @@ package org.golfit.client.handlers;
 
 import org.golfit.client.clientLogic.ClientApi;
 import org.golfit.client.eventBus.EventBus;
-import org.golfit.client.gui.settings.ClientPreferences;
+import org.golfit.client.sound.SoundManager;
 import org.golfit.shared.constants.Constants;
 import org.golfit.shared.messageParser.MessageParser;
 import org.golfit.client.game.BallRender;
@@ -47,13 +47,28 @@ public class MovementHandler {
 
     private MessageParser.Message lastMessage = null;
 
+    /** Server-confirmed playerId → color map; overrides the default join-order palette. */
+    private final Map<Integer, Color> networkColors = new ConcurrentHashMap<>();
+
     public MovementHandler(ClientApi clientApi) {
         this.clientApi = clientApi;
-        EventBus.get().on(Constants.BALL_COLOR_CHANGED, data -> {
-            Color newColor = (Color) data;
+
+        // Server-authoritative color assignments (all players, any color)
+        EventBus.get().on(Constants.PLAYER_COLORS_UPDATE, data -> {
+            @SuppressWarnings("unchecked")
+            Map<Integer, Color> received = (Map<Integer, Color>) data;
+            networkColors.clear();
+            networkColors.putAll(received);
+            // Recolor already-rendered balls
             Platform.runLater(() -> {
-                BallRender myRender = players.get(clientApi.getId());
-                if (myRender != null) myRender.changeColor(newColor);
+                for (var entry : players.entrySet()) {
+                    int pid = entry.getKey();
+                    int idx = joinOrder.indexOf(pid);
+                    Color c = networkColors.containsKey(pid)
+                            ? networkColors.get(pid)
+                            : PLAYER_COLORS[Math.max(0, idx) % PLAYER_COLORS.length];
+                    entry.getValue().changeColor(c);
+                }
             });
         });
     }
@@ -122,11 +137,9 @@ public class MovementHandler {
 
                 if (render == null) {
                     int index = joinOrder.indexOf(playerId);
-                    var color = PLAYER_COLORS[index % PLAYER_COLORS.length];
-                    if (playerId == clientApi.getId()
-                            && ClientPreferences.getPreferredBallColor() != null) {
-                        color = ClientPreferences.getPreferredBallColor();
-                    }
+                    var color = networkColors.containsKey(playerId)
+                            ? networkColors.get(playerId)
+                            : PLAYER_COLORS[index % PLAYER_COLORS.length];
                     render = new BallRender(gamePane, new Ball(pixelX, pixelY), color);
                     players.put(playerId, render);
                 } else {
@@ -145,11 +158,14 @@ public class MovementHandler {
                 }
             }
 
-            // Remove missing players
+            // Remove missing players; detect local player holing out
             players.entrySet().removeIf(entry -> {
                 if (receivedIds.contains(entry.getKey())) {
                     return false;
                 } else {
+                    if (entry.getKey() == clientApi.getId()) {
+                        SoundManager.playHoleIn();
+                    }
                     entry.getValue().remove();
                     lastUpdateTime.remove(entry.getKey());
                     return true;

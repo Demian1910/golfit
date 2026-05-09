@@ -8,6 +8,7 @@ import javafx.scene.layout.*;
 import javafx.stage.Stage;
 import org.golfit.client.clientLogic.Client;
 import org.golfit.client.eventBus.EventBus;
+import org.golfit.client.sound.SoundManager;
 import org.golfit.client.game.AimIndicator;
 import org.golfit.client.game.GameView;
 import org.golfit.client.game.GamepadInput;
@@ -84,6 +85,7 @@ public class App extends Application {
             // GAME START
             // =========================
             EventBus.get().on(Constants.GAME_START, data -> {
+                SoundManager.playGameStart();
                 Platform.runLater(() -> {
                     try {
                         // Fixed internal resolution
@@ -160,6 +162,7 @@ public class App extends Application {
             // GAME END
             // =========================
             EventBus.get().on(Constants.GAME_END, data -> {
+                SoundManager.playGameEnd();
                 Platform.runLater(() -> {
 
                     // remove cheat listener
