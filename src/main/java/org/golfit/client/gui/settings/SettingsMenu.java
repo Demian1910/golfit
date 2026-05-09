@@ -21,6 +21,11 @@ public class SettingsMenu {
         this.clientApi = clientApi;
     }
 
+    /**
+     * Opens the settings modal window.
+     *
+     * @param owner the parent window used to centre and block the modal; may be {@code null}
+     */
     public void open(Window owner) {
         Stage popup = new Stage();
         popup.setTitle("Settings");

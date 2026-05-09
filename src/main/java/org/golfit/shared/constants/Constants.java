@@ -52,9 +52,9 @@ public class Constants {
     public static final String GAME_END      =  "GAME_END";      // EventBus event for game-over results
     public static final String OBSTACLE_UPDATE = "OBSTACLE_UPDATE";
     public static final String SCORE_UPDATE = "SCORE_UPDATE";
-    public static final String USERNAME_CHANGED  = "USERNAME_CHANGED";
-    public static final String SOUND_TOGGLE      = "SOUND_TOGGLE";
-    public static final String BALL_COLOR_CHANGED = "BALL_COLOR_CHANGED";
+    public static final String USERNAME_CHANGED   = "USERNAME_CHANGED";  // emitted when the local player changes their username
+    public static final String SOUND_TOGGLE       = "SOUND_TOGGLE";       // emitted with Boolean payload when sound is toggled
+    public static final String BALL_COLOR_CHANGED = "BALL_COLOR_CHANGED"; // emitted with Color payload when preferred ball color changes
 
     /** Golf hole position in grid coordinates (matches Course.java addGolfHole(64, 8) with width=2, height=2) */
     public static final double HOLE_CENTER_X    = 65.0;
