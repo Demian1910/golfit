@@ -99,13 +99,21 @@ test {
 }
 
 jacocoTestReport {
+    dependsOn test // Ensure tests run before the report is generated
+
     reports {
-        html.required = true
         xml.required = true
+        html.required = true
     }
+
     afterEvaluate {
         classDirectories.setFrom(files(classDirectories.files.collect {
-            fileTree(dir: it, exclude: ['module-info.class', 'META-INF/**', '**/*TestApp*'])
+            fileTree(dir: it, exclude: [
+                    'org/golfit/shared/constants/**',
+                    'org/golfit/graphics/**',
+                    'org/golfit/client/gui/**',
+                    'org/golfit/shared/lobby/**'
+            ])
         }))
     }
 }
