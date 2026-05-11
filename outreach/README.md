@@ -1,5 +1,7 @@
 # GOLFIT
 
+**Website:** [https://demian1910.github.io/golfit-website/](https://demian1910.github.io/golfit-website/)
+
 GolfIt is a multiplayer video game centered around the experience of minigolf. Developed by a team of four students for the Programming project at the University of Basel, it aims to provide a fun golf game, with interactive environment.
 
 ## Project Overview
@@ -38,8 +40,9 @@ java -jar build/libs/golfit-0.0.1-ALPHA.jar client <address>:<port> <name>
 
 ## Project Documentation
 Detailed information about project design and progress can be found in the following documents:
+* [**Website**](https://demian1910.github.io/golfit-website/): Official GOLFIT presentation website.
 * [**Network Protocol**](../docs/networkProtocol.md): Technical specifications of the custom communication protocol.
-* [**Outreach**](.): Folder containing game's trailer and picture.
+* [**Outreach**](.): Folder containing game's presentation website, trailer, and pictures.
 * [**Project Diary**](../docs/diary.md): Chronological record of milestones and task assignments.
 
 

@@ -257,3 +257,6 @@ Sound was added from scratch, no audio files just generated programmatically. Th
 
 Ball colors are now synced across all clients through a new SYS_PLAYER_COLOR packet so both screens show the same colors during a demo which was kind of needed. Also fixed a bug where if someone disconnected while in a lobby the remaining players sidebar wouldn't update.
 Javadocs added to all new and touched files and wrote some unit tests for the new stuff.
+
+## Entry #26 09.05.26
+Demian: outreach folder filled with required resources: gameplay, Manual, screenshot, logo
