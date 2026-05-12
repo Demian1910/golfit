@@ -10,7 +10,7 @@ The game is built on a client-server architecture where communication is handled
 * **Client**: Provides a JavaFX-based Graphical User Interface (GUI), handles user input, and implements latency prediction.
 
 ## Key Features
-* **Multiplayer Gameplay**: Support for up to 6 players per lobby.
+* **Multiplayer Gameplay**: Support for up to 4 players per lobby.
 * **Lobby & Chat**: Users can create/join lobbies and communicate via a real-time text chat.
 * **Reliable Networking**: A custom UDP-based protocol with reliable delivery for system and chat messages.
 * **Game physics**: Friction-based deceleration, wall bounces and interactive elements such as trees, wall and bridge..

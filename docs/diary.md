@@ -260,3 +260,7 @@ Javadocs added to all new and touched files and wrote some unit tests for the ne
 
 ## Entry #26 09.05.26
 Demian: outreach folder filled with required resources: gameplay, Manual, screenshot, logo
+
+## Entry #27 13.05.26
+Demian: Highscore entries now display non winning player with relative stroke counts and are listed in order of least stroke count winning player. Timestamp is also displayed, highscore is now scrollable.
+Maximum of 4 players per game is enforced, lobby showed as "Full" when there are 4 players.

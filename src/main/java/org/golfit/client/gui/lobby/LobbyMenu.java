@@ -141,26 +141,32 @@ public class LobbyMenu extends VBox {
         nameLabel.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
         Label playerCount = new Label(lobby[2] + "/4");
         playerCount.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
-        Label status = new Label(lobby[3]);
-        status.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        javafx.scene.text.Text status = new javafx.scene.text.Text(lobby[3]);
         switch (lobby[3]) {
             case "open":
-                status.setStyle("-fx-text-fill: green");
+                status.setStyle("-fx-fill: green;");
                 break;
             case "ongoing":
-                status.setStyle("-fx-text-fill: yellow");
+                status.setStyle("-fx-fill: yellow; -fx-stroke: black; -fx-stroke-width: 0.5;");
                 break;
             case "finished":
-                status.setStyle("-fx-text-fill: red");
+                status.setStyle("-fx-fill: red;");
                 break;
             default:
-                status.setStyle("-fx-text-fill: white");
+                status.setStyle("-fx-fill: white;");
         }
         javafx.scene.layout.Region spacer = new javafx.scene.layout.Region();
         HBox.setHgrow(spacer, Priority.ALWAYS);
 
-        Button joinBtn = new Button("Join");
+        boolean isFull;
+        try {
+            isFull = Integer.parseInt(lobby[2]) >= org.golfit.shared.lobby.Lobby.MAX_PLAYERS;
+        } catch (NumberFormatException e) {
+            isFull = false;
+        }
+        Button joinBtn = new Button(isFull ? "Full" : "Join");
         joinBtn.setMinWidth(javafx.scene.layout.Region.USE_PREF_SIZE);
+        joinBtn.setDisable(isFull);
 
         joinBtn.setOnAction(e -> {
             if (clientApi.getLobbyId() > 0)

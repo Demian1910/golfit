@@ -59,13 +59,19 @@ public class Lobby {
         return clients;
     }
 
+    public static final int MAX_PLAYERS = 4;
+
     /**
      * Adds a client to this lobby.
      *
      * @param client the client to add
-     * @return true if the client was added, false if they were already present
+     * @return true if the client was added, false if they were already present or lobby is full
      */
     public boolean addClient(ClientHandler client) {
+        if (clients.size() >= MAX_PLAYERS) {
+            System.err.println("Lobby is full!");
+            return false;
+        }
         if(clients.contains(client)) {
             System.err.println("Client already exists!");
             return false;
