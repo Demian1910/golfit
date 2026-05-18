@@ -248,7 +248,10 @@ Constantin implemented the mechanic for the switch, so that the barrier and brid
 ## Entry #24 1.5.26
 Demian implemented unique ball colors: now every golf ball has a unique color (between 6) that is decided when lobby is joined, and the color is displayed next to the player name during the game phase instead of the person emoji.
 
-## Entry #25 09.05.26
+## Entry #25 1.5.26
+Anton added gamepad input
+
+## Entry #26 09.05.26
 Tamer added a settings menu, sound effects and also fixed some stuff along the way.
 
 Settings are now accessible via a gear button in the sidebar, opens a small popup where you can change your username, toggle sound on/off with a volume slider, and pick a ball color from 6 presets that match the actual in-game ball colors.
@@ -258,9 +261,9 @@ Sound was added from scratch, no audio files just generated programmatically. Th
 Ball colors are now synced across all clients through a new SYS_PLAYER_COLOR packet so both screens show the same colors during a demo which was kind of needed. Also fixed a bug where if someone disconnected while in a lobby the remaining players sidebar wouldn't update.
 Javadocs added to all new and touched files and wrote some unit tests for the new stuff.
 
-## Entry #26 09.05.26
 Demian: outreach folder filled with required resources: gameplay, Manual, screenshot, logo
 
-## Entry #27 13.05.26
+## Entry #27 12.05.26
+Constantin: created QA report.
 Demian: Highscore entries now display non winning player with relative stroke counts and are listed in order of least stroke count winning player. Timestamp is also displayed, highscore is now scrollable.
 Maximum of 4 players per game is enforced, lobby showed as "Full" when there are 4 players.

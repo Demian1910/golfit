@@ -50,39 +50,40 @@ In the examples below, `\n` denotes the trailing newline terminator.
 
 ### 3.2 Lobby Messages
 
-| Constant              | Value | Direction | Channel | Description                                                                                        | Example                                                    |
-|-----------------------|---|---|---|----------------------------------------------------------------------------------------------------|------------------------------------------------------------|
-| `SYS_LOBBY_CREATE`    | `"SYS_LOBBY_CREATE"` | Client → Server | `CH_SYSTEM` | Request to create a lobby                                                                          | `SYS_LOBBY_CREATE\|CH_SYSTEM\|2\|3\|\n`                    |
-| `SYS_LOBBY_CREATED`   | `"SYS_LOBBY_CREATED"` | Server → Client | `CH_SYSTEM` | Lobby creation confirmation, payload is lobby ID                                                   | `SYS_LOBBY_CREATED\|CH_SYSTEM\|1\|4\|42\n`                 |
-| `SYS_LOBBY_JOIN`      | `"SYS_LOBBY_JOIN"` | Client → Server | `CH_SYSTEM` | Request to join a lobby, payload is lobby  ID                                                      | `SYS_LOBBY_JOIN\|CH_SYSTEM\|2\|5\|42\n`                    |
-| `SYS_LOBBY_JOINED`    | `"SYS_LOBBY_JOINED"` | Server → Client | `CH_SYSTEM` | Lobby join confirmation, payload is lobby ID                                                       | `SYS_LOBBY_JOINED\|CH_SYSTEM\|1\|6\|42\n`                  |
-| `SYS_LOBBY_LEAVE`     | `"SYS_LOBBY_LEAVE"` | Client → Server | `CH_SYSTEM` | Request to leave current lobby, payload is lobby ID                                                | `SYS_LOBBY_LEAVE\|CH_SYSTEM\|2\|7\|42\n`                   |
-| `SYS_LOBBY_LEFT`      | `"SYS_LOBBY_LEFT"` | Server → Client | `CH_SYSTEM` | Lobby leave confirmation, payload is lobby ID                                                      | `SYS_LOBBY_LEFT\|CH_SYSTEM\|1\|8\|42\n`                    |
-| `SYS_LOBBY_LIST`      | `"SYS_LOBBY_LIST"` | Server → Client | `CH_SYSTEM` | List of available lobbies                                                                          | `SYS_LOBBY_LIST\|CH_SYSTEM\|1\|9\|1:2:3:\n`                |
-| `SYS_LOBBY_INFO`      | `"SYS_LOBBY_INFO"` | Server → Client | `CH_SYSTEM` | Information about a specific lobby in the format lobbyID:player1,player2: playerCount: lobby status | `SYS_LOBBY_INFO\|CH_SYSTEM\|1\|10\|42:anton, tamer:2:open\n` |
-| `SYS_PLAYERS_LIST`    | `"SYS_PLAYERS_LIST"` | Server → Client | `CH_SYSTEM` | List of players connected to the server                                                            | `SYS_PLAYERS_LIST\|CH_SYSTEM\|1\|11\|Anton:Bea:Stephen\n`  |
-| `SYS_LOBBY_START`     | `"SYS_LOBBY_START"` | Client → Server | `CH_SYSTEM` | Request to start the game                                                                          | `SYS_LOBBY_START\|CH_SYSTEM\|2\|12\|42\n`                  |
-| `SYS_GAME_START`      | `"SYS_GAME_START"` | Server → Client | `CH_SYSTEM` | Inform game is starting                                                                            | `SYS_GAME_START\|CH_SYSTEM\|1\|13\|42\n`                   |
-| `SYS_STROKE_UPDATE`   | `"SYS_STROKE_UPDATE"` | Server → Client | `CH_SYSTEM` | Inform on players stroke counts in the form user:strokes                                           | `SYS_STROKE_UPDATE\|CH_SYSTEM\|1\|14\|anton:5,john:10\n`   |
-| `SYS_SCORE_UPDATE`    | `"SYS_SCORE_UPDATE"` | Server → Client | `CH_SYSTEM` | Inform on players score updates in the form winner:strokes                                         | `SYS_SCORE_UPDATE\|CH_SYSTEM\|1\|15\|anton:10, rose:15\n`  |
-| `SYS_OBSTACLE_UPDATE` | `"SYS_OBSTACLE_UPDATE"` | Server → Client | `CH_SYSTEM` | Authoritative update on obstacle state payload is obstacle ID                                      | `SYS_OBSTACLE_UPDATE\|CH_SYSTEM\|1\|16\|7\n`         |
-| `SYS_GAME_END`        | `"SYS_GAME_END"` | Server → Client | `CH_SYSTEM` | Game over and result                                                                               | `SYS_GAME_END\|CH_SYSTEM\|1\|17\|2:Anton\n`                |
-| `SYS_HESOYAM`         | `"SYS_HESOYAM"` | Client → Server | `CH_SYSTEM` | Cheat code trigger                                                                                 | `SYS_HESOYAM\|CH_SYSTEM\|2\|18\|\n`                        |
+| Constant | Value | Direction | Channel | Description | Example |
+|---|---|---|---|---|---|
+| `SYS_LOBBY_CREATE` | `"SYS_LOBBY_CREATE"` | Client → Server | `CH_SYSTEM` | Request to create a lobby | `SYS_LOBBY_CREATE\|CH_SYSTEM\|2\|3\|\n` |
+| `SYS_LOBBY_CREATED` | `"SYS_LOBBY_CREATED"` | Server → Client | `CH_SYSTEM` | Lobby creation confirmation, payload is lobby ID | `SYS_LOBBY_CREATED\|CH_SYSTEM\|1\|4\|42\n` |
+| `SYS_LOBBY_JOIN` | `"SYS_LOBBY_JOIN"` | Client → Server | `CH_SYSTEM` | Request to join a lobby, payload is lobby ID | `SYS_LOBBY_JOIN\|CH_SYSTEM\|2\|5\|42\n` |
+| `SYS_LOBBY_JOINED` | `"SYS_LOBBY_JOINED"` | Server → Client | `CH_SYSTEM` | Lobby join confirmation, payload is lobby ID | `SYS_LOBBY_JOINED\|CH_SYSTEM\|1\|6\|42\n` |
+| `SYS_LOBBY_LEAVE` | `"SYS_LOBBY_LEAVE"` | Client → Server | `CH_SYSTEM` | Request to leave current lobby, payload is lobby ID | `SYS_LOBBY_LEAVE\|CH_SYSTEM\|2\|7\|42\n` |
+| `SYS_LOBBY_LEFT` | `"SYS_LOBBY_LEFT"` | Server → Client | `CH_SYSTEM` | Lobby leave confirmation, payload is lobby ID | `SYS_LOBBY_LEFT\|CH_SYSTEM\|1\|8\|42\n` |
+| `SYS_LOBBY_LIST` | `"SYS_LOBBY_LIST"` | Server → Client | `CH_SYSTEM` | List of available lobbies | `SYS_LOBBY_LIST\|CH_SYSTEM\|1\|9\|1:2:3:\n` |
+| `SYS_LOBBY_INFO` | `"SYS_LOBBY_INFO"` | Server → Client | `CH_SYSTEM` | Information about a specific lobby in the format lobbyID:player1,player2:playerCount:lobbyStatus | `SYS_LOBBY_INFO\|CH_SYSTEM\|1\|10\|42:anton,tamer:2:open\n` |
+| `SYS_PLAYERS_LIST` | `"SYS_PLAYERS_LIST"` | Server → Client | `CH_SYSTEM` | List of players connected to the server | `SYS_PLAYERS_LIST\|CH_SYSTEM\|1\|11\|Anton:Bea:Stephen\n` |
+| `SYS_LOBBY_START` | `"SYS_LOBBY_START"` | Client → Server | `CH_SYSTEM` | Request to start the game | `SYS_LOBBY_START\|CH_SYSTEM\|2\|12\|42\n` |
+| `SYS_GAME_START` | `"SYS_GAME_START"` | Server → Client | `CH_SYSTEM` | Inform game is starting | `SYS_GAME_START\|CH_SYSTEM\|1\|13\|42\n` |
+| `SYS_STROKE_UPDATE` | `"SYS_STROKE_UPDATE"` | Server → Client | `CH_SYSTEM` | Inform on players stroke counts in the form user:strokes | `SYS_STROKE_UPDATE\|CH_SYSTEM\|1\|14\|anton:5,john:10\n` |
+| `SYS_SCORE_UPDATE` | `"SYS_SCORE_UPDATE"` | Server → Client | `CH_SYSTEM` | Inform on players score updates in the form winner:strokes | `SYS_SCORE_UPDATE\|CH_SYSTEM\|1\|15\|anton:10,rose:15\n` |
+| `SYS_OBSTACLE_UPDATE` | `"SYS_OBSTACLE_UPDATE"` | Server → Client | `CH_SYSTEM` | Authoritative update on obstacle state, payload is obstacle ID | `SYS_OBSTACLE_UPDATE\|CH_SYSTEM\|1\|16\|7\n` |
+| `SYS_GAME_END` | `"SYS_GAME_END"` | Server → Client | `CH_SYSTEM` | Game over and result | `SYS_GAME_END\|CH_SYSTEM\|1\|17\|2:Anton\n` |
+| `SYS_HESOYAM` | `"SYS_HESOYAM"` | Client → Server | `CH_SYSTEM` | Cheat code trigger | `SYS_HESOYAM\|CH_SYSTEM\|2\|18\|\n` |
+| `SYS_PLAYER_COLOR` | `"SYS_PLAYER_COLOR"` | Both | `CH_SYSTEM` | Player color selection; client sends chosen color, server broadcasts to all clients in the lobby, payload format: `<playerId>:<color>` | `SYS_PLAYER_COLOR\|CH_SYSTEM\|2\|19\|2:FF3300\n` |
 
 ### 3.3 Chat Messages
 
 | Constant | Value | Direction | Channel | Description | Example |
 |---|---|---|---|---|---|
-| `SYS_CHAT_BROADCAST` | `"SYS_CHAT_BROADCAST"` | Both | `CH_CHAT` | Public chat message, server broadcasts to all clients with original sender ID | `SYS_CHAT_BROADCAST\|CH_CHAT\|2\|19\|hello everyone\n` |
-| `SYS_CHAT_LOBBY` | `"SYS_CHAT_LOBBY"` | Both | `CH_CHAT` | Chat message scoped to the sender's current lobby | `SYS_CHAT_LOBBY\|CH_CHAT\|2\|20\|gg team\n` |
-| `SYS_CHAT_PRIVATE` | `"SYS_CHAT_PRIVATE"` | Both | `CH_CHAT` / `CH_SYSTEM` | Private chat, payload format: `<targetUsername>:<message>` | `SYS_CHAT_PRIVATE\|CH_CHAT\|2\|21\|Anton:hello\n` |
+| `SYS_CHAT_BROADCAST` | `"SYS_CHAT_BROADCAST"` | Both | `CH_CHAT` | Public chat message, server broadcasts to all clients with original sender ID | `SYS_CHAT_BROADCAST\|CH_CHAT\|2\|20\|hello everyone\n` |
+| `SYS_CHAT_LOBBY` | `"SYS_CHAT_LOBBY"` | Both | `CH_CHAT` | Chat message scoped to the sender's current lobby | `SYS_CHAT_LOBBY\|CH_CHAT\|2\|21\|gg team\n` |
+| `SYS_CHAT_PRIVATE` | `"SYS_CHAT_PRIVATE"` | Both | `CH_CHAT` / `CH_SYSTEM` | Private chat, payload format: `<targetUsername>:<message>` | `SYS_CHAT_PRIVATE\|CH_CHAT\|2\|22\|Anton:hello\n` |
 
 ### 3.4 Movement Messages
 
-| Constant | Value | Direction | Channel | Description | Example                                                 |
-|---|---|---|---|---|---------------------------------------------------------|
-| `MOVE_INPUT` | `"MOVE_INPUT"` | Client → Server | `CH_SYSTEM` | Player movement input | `MOVE_INPUT\|CH_SYSTEM\|2\|22\|<forceX>,<forceY>\n`             |
-| `MOVE_UPDATE` | `"MOVE_UPDATE"` | Server → Client | `CH_MOVEMENT` | Authoritative position update broadcast to all clients | `MOVE_UPDATE\|CH_MOVEMENT\|1\|23\|playerId>:<x>,<y>;\n` |
+| Constant | Value | Direction | Channel | Description | Example |
+|---|---|---|---|---|---|
+| `MOVE_INPUT` | `"MOVE_INPUT"` | Client → Server | `CH_SYSTEM` | Player movement input | `MOVE_INPUT\|CH_SYSTEM\|2\|23\|<forceX>,<forceY>\n` |
+| `MOVE_UPDATE` | `"MOVE_UPDATE"` | Server → Client | `CH_MOVEMENT` | Authoritative position update broadcast to all clients | `MOVE_UPDATE\|CH_MOVEMENT\|1\|24\|playerId:<x>,<y>;\n` |
 
 ## 4. Channels
 
@@ -117,6 +118,7 @@ In the examples below, `\n` denotes the trailing newline terminator.
 | `SYS_LOBBY_LEFT` | `<lobbyId>` | `42` |
 | `SYS_LOBBY_LIST` | `<id>:<id>:...` | `1:2:3:` |
 | `SYS_CHAT_PRIVATE` | `<targetUsername>:<message>` | `Anton:hello` |
+| `SYS_PLAYER_COLOR` | `<playerId>:<color>` | `2:FF3300` |
 
 ## 7. Connection Lifecycle
 
