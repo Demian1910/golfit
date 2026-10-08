@@ -40,6 +40,7 @@ java -jar build/libs/golfit-0.0.1-ALPHA.jar client <address>:<port> <name>
 
 ## Project Documentation
 Detailed information about project design and progress can be found in the following documents:
+* [**Project Overview**](GOLFIT_PROJECT.md): Complete description of the game, architecture, milestones and work done.
 * [**Website**](https://demian1910.github.io/golfit-website/): Official GOLFIT presentation website.
 * [**Network Protocol**](docs/networkProtocol.md): Technical specifications of the custom communication protocol.
 * [**Outreach**](outreach): Folder containing game's presentation website, trailer, and pictures.
